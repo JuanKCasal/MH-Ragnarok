@@ -217,6 +217,8 @@ Tres momentos, uno por elemento, nunca en todas las secciones a la vez:
 2. **Brillo en el título** RAGNAROK (barrido dorado, 6 s, lineal).
 3. **Latido del botón principal** (halo dorado que se expande y se apaga, 2,4 s), solo mientras la acción esté pendiente.
 
+**Ambiente: chispas y virutas de fuego** (pedido de Juan, 22-11-2026). Fondo fijo en todas las pantallas, detrás de los paneles (`site/js/ui/brasas.js` + `.brasas` y `.brasas-fogon` en `base.css`): chispas rápidas con estela, brasas que titilan y se enfrían de `oro-claro` a carmesí, y virutas que giran y terminan como ceniza; un resplandor de fogón titila abajo (5,5 s). Intensidad plena en el Inicio y 55 % en las demás pantallas. Más densidad en pantallas chicas para que se note en el celular; tope de 170 partículas, DPR máx. 1,5 y pausa con la pestaña oculta. Con `prefers-reduced-motion: reduce` queda un cuadro quieto, sin animación.
+
 Entradas de pantalla: aparición de 220 ms con ease-out exponencial (opacidad + 6 px). Con `prefers-reduced-motion: reduce` todo lo anterior se apaga y los cambios son instantáneos.
 
 ## Do's and Don'ts

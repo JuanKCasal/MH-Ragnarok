@@ -28,3 +28,24 @@ test('formatos de duración y semana', () => {
   assert.equal(duracion(60), '1 h');
   assert.equal(fechaSemana('2026-11-28'), '28 nov');
 });
+
+test('brasas: población según el área, con tope e intensidad', async () => {
+  const { poblacion } = await import('../site/js/ui/brasas.js');
+  const cel = poblacion(390, 844, 1);
+  const totalCel = cel.chispas + cel.brasas + cel.virutas;
+  assert.ok(totalCel >= 60 && totalCel <= 110, `celular: ${totalCel}`);
+  const pc = poblacion(2560, 1440, 1);
+  assert.ok(pc.chispas + pc.brasas + pc.virutas <= 172, 'tope en pantallas grandes');
+  const tenue = poblacion(390, 844, 0.5);
+  assert.ok(tenue.brasas < cel.brasas);
+  assert.deepEqual(poblacion(0, 0), { chispas: 0, brasas: 0, virutas: 0 });
+});
+
+test('brasas: color del fuego de carmesí a blanco dorado', async () => {
+  const { colorFuego } = await import('../site/js/ui/brasas.js');
+  assert.deepEqual(colorFuego(0), [122, 24, 20]);
+  assert.deepEqual(colorFuego(1), [255, 240, 196]);
+  assert.deepEqual(colorFuego(2), [255, 240, 196]);
+  const [r, g] = colorFuego(0.65);
+  assert.equal(r, 255); assert.equal(g, 146);
+});

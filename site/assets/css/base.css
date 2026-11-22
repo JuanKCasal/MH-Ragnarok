@@ -30,6 +30,40 @@ body::before {
   pointer-events: none;
 }
 
+/* Ambiente: chispas, brasas y virutas que suben del fogón (js/ui/brasas.js). Detrás de todo;
+   los paneles opacos las tapan, así que nunca compiten con el texto. */
+.brasas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh; /* alto grande: no salta cuando la barra del navegador del celular se esconde */
+  z-index: -1;
+  pointer-events: none;
+}
+
+.brasas-fogon {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48vh;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 85% 60% at 50% 112%, rgba(214, 80, 28, 0.30) 0%, rgba(140, 29, 42, 0.14) 45%, transparent 75%),
+    radial-gradient(ellipse 50% 30% at 50% 108%, rgba(255, 170, 70, 0.16) 0%, transparent 70%);
+  animation: fogon 5.5s ease-in-out infinite alternate;
+}
+
+@keyframes fogon {
+  0% { opacity: 0.72; }
+  35% { opacity: 1; }
+  60% { opacity: 0.82; }
+  100% { opacity: 0.96; }
+}
+
 ::selection { background: rgba(230, 192, 104, 0.35); color: var(--marfil-claro); }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }

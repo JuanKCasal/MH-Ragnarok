@@ -3,6 +3,7 @@ import { iniciarRouter, ruta } from './router.js';
 import { sesion, alCambiarSesion, revalidar } from './auth.js';
 import { html, crudo, pintar } from './ui/dom.js';
 import { ICONOS, emblema } from './ui/iconos.js';
+import { iniciarBrasas } from './ui/brasas.js';
 
 const SECCIONES = [
   { id: 'inicio', ruta: '#/', texto: 'Inicio' },
@@ -50,8 +51,16 @@ function pintarCuenta(s = sesion()) {
     : html`<a class="boton boton--chico" href="#/entrar">Entrar</a>`);
 }
 
+const brasas = iniciarBrasas();
+
 pintarNavegacion();
 pintarCuenta();
 alCambiarSesion(pintarCuenta);
-iniciarRouter(document.getElementById('vista'), { onNavegar: marcarSeccion });
+iniciarRouter(document.getElementById('vista'), {
+  onNavegar: (id) => {
+    marcarSeccion(id);
+    // Fuego pleno en el Inicio; más tenue en las pantallas de trabajo (Eventos, armado…).
+    brasas.intensidad(id === 'inicio' ? 1 : 0.55);
+  },
+});
 revalidar();

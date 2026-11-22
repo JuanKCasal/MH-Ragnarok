@@ -6,8 +6,10 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 ## Punto de partida exacto para la sesión 4
 
 1. Leer `CLAUDE.md`, este archivo, `SPEC.md` y `DESIGN.md`.
-2. Confirmar con Juan que hizo el **primer commit y el push** con los comandos que le di (ver "Git" abajo) y que activó **Settings → Pages → Source: GitHub Actions**. Revisar que la acción "Publicar en GitHub Pages" pasó (corre `npm test`, 40 pruebas).
-3. Pedirle que pruebe la web publicada en su celular (modo demostración) y anotar sus comentarios de diseño.
+2. **Primer commit y push hechos** por Juan (commit `599e4f5`, 65 archivos, rama `main`). **GitHub Pages activado** (Source: GitHub Actions, lo activó Claude desde el navegador de Juan) y la acción "Publicar en GitHub Pages" pasó en verde. **Web en línea: https://juankcasal.github.io/MH-Ragnarok/** (modo demostración). Aviso menor de la acción: `checkout`, `setup-node`, `configure-pages`, `upload-pages-artifact` y `deploy-pages` corren en Node 20 (deprecado); subirlas a su versión más nueva cuando toque.
+3. Comentarios de Juan tras probar en el celular (sesión 4):
+   - ✅ **Fondo de chispas y virutas de fuego** — hecho en la sesión 4 (`site/js/ui/brasas.js`, estilos `.brasas`/`.brasas-fogon` en `base.css`, conectado en `app.js`, documentado en `DESIGN.md` > Movimiento > Ambiente, 2 pruebas nuevas → **42**). Verificado con Playwright a 390 y 1440 px, 60 fps, sin errores de consola, con `reduced-motion` = cuadro quieto. **Falta commit + push** (comandos abajo) y que Juan lo vea en su celular.
+   - (anotar aquí el resto de sus comentarios)
 4. Siguiente bloque del frontend v1 (`SPEC.md` §2): **Entrar / Registro / Mi perfil** (login con nick + PIN, registro con código del clan, cambio de nick con límite, adventurers Fase 1 y subida de capturas con `image.js`). Después Noticias, Guías y Miembros, y por último editor y admin.
 5. Juan monta el backend con `docs/SETUP-backend.md` y pega la URL `/exec` en `site/config.js` (con eso se apaga el modo demostración solo).
 
@@ -47,6 +49,16 @@ git add .
 git status
 git commit -m "MH-Ragnarok v0.1: SPEC, backend Apps Script, DESIGN.md y frontend (Inicio, Eventos, armado de brigadas)"
 git push -u origin main
+```
+
+## Commit pendiente (sesión 4)
+
+```powershell
+cd C:\dev\mh-ragnarok
+git add .
+git status
+git commit -m "Fondo animado de chispas, brasas y virutas de fuego"
+git push
 ```
 
 ## Notas técnicas
