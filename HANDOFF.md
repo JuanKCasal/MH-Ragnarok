@@ -1,17 +1,29 @@
-# HANDOFF — MH-Ragnarok (fin de sesión 3 en Cowork)
+# HANDOFF — MH-Ragnarok (fin de sesión 4 en Cowork)
 
 Fecha: 2026-11-22
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
 
-## Punto de partida exacto para la sesión 4
+## Punto de partida exacto para la sesión 5
 
 1. Leer `CLAUDE.md`, este archivo, `SPEC.md` y `DESIGN.md`.
-2. **Primer commit y push hechos** por Juan (commit `599e4f5`, 65 archivos, rama `main`). **GitHub Pages activado** (Source: GitHub Actions, lo activó Claude desde el navegador de Juan) y la acción "Publicar en GitHub Pages" pasó en verde. **Web en línea: https://juankcasal.github.io/MH-Ragnarok/** (modo demostración). Aviso menor de la acción: `checkout`, `setup-node`, `configure-pages`, `upload-pages-artifact` y `deploy-pages` corren en Node 20 (deprecado); subirlas a su versión más nueva cuando toque.
-3. Comentarios de Juan tras probar en el celular (sesión 4):
-   - ✅ **Fondo de chispas y virutas de fuego** — hecho en la sesión 4 (`site/js/ui/brasas.js`, estilos `.brasas`/`.brasas-fogon` en `base.css`, conectado en `app.js`, documentado en `DESIGN.md` > Movimiento > Ambiente, 2 pruebas nuevas → **42**). Verificado con Playwright a 390 y 1440 px, 60 fps, sin errores de consola, con `reduced-motion` = cuadro quieto. **Falta commit + push** (comandos abajo) y que Juan lo vea en su celular.
-   - (anotar aquí el resto de sus comentarios)
-4. Siguiente bloque del frontend v1 (`SPEC.md` §2): **Entrar / Registro / Mi perfil** (login con nick + PIN, registro con código del clan, cambio de nick con límite, adventurers Fase 1 y subida de capturas con `image.js`). Después Noticias, Guías y Miembros, y por último editor y admin.
-5. Juan monta el backend con `docs/SETUP-backend.md` y pega la URL `/exec` en `site/config.js` (con eso se apaga el modo demostración solo).
+2. Confirmar con Juan que hizo commit + push de la sesión 4 (comandos en "Commit pendiente" abajo) y que probó en su celular **Entrar / Registro / Mi perfil / Adventurer** en modo demostración. Anotar sus comentarios.
+3. Siguiente bloque del frontend v1 (`SPEC.md` §2): **Miembros** (`#/miembros` directorio con buscador, filtros arma/elemento/tipo y orden por poder; `#/miembros/:id` perfil público reutilizando `tarjetaAdventurer` y `avatar` de `views/yo.js`). Después **Noticias** y **Guías** (con `markdown.js` seguro), y por último **editor** (oficiales) y **admin**.
+4. Juan monta el backend con `docs/SETUP-backend.md` y pega la URL `/exec` en `site/config.js` (con eso se apaga el modo demostración solo).
+5. Pendiente menor: subir las acciones de GitHub Pages a versiones con Node 24 (hoy corren en Node 20, deprecado).
+
+## Hecho en la sesión 4
+
+- **Fondo de chispas, brasas y virutas de fuego** (pedido de Juan tras probar en el celular): `site/js/ui/brasas.js` + `.brasas`/`.brasas-fogon` en `base.css`. Documentado en `DESIGN.md` > Movimiento > Ambiente. Commit `a24623f`, publicado. A Juan le encantó.
+- **Entrar** (`views/entrar.js`): nick + PIN, botón Ver/Ocultar, vuelve a `?volver=` (solo rutas internas), PIN temporal → `#/yo?pin=1`.
+- **Registro** (`views/registro.js`): código del clan, nick, nombre en el juego, país, PIN ×2; errores del backend marcados en su campo (`CAMPO_DE_ERROR`); al terminar → `#/yo?nuevo=1` con bienvenida.
+- **Mi perfil** (`views/yo.js`): avatar (512 px cuadrado), adventurers con "Principal" y "Hacer principal", enlace de WhatsApp (solo enlaces `chat.whatsapp.com`, solo con sesión), Mis datos (nick con cambios restantes de la semana, nombre e ID del juego, país, bio 280), Cambiar PIN (primero y abierto si es temporal), Cerrar sesión. Exporta `tarjetaAdventurer` y `avatar` para reutilizar en Miembros.
+- **Adventurer** (`views/adventurer.js`, `#/yo/adventurer` y `#/yo/adventurer/:id`): nombre, arma (ES · EN), elemento y tipo como chips, poder total y nivel, desglose opcional (Equipamiento/Rostros/Camarada), loadout, notas, hasta 5 capturas (comprimidas a WebP 1600 px, se pueden quitar), eliminar con doble toque (sin diálogos del navegador).
+- Nuevos módulos: `js/validar.js` (espejo de las validaciones del backend, países, bandera, `validarAdventurer`), `js/image.js` (compresión y URL de miniatura de Drive), `js/ui/form.js` (campos accesibles, errores, PIN, contadores). Estilos de formularios, chips, avatar y alertas en `components.css`; vistas en `views.css`.
+- `auth.js`: ahora olvida la sesión también con `SESION_VENCIDA`/`SIN_ACCESO` (antes solo `SIN_SESION`, que el backend no envía); `actualizarMiembro`, `salir`, `esSesionCaida`. En demo se puede cerrar sesión y volver a entrar.
+- `demo-data.js`: perfil de "Midori" con 2 adventurers y todas las escrituras de este bloque simuladas con las reglas del backend (prueba el nick "Kaelith" para ver "nick ocupado").
+- Eventos: el aviso de "necesitas tu adventurer principal" enlaza a `#/yo/adventurer`.
+- Verificado con Playwright a 390 y 320 px: flujo completo (editar con capturas, errores, principal, nick ocupado, PIN débil, salir, entrar, registro), sin errores de consola ni desborde. Arreglados en la prueba: `maxlength` del PIN recortaba un PIN pegado con espacios; `marcar()` fallaba en fieldsets sin párrafo de error.
+- Pruebas: **49** (`npm test`), nuevo `tests/perfil.test.mjs`.
 
 ## Hecho en la sesión 3
 
@@ -51,13 +63,13 @@ git commit -m "MH-Ragnarok v0.1: SPEC, backend Apps Script, DESIGN.md y frontend
 git push -u origin main
 ```
 
-## Commit pendiente (sesión 4)
+## Commit pendiente (sesión 4, segundo commit)
 
 ```powershell
 cd C:\dev\mh-ragnarok
 git add .
 git status
-git commit -m "Fondo animado de chispas, brasas y virutas de fuego"
+git commit -m "Entrar, Registro, Mi perfil y formulario de adventurers (Fase 1)"
 git push
 ```
 

@@ -221,3 +221,73 @@
 .ayuda-intercambio--activa { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .ayuda-intercambio strong { color: var(--oro-claro); }
 .armado-acciones { margin-top: 8px; }
+
+/* ---------- Entrar y Registro ---------- */
+
+.acceso { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 440px; margin: 0 auto; }
+.acceso__pie { color: var(--texto-suave); text-align: center; }
+.acceso__pie a { font-weight: 800; }
+
+/* ---------- Mi perfil ---------- */
+
+.perfil-cabeza { display: flex; align-items: center; gap: 16px; }
+.perfil-cabeza__avatar { position: relative; flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+.perfil-cabeza__cambiar { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--oro); }
+.perfil-cabeza__avatar:hover .perfil-cabeza__cambiar { color: var(--oro-claro); }
+.perfil-cabeza__avatar:focus-within .avatar { outline: 2px solid var(--oro); outline-offset: 3px; }
+.perfil-cabeza__texto { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.perfil-cabeza__texto .titulo { overflow-wrap: anywhere; }
+
+.bienvenida { gap: 6px; }
+
+.advs { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 700px) { .advs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.adv {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 16px;
+  background: linear-gradient(160deg, var(--panel), var(--panel-hondo));
+  border: 1px solid var(--filete);
+  border-radius: var(--filo);
+  min-width: 0;
+}
+.adv--principal { border-color: var(--oro); }
+.adv__cabeza { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.adv__nombre { font-family: var(--f-display); font-weight: 700; font-size: 1.125rem; color: var(--marfil-claro); overflow-wrap: anywhere; }
+.adv__poder { display: flex; align-items: baseline; gap: 8px; }
+.adv__poder .num { font-family: var(--f-display); font-weight: 700; font-size: 1.75rem; line-height: 1.1; color: var(--oro-claro); font-variant-numeric: tabular-nums lining-nums; }
+.adv__datos { font-size: 0.875rem; line-height: 1.5; color: var(--texto-suave); }
+.adv__loadout { font-size: 0.875rem; color: var(--texto-tenue); }
+.adv__capturas { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 2px; scrollbar-width: thin; }
+.adv__capturas a { display: block; flex: none; }
+.adv__capturas img { display: block; width: 96px; aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid var(--filete-suave); border-radius: var(--filo); background: var(--celda); }
+.adv__acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 6px; }
+
+.grupo .grupo__texto { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; color: var(--marfil-claro); }
+.grupo svg { width: 22px; height: 22px; color: var(--acierto); }
+
+.desplegable--panel { padding: 4px 16px; border: 1px solid var(--filete); border-radius: var(--filo); background: rgba(255, 255, 255, 0.02); }
+.desplegable--panel[open] { padding-bottom: 18px; }
+.desplegable--panel summary { min-height: 52px; font-family: var(--f-display); font-weight: 700; font-size: 1.0625rem; color: var(--marfil-claro); }
+
+/* ---------- Formulario de adventurer ---------- */
+
+.campos-dos { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 420px) { .campos-dos { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); } }
+
+.capturas { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.capturas:empty { display: none; }
+.captura { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--filete); border-radius: var(--filo); overflow: hidden; background: var(--celda); }
+.captura img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.captura__quitar {
+  position: absolute; top: 0; right: 0;
+  width: 44px; height: 44px;
+  border: 0; background: linear-gradient(225deg, rgba(15, 12, 13, 0.85) 45%, transparent 46%);
+  color: var(--marfil-claro); font-size: 1.25rem; line-height: 1; font-weight: 700;
+  display: flex; align-items: flex-start; justify-content: flex-end; padding: 5px 8px;
+  cursor: pointer;
+}
+.captura__quitar:hover { color: var(--error); }
+.captura--subiendo span { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(230,192,104,0.12), rgba(255,255,255,0.03)); background-size: 200% 100%; animation: brillo 1.4s linear infinite; }
+.capturas__agregar { align-self: flex-start; position: relative; cursor: pointer; }
+.capturas__agregar:focus-within { outline: 2px solid var(--oro); outline-offset: 2px; }

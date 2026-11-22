@@ -112,7 +112,7 @@ export default async function vistaEventos(el, { recargar }) {
             </div>
             ${advMio
               ? html`<p class="mi-adventurer">Con tu adventurer principal: <strong>${[arma(advMio.arma), elemento(advMio.elemento)].filter(Boolean).join(' · ')}</strong> · <strong class="poder">${numero(mia.poder)}</strong></p>`
-              : html`<p class="mi-adventurer">Para confirmar “voy” necesitas tu adventurer principal en tu perfil: su poder es el que se usa para armar las brigadas.</p>`}`
+              : html`<p class="mi-adventurer">Para confirmar “voy” necesitas tu adventurer principal en tu perfil: su poder es el que se usa para armar las brigadas. <a href="#/yo/adventurer">Agregarlo ahora</a></p>`}`
           : html`
             <p class="apoyo">Entra con tu nick y PIN para confirmar si vas este sábado.</p>
             <a class="boton boton--oro boton--ancho" href="#/entrar?volver=eventos">Entrar para confirmar</a>`}

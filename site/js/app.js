@@ -24,9 +24,11 @@ ruta('/guias', pronto, { seccion: 'guias' });
 ruta('/guias/:slug', pronto, { seccion: 'guias' });
 ruta('/miembros', pronto, { seccion: 'miembros' });
 ruta('/miembros/:id', pronto, { seccion: 'miembros' });
-ruta('/entrar', pronto);
-ruta('/registro', pronto);
-ruta('/yo', pronto);
+ruta('/entrar', () => import('./views/entrar.js'));
+ruta('/registro', () => import('./views/registro.js'));
+ruta('/yo', () => import('./views/yo.js'));
+ruta('/yo/adventurer', () => import('./views/adventurer.js'));
+ruta('/yo/adventurer/:id', () => import('./views/adventurer.js'));
 ruta('/404', pronto);
 
 function pintarNavegacion() {

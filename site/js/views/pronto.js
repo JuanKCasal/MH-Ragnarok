@@ -6,9 +6,6 @@ const TEXTOS = {
   noticias: ['Noticias', 'Aquí van las crónicas del gremio y las novedades del juego, con filtro por tipo.'],
   guias: ['Guías', 'Guías para nuevos: primeros pasos, armas, Rostros, Camaradas y eventos.'],
   miembros: ['Miembros', 'El directorio del clan con los adventurers y el poder de cada cazador.'],
-  entrar: ['Entrar', 'Entrarás con tu nick y tu PIN de 6 dígitos.'],
-  registro: ['Registro', 'Te registrarás con el código del clan que se comparte en el grupo.'],
-  yo: ['Mi perfil', 'Tus datos, tus adventurers, tu nick (hasta 2 cambios por semana) y tu PIN.'],
 };
 
 export default function vistaPronto(el) {

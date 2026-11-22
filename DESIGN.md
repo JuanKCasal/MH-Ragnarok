@@ -210,6 +210,9 @@ Barra dorada de 250 px, paño carmesí de 210 × 300 px con cola en V, filete in
 ### Cuenta regresiva
 Cifra Cinzel en `marfil-claro` con `font-variant-numeric: tabular-nums`, línea de fecha en la hora local del visitante ("sáb 28 nov · 23:15 en tu hora"). Se actualiza cada segundo solo con la pestaña visible. Si el evento está en curso, cambia a la insignia bosque "EN CURSO · termina en …".
 
+### Formularios
+Etiqueta en Mulish 800 sobre el campo; "OPCIONAL" en rótulo pequeño. Campo de 48 px de alto, fondo `celda`, filete dorado tenue, letra de 16 px (iOS no hace zoom); foco con anillo `oro`. PIN en Cinzel espaciado con botón "VER". Errores en `error` bajo el campo y resumen en caja carmesí. Opciones cortas (elemento, tipo) como chips de 44 px: marcado = filete `oro` y fondo dorado al 14 %. El elemento lleva un punto de color (fuego, agua, trueno, hielo, dragón). Avatar cuadrado con filete `oro`; sin foto, la inicial en Cinzel sobre carmesí. Acciones destructivas con doble toque, nunca diálogos del navegador.
+
 ## Movimiento
 
 Tres momentos, uno por elemento, nunca en todas las secciones a la vez:

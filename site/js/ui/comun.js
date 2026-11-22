@@ -4,7 +4,7 @@ import { ICONOS } from './iconos.js';
 import { MODO_DEMO } from '../api.js';
 import { CONFIG_EVENTOS } from '../time.js';
 
-export function avisoDemo(texto = 'Datos de ejemplo: la web aún no está conectada al backend del gremio. Navegas como “Midori”, oficial de prueba; nada se guarda.') {
+export function avisoDemo(texto = 'Datos de ejemplo: la web aún no está conectada al backend del gremio. Navegas como oficial de prueba y nada se guarda al recargar.') {
   if (!MODO_DEMO) return '';
   return html`<p class="aviso">${crudo(ICONOS.info)}<span>${texto}</span></p>`;
 }
