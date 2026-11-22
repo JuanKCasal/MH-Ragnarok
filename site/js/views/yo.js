@@ -17,13 +17,30 @@ const MAX_ADVENTURERS = 30;
 export function avatar(m, tam = 88) {
   const src = urlImagen(m.avatar_id, tam * 2);
   return src
-    ? html`<img class="avatar" src="${src}" alt="" width="${tam}" height="${tam}" loading="lazy" decoding="async">`
+    ? html`<img class="avatar" src="${src}" alt="" width="${tam}" height="${tam}" style="--tam:${tam}px" loading="lazy" decoding="async">`
     : html`<span class="avatar avatar--inicial" style="--tam:${tam}px" aria-hidden="true">${[...String(m.nick || '?')][0].toUpperCase()}</span>`;
 }
 
-const elemDot = (k) => html`<span class="elem elem--${k || 'none'}" aria-hidden="true"></span>`;
+export const elemDot = (k) => html`<span class="elem elem--${k || 'none'}" aria-hidden="true"></span>`;
 
-export function tarjetaAdventurer(a, { principal = false, editable = false } = {}) {
+const PARTES = [['poder_equipo', 'Equipamiento', 'equipo'], ['poder_rostros', 'Rostros', 'rostros'], ['poder_camarada', 'Camarada', 'camarada']];
+
+/** Barra con el poder por componente (Equipamiento, Rostros, Camarada, Otros). Vacío si no lo cargó. */
+export function desglosePoder(a) {
+  const total = Number(a.poder_total) || 0;
+  const partes = PARTES.map(([k, t, c]) => ({ t, c, v: Number(a[k]) || 0 })).filter((p) => p.v > 0);
+  if (!total || !partes.length) return '';
+  const otros = total - partes.reduce((s, p) => s + p.v, 0);
+  if (otros > 0) partes.push({ t: 'Otros', c: 'otros', v: otros });
+  return html`
+    <div class="desglose">
+      <div class="desglose__barra" aria-hidden="true">${partes.map((p) => html`<span class="desglose--${p.c}" style="flex-grow:${p.v}"></span>`)}</div>
+      <dl class="desglose__leyenda">${partes.map((p) => html`
+        <div><dt><span class="desglose__punto desglose--${p.c}" aria-hidden="true"></span>${p.t}</dt><dd>${numero(p.v)}</dd></div>`)}</dl>
+    </div>`;
+}
+
+export function tarjetaAdventurer(a, { principal = false, editable = false, desglose = false } = {}) {
   const datos = [armaBilingue(a.arma), a.tipo ? tipo(a.tipo) : '', a.nivel ? `Nv. ${a.nivel}` : ''].filter(Boolean).join(' · ');
   return html`
     <article class="adv ${principal ? 'adv--principal' : ''}">
@@ -33,7 +50,9 @@ export function tarjetaAdventurer(a, { principal = false, editable = false } = {
       </div>
       <p class="adv__poder"><span class="num">${numero(a.poder_total)}</span> <span class="rotulo">poder</span></p>
       <p class="adv__datos">${elemDot(a.elemento)}${elemento(a.elemento || 'none')}${datos ? ` · ${datos}` : ''}</p>
+      ${desglose ? desglosePoder(a) : ''}
       ${a.loadout ? html`<p class="adv__loadout">Loadout “${a.loadout}”</p>` : ''}
+      ${a.notas ? html`<p class="adv__notas">${a.notas}</p>` : ''}
       ${a.capturas?.length
         ? html`<ul class="adv__capturas" aria-label="Capturas">${a.capturas.map((id, i) => html`
             <li><a href="${urlImagen(id, 1600)}" target="_blank" rel="noopener noreferrer"><img src="${urlImagen(id, 400)}" alt="Captura ${i + 1} de ${a.adventurer}" loading="lazy" decoding="async"></a></li>`)}</ul>`
@@ -119,7 +138,7 @@ export default async function vistaYo(el, { query, recargar }) {
         ${advs.length ? html`<span class="nota">${advs.length} de ${MAX_ADVENTURERS}</span>` : ''}
       </div>
       ${advs.length
-        ? html`<div class="advs">${advs.map((a) => tarjetaAdventurer(a, { principal: a.id === principalId, editable: true }))}</div>`
+        ? html`<div class="advs">${advs.map((a) => tarjetaAdventurer(a, { principal: a.id === principalId, editable: true, desglose: a.id === principalId }))}</div>`
         : query.nuevo === '1' ? '' : html`<div class="vacio"><p>Todavía no cargas ninguno. Con tu adventurer principal y su poder ya puedes confirmar el Clash del sábado.</p></div>`}
       ${advs.length < MAX_ADVENTURERS
         ? html`<a class="boton boton--ancho ${advs.length ? '' : 'boton--oro latido'}" href="#/yo/adventurer">Agregar adventurer</a>`

@@ -34,9 +34,18 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Copia de site/ con ?v=<commit> en CSS/JS: cada publicación usa URLs nuevas
+      # y la web avisa "Hay una versión nueva" (ver scripts/versionar.mjs).
+      - name: Versionar
+        run: |
+          cp -r site _site
+          node scripts/versionar.mjs _site "${GITHUB_SHA::7}"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

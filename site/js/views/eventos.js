@@ -25,7 +25,7 @@ function celda(j, yoId) {
   const a = j.adventurer || {};
   return html`
     <li class="cazador ${tuyo ? 'cazador--tuyo' : ''}">
-      <span class="cazador__nick">${tuyo ? `${j.nick} (tú)` : j.nick}</span>
+      <a class="cazador__nick" href="#/miembros/${encodeURIComponent(j.miembro_id)}">${tuyo ? `${j.nick} (tú)` : j.nick}</a>
       <span class="cazador__dato">${[numero(j.poder), arma(a.arma)].filter(Boolean).join(' · ')}</span>
     </li>`;
 }

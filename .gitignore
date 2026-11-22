@@ -13,3 +13,4 @@ Thumbs.db
 # Salidas locales de Cowork
 Claude outputs/
 .impeccable/
+_site/

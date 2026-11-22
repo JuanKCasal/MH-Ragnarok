@@ -4,6 +4,8 @@ import { sesion, alCambiarSesion, revalidar } from './auth.js';
 import { html, crudo, pintar } from './ui/dom.js';
 import { ICONOS, emblema } from './ui/iconos.js';
 import { iniciarBrasas } from './ui/brasas.js';
+import { vigilarVersion } from './ui/actualizacion.js';
+import { VERSION } from './version.js';
 
 const SECCIONES = [
   { id: 'inicio', ruta: '#/', texto: 'Inicio' },
@@ -18,12 +20,12 @@ const pronto = () => import('./views/pronto.js');
 ruta('/', () => import('./views/inicio.js'), { seccion: 'inicio' });
 ruta('/eventos', () => import('./views/eventos.js'), { seccion: 'eventos' });
 ruta('/clash/armar', () => import('./views/armar.js'), { seccion: 'eventos' });
-ruta('/noticias', pronto, { seccion: 'noticias' });
-ruta('/noticias/:id', pronto, { seccion: 'noticias' });
-ruta('/guias', pronto, { seccion: 'guias' });
-ruta('/guias/:slug', pronto, { seccion: 'guias' });
-ruta('/miembros', pronto, { seccion: 'miembros' });
-ruta('/miembros/:id', pronto, { seccion: 'miembros' });
+ruta('/noticias', () => import('./views/noticias.js'), { seccion: 'noticias' });
+ruta('/noticias/:id', () => import('./views/noticia.js'), { seccion: 'noticias' });
+ruta('/guias', () => import('./views/guias.js'), { seccion: 'guias' });
+ruta('/guias/:slug', () => import('./views/guia.js'), { seccion: 'guias' });
+ruta('/miembros', () => import('./views/miembros.js'), { seccion: 'miembros' });
+ruta('/miembros/:id', () => import('./views/miembro.js'), { seccion: 'miembros' });
 ruta('/entrar', () => import('./views/entrar.js'));
 ruta('/registro', () => import('./views/registro.js'));
 ruta('/yo', () => import('./views/yo.js'));
@@ -66,3 +68,10 @@ iniciarRouter(document.getElementById('vista'), {
   },
 });
 revalidar();
+vigilarVersion();
+if (VERSION !== 'dev') {
+  const v = document.createElement('span');
+  v.className = 'pie__version';
+  v.textContent = `Versión ${VERSION}`;
+  document.querySelector('.pie')?.append(v);
+}

@@ -23,3 +23,8 @@ export const arma = (k) => ARMAS[k]?.es ?? '';
 export const armaBilingue = (k) => (ARMAS[k] ? `${ARMAS[k].es} · ${ARMAS[k].en}` : '');
 export const elemento = (k) => ELEMENTOS[k] ?? '';
 export const tipo = (k) => TIPOS[k] ?? '';
+
+export const CATEGORIAS_GUIA = {
+  'primeros-pasos': 'Primeros pasos', armas: 'Armas', rostros: 'Rostros', camaradas: 'Camaradas', eventos: 'Eventos', otros: 'Otros',
+};
+export const NIVELES_GUIA = { basico: 'Básico', intermedio: 'Intermedio', avanzado: 'Avanzado' };

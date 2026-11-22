@@ -1,15 +1,51 @@
-# HANDOFF — MH-Ragnarok (fin de sesión 4 en Cowork)
+# HANDOFF — MH-Ragnarok (fin de sesión 6 en Cowork)
 
 Fecha: 2026-11-22
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
 
-## Punto de partida exacto para la sesión 5
+## Punto de partida exacto para la sesión 7
 
 1. Leer `CLAUDE.md`, este archivo, `SPEC.md` y `DESIGN.md`.
-2. Confirmar con Juan que hizo commit + push de la sesión 4 (comandos en "Commit pendiente" abajo) y que probó en su celular **Entrar / Registro / Mi perfil / Adventurer** en modo demostración. Anotar sus comentarios.
-3. Siguiente bloque del frontend v1 (`SPEC.md` §2): **Miembros** (`#/miembros` directorio con buscador, filtros arma/elemento/tipo y orden por poder; `#/miembros/:id` perfil público reutilizando `tarjetaAdventurer` y `avatar` de `views/yo.js`). Después **Noticias** y **Guías** (con `markdown.js` seguro), y por último **editor** (oficiales) y **admin**.
+2. **Las sesiones 5 y 6 van en un solo commit** (decisión de Juan) y todavía no se hizo: confirmar que corrió los comandos de "Commit pendiente" abajo. Después del push, revisar con él en el celular: el aviso **"Hay una versión nueva · Actualizar"** (la primera publicación con versionado puede necesitar esperar ~10 min o borrar caché una última vez), **Miembros**, **Noticias** y **Guías**.
+3. Siguiente bloque del frontend v1 (`SPEC.md` §2): **editor** de noticias y guías para oficiales (`#/editor/noticia/:id?`, `#/editor/guia/:id?`: Markdown con vista previa usando `renderMarkdown`, portada con `comprimir` + `imagen.subir` tipo `portada`, publicar/borrador, fijar; lista vía `editor.contenido`) y luego **admin** (`#/admin`: miembros con rol/estado/reset de PIN, código del clan, configuración del gremio). Faltan en `demo-data.js` las escrituras `noticia.guardar/eliminar`, `guia.guardar/eliminar`, `editor.contenido` y las de admin.
 4. Juan monta el backend con `docs/SETUP-backend.md` y pega la URL `/exec` en `site/config.js` (con eso se apaga el modo demostración solo).
-5. Pendiente menor: subir las acciones de GitHub Pages a versiones con Node 24 (hoy corren en Node 20, deprecado).
+5. Pendiente menor: subir las acciones de GitHub Pages a versiones con Node 24 (hoy corren en Node 20, deprecado). Verificar versiones vigentes antes de cambiarlas.
+
+## Commit pendiente (sesiones 5 y 6 juntas)
+
+```powershell
+cd C:\dev\mh-ragnarok
+git add .
+git status
+git commit -m "Miembros, Noticias y Guías (Markdown seguro) y versionado de la web con aviso de actualización"
+git push
+```
+
+## Hecho en la sesión 6 (misma conversación que la 5)
+
+- **`js/markdown.js`** (subconjunto propio, sin dependencias): escapa todo el HTML; títulos `#`–`####` (`#` y `##` salen como h2, con id `s-<slug>` único), párrafos (un salto de línea = `<br>`), listas `- * 1.`, citas `>`, `---`, bloques de código, tablas con `|`; en línea **negrita**, *cursiva*, `código`, enlaces y imágenes. Enlaces: solo `https:`, rutas internas `#/…` y anclas `#seccion` (cualquier otro esquema queda como texto). Imágenes: solo de Drive (`drive:ID` o enlaces de Drive → miniatura). Devuelve `{ html, titulos }`.
+- **`js/ui/contenido.js`**: `fechaRelativa` ("hace 3 h", "ayer", "hace 4 días", "22 nov 2026"), `fechaLarga`, `activarAnclas` (las anclas no pueden usar el hash porque lo usa el router: se salta con `scrollIntoView`), `compartir` (menú del teléfono con `navigator.share`, o copia el enlace) y `portada`.
+- **Noticias** (`views/noticias.js`, `views/noticia.js`): lista con filtro Todas / Juego / Gremio / Eventos (`#/noticias?tipo=…`), fijadas primero con su marca, color por tipo, "Cargar más" (paginado de la API); detalle con tipo, fecha, autor, entrada, portada, cuerpo en Markdown, Compartir y "Más noticias".
+- **Guías** (`views/guias.js`, `views/guia.js`): agrupadas por categoría con saltos rápidos, insignia de nivel (Básico / Intermedio / Avanzado); detalle con índice "En esta guía" (si hay 3 o más secciones), cuerpo en Markdown, Compartir y "Todas las guías". Etiquetas `CATEGORIAS_GUIA` y `NIVELES_GUIA` en `etiquetas.js`.
+- **Contenido de ejemplo** en `js/demo-contenido.js`: 7 noticias y 7 guías escritas solo con datos confirmados del juego (capturas de Juan) y las reglas de la web; los oficiales pueden usarlas como base para las reales. En demo la lista de noticias pagina de 5 en 5 (el backend de 12) para que se vea "Cargar más". Inicio muestra las 3 últimas (fijadas primero).
+- `views/pronto.js` ahora es solo la página "no encontrada": ya no queda ninguna sección "próximamente".
+- Verificado con Playwright a 390 y 320 px sobre la copia versionada: lista, filtro, cargar más, detalle, no existe, saltos e índice sin tocar el hash, tablas sin desborde, enlace desde Inicio. Arreglados en la prueba: el reset global quitaba viñetas y números de las listas del Markdown y del índice; las tablas cortaban palabras a la mitad en 320 px.
+- Pruebas: **65** (`npm test`), nueva `tests/markdown.test.mjs` (incluye intentos de `javascript:`, `data:`, `http:`, atributos inyectados e imágenes de fuera de Drive).
+- Quedan en `Claude outputs/` los paquetes de prueba `site-build*.tgz` (ignorados por git); Juan puede borrarlos.
+
+## Hecho en la sesión 5
+
+- **Versionado / caché del celular** (pedido de Juan: en el PC veía la versión nueva con Ctrl+Mayús+R, en el celular no). GitHub Pages sirve con caché de ~10 min y no deja cambiar cabeceras.
+  - `scripts/versionar.mjs`: al desplegar, sobre una copia de `site/` (`_site/`), añade `?v=<commit de 7 caracteres>` a cada CSS/JS del HTML y a todos los `import` (estáticos y dinámicos) de los módulos, fija `VERSION` en `js/version.js` y escribe `version.json`. En el repo `VERSION = 'dev'` (local no avisa nada).
+  - `js/ui/actualizacion.js`: al abrir y al volver a la pestaña (máx. cada 5 min) compara `version.json` (sin caché) con su `VERSION`; si cambió, muestra **"Hay una versión nueva de la web · Actualizar"**, que recarga con `?v=` en la dirección para saltarse el HTML guardado (luego se limpia de la barra).
+  - La versión se ve en el pie ("Versión abc1234"). Workflow `pages.yml`: paso "Versionar" y publica `_site`. `_site/` en `.gitignore`.
+- **Miembros** (`views/miembros.js`, `#/miembros`): buscador sin tildes (nick, nombre en el juego, adventurer, arma en ES o EN, elemento, tipo); panel **Filtros** con chips de selección múltiple (arma, elemento con punto de color, tipo; O dentro del grupo, Y entre grupos) y contador; orden Más poder / Menos poder / Nick A–Z; puesto por poder en todo el gremio (podio 1–3 en oro); "Tú" en tu fila; los que no cargaron adventurer van al final. Los filtros se conservan al volver de un perfil. Lógica pura en `js/miembros-filtro.js`.
+- **Perfil público** (`views/miembro.js`, `#/miembros/:id`): avatar, rol, país, nombre en el juego, bio, **ID de jugador con botón Copiar** (para agregarlo de amigo), "En el gremio desde…", "Editar mi perfil" si eres tú, adventurers con el principal primero y **barra de desglose del poder** (Equipamiento / Rostros / Camarada / Otros). Mensajes para "sin adventurers" y "no existe".
+- `views/yo.js`: exporta `elemDot` y `desglosePoder`; `tarjetaAdventurer` acepta `desglose` y muestra las **notas**; el avatar con foto respeta el tamaño pedido (antes quedaba siempre en 88 px). Mi perfil también muestra el desglose del principal.
+- Eventos: el nick de cada cazador en las brigadas enlaza a su perfil.
+- `demo-data.js`: `leerDemo('miembros')` y perfiles completos (nombres de adventurer inventados, nivel, loadout, bio, ID, desglose en la mitad, segundo adventurer en un tercio, 2 sin adventurer) con otra semilla para no cambiar los poderes del Clash.
+- Verificado con Playwright a 390 y 320 px sobre la copia versionada: búsqueda, filtros, vacío, orden, perfil, volver con filtros, sin adventurer, no existe, enlaces de brigadas y aviso de versión nueva + recarga. Sin errores de consola ni desborde.
+- Pruebas: **59** (`npm test`): nuevas `tests/versionar.test.mjs` y `tests/miembros.test.mjs`.
 
 ## Hecho en la sesión 4
 
@@ -61,16 +97,6 @@ git add .
 git status
 git commit -m "MH-Ragnarok v0.1: SPEC, backend Apps Script, DESIGN.md y frontend (Inicio, Eventos, armado de brigadas)"
 git push -u origin main
-```
-
-## Commit pendiente (sesión 4, segundo commit)
-
-```powershell
-cd C:\dev\mh-ragnarok
-git add .
-git status
-git commit -m "Entrar, Registro, Mi perfil y formulario de adventurers (Fase 1)"
-git push
 ```
 
 ## Notas técnicas

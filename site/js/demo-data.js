@@ -6,6 +6,7 @@ import { balancearEquipos } from './clash-balance.js';
 import { semanaClashId } from './time.js';
 import { ErrorApi } from './api.js';
 import { errorNick, errorPin, NICK_RE } from './validar.js';
+import { NOTICIAS, GUIAS, CATEGORIAS_ORDEN } from './demo-contenido.js';
 
 const GREMIO = {
   gremio_nombre: 'Ragnarok',
@@ -63,6 +64,27 @@ const MIEMBROS = NICKS.map((nick, i) => {
   };
 });
 
+// Datos extra del directorio con otra semilla, para no alterar los poderes de arriba.
+const azar2 = prng(77);
+const NOMBRES_ADV = ['Kestrel', 'Aldra', 'Bram', 'Senna', 'Iko', 'Varo', 'Liesel', 'Toma', 'Oriel', 'Maeve', 'Dov', 'Yuna'];
+const LOADOUTS = ['Principal', 'Clash', 'Fuego total', 'Rompe-cuernos', 'Cazar rápido', 'Hielo', ''];
+const BIOS = ['Juego de noche, después del trabajo.', 'Siempre listo para el Clash del sábado.', 'Aprendiendo a usar el arco, paciencia.',
+  'Si necesitas ayuda con un monstruo, avísame.', '', '', ''];
+const elegir = (lista) => lista[Math.floor(azar2() * lista.length)];
+MIEMBROS.forEach((m, i) => {
+  if (i === 0) return;
+  m.adventurer.adventurer = elegir(NOMBRES_ADV);
+  m.nivel = Math.min(80, Math.round(40 + (m.poder - 9000) / 300 + azar2() * 8));
+  m.loadout = elegir(LOADOUTS);
+  m.bio = elegir(BIOS);
+  m.nick_juego = azar2() < 0.3 ? `${m.nick}_${Math.floor(azar2() * 90 + 10)}` : m.nick;
+  m.uid_juego = azar2() < 0.5 ? String(Math.floor(1e8 + azar2() * 9e8)) : '';
+  m.creado = new Date(Date.UTC(2026, 9, 28 + Math.floor(azar2() * 24))).toISOString();
+  m.desglose = i % 2 === 0;
+  m.extra = i % 3 === 0;
+  m.sinAdv = i >= 50; // los dos últimos aún no cargan su adventurer
+});
+
 const semanaId = semanaClashId(new Date(), {
   offsetJuegoMin: -360,
   clash: { dia: 6, hora: '20:15', duracionMin: 60 },
@@ -99,11 +121,7 @@ function respuestaClash() {
 }
 
 const hace = (dias) => new Date(Date.now() - dias * 864e5).toISOString();
-const NOTICIAS = [
-  { id: 'n1', tipo: 'gremio', titulo: 'Las brigadas del Clash ahora se arman en la web', resumen: 'Confirma tu asistencia antes del sábado y los oficiales reparten 2 fuertes + 2 normales por brigada.', fecha_pub: hace(0), fijada: true },
-  { id: 'n2', tipo: 'evento', titulo: 'Puesto 29 en el último Clash: vamos por el top 20', resumen: 'Cuatro rondas por brigada; cada victoria suma.', fecha_pub: hace(1), fijada: false },
-  { id: 'n3', tipo: 'juego', titulo: 'Cómo armar tus Rostros con costo 12', resumen: '1 carta núcleo + 4 de monstruo, sin pasarte del costo.', fecha_pub: hace(3), fijada: false },
-];
+
 
 const espera = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -137,6 +155,33 @@ function sincronizar() {
   }
 }
 
+/** Perfil público de ejemplo (forma de GET miembro). */
+function perfilDemo(m) {
+  if (m.id === 'demo-yo') {
+    return { ...YO, adventurers: advsYo.map((a) => ({ ...a, capturas: [...a.capturas] })).sort((a, b) => b.poder_total - a.poder_total) };
+  }
+  const base = {
+    id: m.id, nick: m.nick, nick_juego: m.nick_juego, uid_juego: m.uid_juego, pais: m.pais, rol: m.rol, bio: m.bio,
+    avatar_id: '', adventurer_principal_id: m.sinAdv ? '' : `${m.id}-a`, creado: m.creado,
+  };
+  if (m.sinAdv) return { ...base, adventurers: [] };
+  const parte = (f) => (m.desglose ? Math.round(m.poder * f) : '');
+  const advs = [{
+    id: `${m.id}-a`, miembro_id: m.id, ...m.adventurer, nivel: m.nivel, poder_total: m.poder,
+    poder_equipo: parte(0.4), poder_rostros: parte(0.125), poder_camarada: parte(0.118),
+    loadout: m.loadout, notas: '', capturas: [], actualizado: hace(3),
+  }];
+  if (m.extra) {
+    advs.push({
+      id: `${m.id}-b`, miembro_id: m.id, adventurer: 'Suplente', arma: m.adventurer.arma === 'bow' ? 'lance' : 'bow',
+      elemento: m.adventurer.elemento === 'ice' ? 'water' : 'ice', tipo: 'support', nivel: Math.max(1, m.nivel - 12),
+      poder_total: Math.round(m.poder * 0.72), poder_equipo: '', poder_rostros: '', poder_camarada: '',
+      loadout: '', notas: 'Para cuando la brigada necesita apoyo.', capturas: [], actualizado: hace(9),
+    });
+  }
+  return { ...base, adventurers: advs };
+}
+
 const nickOcupado = (nick) => MIEMBROS.slice(1).some((m) => m.nick.toLowerCase() === nick.trim().toLowerCase());
 
 function numeroDemo(v, min, max, campo, opcional) {
@@ -153,20 +198,47 @@ export async function leerDemo(accion, params = {}) {
       return {
         gremio: { ...GREMIO },
         miembros: MIEMBROS.length,
-        noticias: NOTICIAS.slice(0, 3),
+        noticias: [...NOTICIAS].sort((a, b) => (b.fijada - a.fijada) || (a.fecha_pub < b.fecha_pub ? 1 : -1)).slice(0, 3).map(({ cuerpo_md, ...n }) => n),
         clash: { semana_id: semanaId, estado, confirmados: [...asistencia.values()].filter((r) => r === 'voy').length },
       };
     case 'clash':
       return respuestaClash();
     case 'clash_historial':
       return [{ id: '2026-11-21', estado: 'cerrada', puesto: 29, puntos: 18240, notas: '' }];
+    case 'noticias': {
+      const lista = NOTICIAS.filter((n) => !params.tipo || n.tipo === params.tipo)
+        .sort((a, b) => (b.fijada - a.fijada) || (a.fecha_pub < b.fecha_pub ? 1 : -1));
+      const porPagina = 5; // menos que el backend (12) para ver "Cargar más" en el ejemplo
+      const pagina = Math.max(1, Number(params.pagina) || 1);
+      return {
+        total: lista.length, pagina, por_pagina: porPagina,
+        items: lista.slice((pagina - 1) * porPagina, pagina * porPagina).map(({ cuerpo_md, ...n }) => ({ ...n })),
+      };
+    }
+    case 'noticia': {
+      const n = NOTICIAS.find((x) => x.id === params.id);
+      if (!n) falla('NO_EXISTE', 'Noticia no encontrada.');
+      return { ...n };
+    }
+    case 'guias':
+      return CATEGORIAS_ORDEN.map((categoria) => ({
+        categoria,
+        guias: GUIAS.filter((g) => g.categoria === categoria).sort((a, b) => a.orden - b.orden).map(({ cuerpo_md, ...g }) => ({ ...g })),
+      })).filter((x) => x.guias.length);
+    case 'guia': {
+      const g = GUIAS.find((x) => x.slug === params.slug);
+      if (!g) falla('NO_EXISTE', 'Guía no encontrada.');
+      return { ...g };
+    }
+    case 'miembros':
+      return MIEMBROS.map((m) => {
+        const { adventurers, ...p } = perfilDemo(m);
+        return { ...p, principal: adventurers.find((a) => a.id === p.adventurer_principal_id) ?? null };
+      }).sort((a, b) => (b.principal?.poder_total ?? 0) - (a.principal?.poder_total ?? 0));
     case 'miembro': {
-      if (params.id === 'demo-yo') {
-        return { ...YO, adventurers: advsYo.map((a) => ({ ...a, capturas: [...a.capturas] })).sort((a, b) => b.poder_total - a.poder_total) };
-      }
       const m = MIEMBROS.find((x) => x.id === params.id);
-      if (!m) throw Object.assign(new Error('Miembro no encontrado.'), { codigo: 'NO_EXISTE' });
-      return { id: m.id, nick: m.nick, pais: m.pais, rol: m.rol, adventurers: [{ id: `${m.id}-a`, ...m.adventurer, poder_total: m.poder }] };
+      if (!m) falla('NO_EXISTE', 'Miembro no encontrado.');
+      return perfilDemo(m);
     }
     default:
       return null;

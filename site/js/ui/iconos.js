@@ -11,6 +11,7 @@ export const ICONOS = {
   eventos: linea('<path d="M5 4l14 16M19 4L5 20"/><path d="M4 7l3-3M17 20l3-3M20 7l-3-3M7 20l-3-3"/>'),
   info: linea('<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>'),
   fijar: linea('<path d="M9 4h6l-1 6 3 3H7l3-3z"/><path d="M12 13v7"/>'),
+  compartir: linea('<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"/>'),
   whatsapp: linea('<path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.3 2 2.5 4.2 4.5 4.5l1-1.2 2 1-.6 1.6c-3.4.4-7.7-3.9-7.3-7.3L10.2 7l1 2z"/>'),
 };
 
