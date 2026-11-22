@@ -1,0 +1,82 @@
+/* Tokens de la dirección B · Salón de Estandartes. Fuente normativa: DESIGN.md (frontmatter). */
+
+@font-face {
+  font-family: 'Cinzel';
+  src: url('../fonts/cinzel-latin-wght-normal.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Mulish';
+  src: url('../fonts/mulish-latin-wght-normal.woff2') format('woff2');
+  font-weight: 200 1000;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Noche */
+  --noche-profunda: #0f0c0d;
+  --noche: #1a1214;
+  --vino-sombra: #3a1a1f;
+  --panel: #241a1c;
+  --panel-hondo: #171113;
+  --celda: #161012;
+  --celda-tuya: #2a2010;
+
+  /* Estandarte */
+  --carmesi: #8c1d2a;
+  --carmesi-hondo: #6d1420;
+  --carmesi-pliegue: #561019;
+
+  /* Oro */
+  --oro: #e6c068;
+  --oro-claro: #f0d48a;
+  --oro-hover: #f5d98f;
+  --oro-boton-alto: #e9c46e;
+  --oro-boton-bajo: #b98a32;
+  --oro-viejo: #8a6424;
+  --filete: rgba(230, 192, 104, 0.35);
+  --filete-fuerte: rgba(230, 192, 104, 0.55);
+  --filete-suave: rgba(230, 192, 104, 0.2);
+
+  /* Texto */
+  --marfil: #efe4cc;
+  --marfil-claro: #fbf1d8;
+  --texto-suave: #d8c9a8;
+  --texto-tenue: #b8a888;
+  --texto-nav: #a99c84;
+  --texto-apagado: #9a8d76;
+
+  /* Estados */
+  --bosque: #1f4a2c;
+  --bosque-texto: #bfe8c9;
+  --acierto: #9fe0b0;
+  --acero: #9fc3e0;
+  --error: #f19a8f;
+
+  /* Tipografía */
+  --f-display: 'Cinzel', 'Times New Roman', serif;
+  --f-texto: 'Mulish', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Forma y espacio */
+  --filo: 2px;
+  --margen: 16px;
+  --hueco: 24px;
+  --barra-alto: 72px;
+  --seguro-abajo: env(safe-area-inset-bottom, 0px);
+  --ancho-max: 1080px;
+
+  /* Movimiento */
+  --salida: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 400px) {
+  :root { --margen: 18px; }
+}

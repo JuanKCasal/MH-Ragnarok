@@ -1,0 +1,15 @@
+# Skills de diseño de terceros (Impeccable, Taste Skill): se instalan localmente, no se publican
+.claude/skills/
+.claude/settings.local.json
+
+# Apps Script (clasp)
+.clasp.json
+.clasprc.json
+
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Salidas locales de Cowork
+Claude outputs/
+.impeccable/

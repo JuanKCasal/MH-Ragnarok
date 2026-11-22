@@ -1,0 +1,79 @@
+/* Base: reset, fondo del salón, tipografía y superficies del navegador. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scrollbar-color: var(--oro-viejo) var(--noche-profunda);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--f-texto);
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--marfil);
+  background: var(--noche-profunda);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Resplandor vino desde arriba, fijo (sin background-attachment: fixed, que falla en iOS). */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 120% 60% at 50% 0%, var(--vino-sombra) 0%, var(--noche) 45%, var(--noche-profunda) 100%);
+  pointer-events: none;
+}
+
+::selection { background: rgba(230, 192, 104, 0.35); color: var(--marfil-claro); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--noche-profunda); }
+::-webkit-scrollbar-thumb { background: var(--oro-viejo); border: 2px solid var(--noche-profunda); border-radius: var(--filo); }
+
+h1, h2, h3, p, ul, ol, figure { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+img, svg { display: block; max-width: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+a { color: var(--oro); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--oro-hover); }
+
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--oro-claro);
+  outline-offset: 3px;
+  border-radius: var(--filo);
+}
+
+input, textarea { caret-color: var(--oro); }
+
+.solo-lector {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+.saltar {
+  position: absolute;
+  left: var(--margen);
+  top: -100px;
+  z-index: 100;
+  padding: 10px 14px;
+  background: var(--oro);
+  color: var(--noche);
+  font-weight: 800;
+  border-radius: var(--filo);
+  text-decoration: none;
+}
+.saltar:focus { top: 10px; color: var(--noche); }
+
+.num { font-variant-numeric: tabular-nums lining-nums; }
