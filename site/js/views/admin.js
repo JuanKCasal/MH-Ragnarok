@@ -119,7 +119,7 @@ async function vistaMiembros(el, cabeza, s, esAdmin, manejar, recargar) {
     const esYo = m.id === yoId;
     return {
       esYo,
-      reset: !esYo && m.estado === 'activo' && (m.rol !== 'admin' || esAdmin),
+      reset: !esYo && m.estado === 'activo' && (m.rol === 'miembro' || esAdmin),
       estado: !esYo && m.rol !== 'admin' && (m.rol !== 'oficial' || esAdmin),
       rol: esAdmin && !esYo && m.rol !== 'admin' && m.estado === 'activo',
     };
@@ -155,6 +155,7 @@ async function vistaMiembros(el, cabeza, s, esAdmin, manejar, recargar) {
               </div>`
             : ''}
           ${p.esYo ? html`<p class="nota">Tu PIN lo cambias en <a href="#/yo">Mi perfil</a>.</p>` : ''}
+          ${!p.esYo && !p.reset && m.estado === 'activo' && m.rol !== 'miembro' ? html`<p class="nota">Solo el admin puede resetear el PIN de ${m.rol === 'admin' ? 'el admin' : 'un oficial'}.</p>` : ''}
           ${p.reset || p.estado || p.rol
             ? html`<div class="admin-fila__acciones">
                 ${p.reset ? html`<button type="button" class="boton boton--chico" data-accion="pin">Resetear PIN</button>` : ''}

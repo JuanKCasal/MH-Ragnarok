@@ -183,6 +183,11 @@ test('reset de PIN por oficial → PIN temporal → cambio obligatorio', () => {
   ok(E.post('pin.cambiar', { pin_actual: pin_temporal, pin_nuevo: '519753' }, s.token));
   assert.equal(ok(E.post('login', { nick: 'torpe', pin: '519753' })).miembro.pin_temporal, false);
   err(E.post('miembro.resetPin', { miembro_id: ok(E.post('sesion', {}, adminToken)).miembro.id }, miembroToken), 'SIN_PERMISO');
+  // Un oficial no resetea a otro oficial (vería su PIN temporal); el admin sí.
+  ok(E.post('miembro.rol', { miembro_id: torpe.id, rol: 'oficial' }, adminToken));
+  err(E.post('miembro.resetPin', { miembro_id: torpe.id }, miembroToken), 'SIN_PERMISO');
+  assert.match(ok(E.post('miembro.resetPin', { miembro_id: torpe.id }, adminToken)).pin_temporal, /^\d{6}$/);
+  ok(E.post('miembro.rol', { miembro_id: torpe.id, rol: 'miembro' }, adminToken));
 });
 
 test('desactivar a un miembro cierra sus sesiones', () => {

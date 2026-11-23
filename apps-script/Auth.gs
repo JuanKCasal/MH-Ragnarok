@@ -180,6 +180,8 @@ function resetPin_(token, d) {
   var m = buscar_('Miembros', function (x) { return x.id === d.miembro_id; });
   if (!m) fallar_('NO_EXISTE', 'Miembro no encontrado.');
   if (m.rol === 'admin' && yo.rol !== 'admin') fallar_('SIN_PERMISO', 'Solo el admin puede resetear su propio PIN.');
+  // Quien resetea ve el PIN temporal: un oficial no debe poder entrar como otro oficial.
+  if (m.rol === 'oficial' && yo.rol !== 'admin') fallar_('SIN_PERMISO', 'Solo el admin puede resetear el PIN de un oficial.');
   var temporal;
   do {
     temporal = String(100000 + parseInt(Utilities.getUuid().replace(/-/g, '').slice(0, 12), 16) % 900000);

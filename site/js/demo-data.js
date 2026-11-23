@@ -426,6 +426,7 @@ export async function escribirDemo(accion, datos = {}) {
     case 'miembro.resetPin': {
       const m = miembroAdmin(datos.miembro_id);
       if (m.rol === 'admin' && YO.rol !== 'admin') falla('SIN_PERMISO', 'Solo el admin puede resetear su propio PIN.');
+      if (m.rol === 'oficial' && YO.rol !== 'admin') falla('SIN_PERMISO', 'Solo el admin puede resetear el PIN de un oficial.');
       credDemo.set(m.id, { bloqueado: false, pin_temporal: true });
       return { pin_temporal: pinTemporalDemo() };
     }

@@ -6,7 +6,8 @@ Tiempo estimado: 15 minutos. Todo se hace desde el navegador, con la cuenta de G
 
 1. Entra a <https://script.google.com> → **Nuevo proyecto**. Nómbralo `MH-Ragnarok API`.
 2. En **Configuración del proyecto** (engranaje) marca **"Mostrar el archivo de manifiesto appsscript.json en el editor"**.
-3. Crea un archivo por cada `.gs` de la carpeta `apps-script/` del repo (botón **+ → Secuencia de comandos**) con el mismo nombre y pega su contenido: `Adventurers`, `Auth`, `Clash`, `Code`, `Contenido`, `Db`, `Imagenes`, `Miembros`, `Setup`, `Util`. Borra el `Código.gs` vacío que trae el proyecto.
+3. **Un solo archivo (recomendado):** genera `MH-Ragnarok.gs` con `npm run gs` (queda en `Claude outputs/`; también te lo puede generar Claude). En el editor, renombra el `Código.gs` que trae el proyecto a `MH-Ragnarok`, borra todo su contenido y pega el archivo completo. Guarda (Ctrl+S).
+   - *Alternativa:* un archivo por cada `.gs` de `apps-script/` (botón **+ → Secuencia de comandos**) con el mismo nombre: `Adventurers`, `Auth`, `Clash`, `Code`, `Contenido`, `Db`, `Imagenes`, `Miembros`, `Setup`, `Util`. No mezcles las dos formas: habría funciones repetidas.
 4. Reemplaza el contenido de `appsscript.json` por el del repo.
 
 > Alternativa para quien use terminal: `npm i -g @google/clasp`, `clasp login`, `clasp create --type webapp --rootDir apps-script` y `clasp push`. El archivo `.clasp.json` queda fuera de git.
@@ -21,10 +22,8 @@ Tiempo estimado: 15 minutos. Todo se hace desde el navegador, con la cuenta de G
 
 ## 3. Código del clan y primer admin
 
-1. En `Setup.gs`, función `configurarCodigoClan`: escribe el código entre las comillas de `CODIGO`, ejecuta la función y **vuelve a dejar las comillas vacías** antes de guardar. El código se guarda solo como hash.
-2. Función `crearAdmin`: escribe tu `NICK` y un `PIN` de 6 dígitos, ejecuta y **vuelve a dejarlos vacíos**.
-
-Después, el código del clan se puede cambiar desde la web (Admin).
+1. Función `crearAdmin` (búscala con Ctrl+F): escribe tu `NICK` y un `PIN` de 6 dígitos, elige `crearAdmin` en la barra superior, ejecuta y **vuelve a dejarlos vacíos** y guarda.
+2. **Código del clan:** lo más simple es ponerlo desde la web, ya entrando como admin: Mi perfil → Administración → Código. Así no se escribe en el script. (También existe la función `configurarCodigoClan`: escribe el código en `CODIGO`, ejecuta y vuelve a dejarlo vacío.) Se guarda solo como hash. Mientras no haya código, nadie puede registrarse.
 
 ## 4. Publicar como aplicación web
 
@@ -33,7 +32,7 @@ Después, el código del clan se puede cambiar desde la web (Admin).
 3. Copia la **URL de la aplicación web** (termina en `/exec`) y pégala en `site/config.js` → `API_URL`.
 4. Prueba en el navegador: `URL/exec?accion=inicio` debe responder `{"ok":true,"data":{…}}`.
 
-Cada vez que cambies el código: **Implementar → Administrar implementaciones → editar (lápiz) → Versión: Nueva → Implementar**. Así la URL no cambia.
+Cada vez que cambies el código (con un solo archivo: borrar todo y pegar el `MH-Ragnarok.gs` nuevo): **Implementar → Administrar implementaciones → editar (lápiz) → Versión: Nueva → Implementar**. Así la URL no cambia.
 
 ## 5. Mantenimiento opcional
 

@@ -40,7 +40,7 @@ Horarios: el juego los da en UTC-6. La web los muestra en la hora local de cada 
 - **Auth:** código del clan (solo para registrarse; cambiable) + PIN personal de 6 dígitos guardado como hash con sal. Token de sesión con vencimiento guardado en el dispositivo. Bloqueo temporal tras 5 intentos fallidos.
 - **Roles:**
   - `admin` (Juan): todo, nombra oficiales.
-  - `oficial`: publica noticias y guías, organiza el Guild Clash, resetea PIN.
+  - `oficial`: publica noticias y guías, organiza el Guild Clash, resetea el PIN de miembros (el de oficiales solo el admin).
   - `miembro`: edita su propio perfil y builds, confirma asistencia.
 
 La estructura de carpetas, el modelo de datos y los endpoints se definen en `SPEC.md`.

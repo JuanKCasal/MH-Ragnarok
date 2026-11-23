@@ -210,7 +210,7 @@ Registro de cada archivo subido por el backend. Sirve para validar que un ID de 
 | `clash.cerrar` | oficial | `{puesto, puntos, notas}`; estado → `cerrada` |
 | `editor.contenido` | oficial | `{tipo: 'noticia'\|'guia', id?}`: lista con borradores, o un ítem completo para editar |
 | `admin.miembros` | oficial | lista con inactivos, bloqueos y PIN temporal |
-| `miembro.resetPin` | oficial | genera PIN temporal de 6 dígitos que se muestra **una vez** al oficial; obliga a cambiarlo al entrar |
+| `miembro.resetPin` | oficial | genera PIN temporal de 6 dígitos que se muestra **una vez** al oficial; obliga a cambiarlo al entrar. El PIN de un oficial solo lo resetea el admin |
 | `miembro.estado` | oficial | activar / desactivar |
 | `miembro.rol` | admin | nombra o quita oficiales |
 | `config.guardar` | admin | claves públicas de `Config`; valida rangos numéricos y horas `HH:MM` (Clash y Carnival) |
