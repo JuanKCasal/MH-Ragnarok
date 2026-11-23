@@ -112,6 +112,13 @@ var CLAVES_CONFIG_EDITABLES = ['gremio_nombre', 'gremio_rango', 'gremio_etiqueta
   'max_miembros', 'whatsapp_invitacion', 'clash_dia', 'clash_hora', 'clash_duracion_min', 'carnival_horas',
   'carnival_duracion_min', 'zona_juego_offset_min', 'nick_cambios_semana'];
 
+/** Rangos de las claves numéricas (los horarios mal escritos romperían la cuenta regresiva de todos). */
+var RANGOS_CONFIG = {
+  max_miembros: [1, 200], clash_dia: [0, 6], clash_duracion_min: [5, 600], carnival_duracion_min: [5, 600],
+  zona_juego_offset_min: [-720, 840], nick_cambios_semana: [0, 10]
+};
+var HORA_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 function guardarConfig_(token, d) {
   var yo = requerir_(token, 'admin');
   Object.keys(d).forEach(function (k) {
@@ -120,6 +127,18 @@ function guardarConfig_(token, d) {
   if (d.whatsapp_invitacion && !/^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+$/.test(d.whatsapp_invitacion)) {
     fallar_('DATO_INVALIDO', 'El enlace de WhatsApp debe ser https://chat.whatsapp.com/…');
   }
+  Object.keys(RANGOS_CONFIG).forEach(function (k) {
+    if (d[k] !== undefined) d[k] = String(numeroValido_(d[k], RANGOS_CONFIG[k][0], RANGOS_CONFIG[k][1], k, false));
+  });
+  if (d.clash_hora !== undefined && !HORA_RE.test(String(d.clash_hora).trim())) fallar_('DATO_INVALIDO', 'La hora del Clash debe ser HH:MM.');
+  if (d.carnival_horas !== undefined) {
+    var horas = String(d.carnival_horas).split(',').map(function (h) { return h.trim(); }).filter(String);
+    if (!horas.length || horas.some(function (h) { return !HORA_RE.test(h); })) {
+      fallar_('DATO_INVALIDO', 'Las horas del Carnival deben ser HH:MM separadas por coma.');
+    }
+    d.carnival_horas = horas.join(',');
+  }
+  if (d.gremio_nombre !== undefined && !limpiarTexto_(d.gremio_nombre, 40)) fallar_('DATO_INVALIDO', 'El gremio necesita un nombre.');
   Object.keys(d).forEach(function (k) { setConfig_(k, limpiarTexto_(d[k], 300)); });
   log_(yo.id, 'config_guardada', 'Config', '', Object.keys(d).join(','));
   invalidarCache_();

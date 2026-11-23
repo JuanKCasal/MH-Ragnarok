@@ -152,6 +152,7 @@ export default async function vistaYo(el, { query, recargar }) {
             <a class="atajo" href="#/editor"><strong>Noticias</strong><span>Escribir, borradores y fijar</span></a>
             <a class="atajo" href="#/editor?tipo=guia"><strong>Guías</strong><span>Escribir y ordenar</span></a>
             <a class="atajo" href="#/clash/armar"><strong>Brigadas</strong><span>Armar el Clash del sábado</span></a>
+            <a class="atajo" href="#/admin"><strong>Administración</strong><span>${tieneRol('admin') ? 'Miembros, gremio y código' : 'Miembros y PIN'}</span></a>
           </nav>
         </section>`
       : ''}

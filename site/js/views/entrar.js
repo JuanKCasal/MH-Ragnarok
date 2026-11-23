@@ -33,7 +33,7 @@ export default function vistaEntrar(el, { query }) {
   }
 
   pintar(el, html`
-    ${avisoDemo('Modo demostración: cualquier nick y cualquier PIN de 6 dígitos te dejan entrar como “Midori”, oficial de prueba.')}
+    ${avisoDemo('Modo demostración: cualquier nick y cualquier PIN de 6 dígitos te dejan entrar como “Midori”, admin de prueba.')}
     <section class="acceso">
       <header class="cabeza-pagina">
         <h1 class="titulo titulo--pagina">Entrar</h1>

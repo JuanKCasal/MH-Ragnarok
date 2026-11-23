@@ -5,7 +5,7 @@
 import { balancearEquipos } from './clash-balance.js';
 import { semanaClashId } from './time.js';
 import { ErrorApi } from './api.js';
-import { errorNick, errorPin, NICK_RE } from './validar.js';
+import { errorNick, errorPin, NICK_RE, validarConfig } from './validar.js';
 import { NOTICIAS, GUIAS, CATEGORIAS_ORDEN } from './demo-contenido.js';
 import { slug as slugDe } from './markdown.js';
 
@@ -54,7 +54,8 @@ const MIEMBROS = NICKS.map((nick, i) => {
     id: i === 0 ? 'demo-yo' : `demo-${i}`,
     nick,
     pais: PAISES[Math.floor(azar() * PAISES.length)],
-    rol: i === 0 || i === 5 ? 'oficial' : 'miembro',
+    rol: i === 0 ? 'admin' : i === 5 || i === 11 ? 'oficial' : 'miembro',
+    estado: 'activo',
     adventurer: {
       arma: i === 0 ? 'heavy_bowgun' : ARMAS[Math.floor(azar() * ARMAS.length)],
       elemento: i === 0 ? 'fire' : ELEMENTOS[Math.floor(azar() * ELEMENTOS.length)],
@@ -129,7 +130,7 @@ const espera = (ms) => new Promise((r) => setTimeout(r, ms));
 // ---------- Tu perfil de ejemplo ("Midori") ----------
 
 const YO = {
-  id: 'demo-yo', nick: 'Midori', nick_juego: 'Midori', uid_juego: '', pais: 'CL', rol: 'oficial',
+  id: 'demo-yo', nick: 'Midori', nick_juego: 'Midori', uid_juego: '', pais: 'CL', rol: 'admin',
   bio: 'Ballesta pesada de fuego. Si el monstruo arde, fui yo.', avatar_id: '', adventurer_principal_id: 'demo-yo-a', creado: hace(25),
 };
 let advsYo = [
@@ -141,8 +142,28 @@ let advsYo = [
 let cambiosNick = 0;
 let idDemo = 0;
 
+// ---------- Administración (oficiales y admin) ----------
+let whatsappDemo = '';
+let codigoClanDemo = ''; // vacío: en el ejemplo cualquier código sirve hasta que el admin ponga uno
+// Dos cuentas que dejaron el clan (inactivas): solo se ven en Admin.
+const RETIRADOS = [
+  { id: 'demo-r1', nick: 'Grieta', pais: 'AR', rol: 'miembro', estado: 'inactivo', adventurer: {}, poder: 0, sinAdv: true, nick_juego: 'Grieta', uid_juego: '', bio: '', creado: hace(20) },
+  { id: 'demo-r2', nick: 'Pólvora', pais: 'MX', rol: 'miembro', estado: 'inactivo', adventurer: {}, poder: 0, sinAdv: true, nick_juego: 'Polvora', uid_juego: '', bio: '', creado: hace(22) },
+];
+const todos = () => [...MIEMBROS, ...RETIRADOS];
+const activos = () => todos().filter((m) => m.estado === 'activo');
+// Estado del PIN de ejemplo: uno bloqueado por intentos fallidos y uno con PIN temporal sin cambiar.
+const credDemo = new Map([['demo-7', { bloqueado: true, pin_temporal: false }], ['demo-12', { bloqueado: false, pin_temporal: true }]]);
+
+function pinTemporalDemo() {
+  let p;
+  do { p = String(100000 + Math.floor(Math.random() * 900000)); } while (/^(\d)\1{5}$/.test(p) || p === '123456' || p === '654321');
+  return p;
+}
+const miembroAdmin = (id) => todos().find((m) => m.id === id) || falla('NO_EXISTE', 'Miembro no encontrado.');
+
 const falla = (codigo, mensaje) => { throw new ErrorApi(codigo, mensaje); };
-const privado = () => ({ ...YO, pin_temporal: false, whatsapp_invitacion: '', nick_cambios_restantes: Math.max(0, 2 - cambiosNick) });
+const privado = () => ({ ...YO, pin_temporal: false, whatsapp_invitacion: whatsappDemo, nick_cambios_restantes: Math.max(0, 2 - cambiosNick) });
 
 /** Mantiene a Midori al día en el directorio y en el Clash de ejemplo. */
 function sincronizar() {
@@ -245,7 +266,7 @@ export async function leerDemo(accion, params = {}) {
     case 'inicio':
       return {
         gremio: { ...GREMIO },
-        miembros: MIEMBROS.length,
+        miembros: activos().length,
         noticias: NOTICIAS.filter(publicada).sort((a, b) => (b.fijada - a.fijada) || (a.fecha_pub < b.fecha_pub ? 1 : -1)).slice(0, 3).map(({ cuerpo_md, ...n }) => n),
         clash: { semana_id: semanaId, estado, confirmados: [...asistencia.values()].filter((r) => r === 'voy').length },
       };
@@ -279,12 +300,12 @@ export async function leerDemo(accion, params = {}) {
       return { ...g };
     }
     case 'miembros':
-      return MIEMBROS.map((m) => {
+      return activos().map((m) => {
         const { adventurers, ...p } = perfilDemo(m);
         return { ...p, principal: adventurers.find((a) => a.id === p.adventurer_principal_id) ?? null };
       }).sort((a, b) => (b.principal?.poder_total ?? 0) - (a.principal?.poder_total ?? 0));
     case 'miembro': {
-      const m = MIEMBROS.find((x) => x.id === params.id);
+      const m = activos().find((x) => x.id === params.id);
       if (!m) falla('NO_EXISTE', 'Miembro no encontrado.');
       return perfilDemo(m);
     }
@@ -308,7 +329,8 @@ export async function escribirDemo(accion, datos = {}) {
       if (!String(datos.nick || '').trim() || !/^\d{6}$/.test(String(datos.pin || ''))) falla('LOGIN_INVALIDO', 'Nick o PIN incorrectos.');
       return { token: 'demo', miembro: privado() };
     case 'registro': {
-      if (!String(datos.codigo_clan || '').trim()) falla('CODIGO_INVALIDO', 'El código del clan no es correcto.');
+      const codigo = String(datos.codigo_clan || '').trim();
+      if (!codigo || (codigoClanDemo && codigo !== codigoClanDemo)) falla('CODIGO_INVALIDO', 'El código del clan no es correcto.');
       if (errorNick(datos.nick)) falla('NICK_FORMATO', errorNick(datos.nick));
       if (nickOcupado(datos.nick)) falla('NICK_OCUPADO', 'Ese nick ya está registrado.');
       if (errorPin(datos.pin)) falla('PIN_DEBIL', errorPin(datos.pin));
@@ -393,6 +415,53 @@ export async function escribirDemo(accion, datos = {}) {
       return guardarContenido(GUIAS, datos, true);
     case 'guia.eliminar':
       return eliminarContenido(GUIAS, datos.id, true);
+    case 'admin.miembros':
+      return todos().map((m) => {
+        const c = credDemo.get(m.id) || {};
+        return {
+          id: m.id, nick: m.nick, nick_juego: m.nick_juego || m.nick, pais: m.pais, rol: m.rol, avatar_id: m.id === 'demo-yo' ? YO.avatar_id : '',
+          creado: m.id === 'demo-yo' ? YO.creado : m.creado, estado: m.estado, bloqueado: !!c.bloqueado, pin_temporal: !!c.pin_temporal,
+        };
+      });
+    case 'miembro.resetPin': {
+      const m = miembroAdmin(datos.miembro_id);
+      if (m.rol === 'admin' && YO.rol !== 'admin') falla('SIN_PERMISO', 'Solo el admin puede resetear su propio PIN.');
+      credDemo.set(m.id, { bloqueado: false, pin_temporal: true });
+      return { pin_temporal: pinTemporalDemo() };
+    }
+    case 'miembro.estado': {
+      const m = miembroAdmin(datos.miembro_id);
+      if (m.rol === 'admin') falla('SIN_PERMISO', 'No se puede desactivar al admin.');
+      if (m.rol === 'oficial' && YO.rol !== 'admin') falla('SIN_PERMISO', 'Solo el admin puede desactivar oficiales.');
+      if (!['activo', 'inactivo'].includes(datos.estado)) falla('DATO_INVALIDO', 'Estado no válido.');
+      m.estado = datos.estado;
+      return { id: m.id, nick: m.nick, rol: m.rol, estado: m.estado };
+    }
+    case 'miembro.rol': {
+      if (YO.rol !== 'admin') falla('SIN_PERMISO', 'No tienes permiso para esta acción.');
+      const m = miembroAdmin(datos.miembro_id);
+      if (m.id === 'demo-yo') falla('SIN_PERMISO', 'No puedes cambiar tu propio rol.');
+      if (!['miembro', 'oficial'].includes(datos.rol)) falla('DATO_INVALIDO', 'Rol no válido.');
+      m.rol = datos.rol;
+      return { id: m.id, nick: m.nick, rol: m.rol };
+    }
+    case 'config.guardar': {
+      const { datos: limpios, errores } = validarConfig(datos);
+      const malo = Object.keys(datos).find((k) => !(k in limpios) && !errores[k]);
+      if (malo) falla('DATO_INVALIDO', `Clave no editable: ${malo}`);
+      const [k1] = Object.keys(errores);
+      if (k1) falla('DATO_INVALIDO', errores[k1]);
+      for (const [k, v] of Object.entries(limpios)) {
+        if (k === 'whatsapp_invitacion') whatsappDemo = v; else GREMIO[k] = v;
+      }
+      return { ...GREMIO };
+    }
+    case 'config.codigoClan': {
+      const c = String(datos.codigo || '').trim();
+      if (c.length < 6) falla('DATO_INVALIDO', 'El código debe tener al menos 6 caracteres.');
+      codigoClanDemo = c;
+      return { cambiado: true };
+    }
     case 'imagen.subir':
       // Sin Drive: la imagen comprimida se guarda en memoria como data: URL.
       return { id: `data:${datos.mime};base64,${datos.base64}` };

@@ -218,6 +218,20 @@ test('config: solo admin, WhatsApp validado y visible solo con sesión', () => {
   assert.equal(ok(E.post('sesion', {}, miembroToken)).miembro.whatsapp_invitacion, 'https://chat.whatsapp.com/AbC123');
 });
 
+test('config: horarios y números validados', () => {
+  err(E.post('config.guardar', { clash_hora: '8:15 pm' }, adminToken), 'DATO_INVALIDO');
+  err(E.post('config.guardar', { clash_dia: '7' }, adminToken), 'DATO_INVALIDO');
+  err(E.post('config.guardar', { carnival_horas: '12:00, 25:00' }, adminToken), 'DATO_INVALIDO');
+  err(E.post('config.guardar', { carnival_horas: ' ' }, adminToken), 'DATO_INVALIDO');
+  err(E.post('config.guardar', { gremio_nombre: '  ' }, adminToken), 'DATO_INVALIDO');
+  ok(E.post('config.guardar', { carnival_horas: ' 12:00 , 18:30', clash_dia: '5', clash_hora: '21:00', zona_juego_offset_min: '-300' }, adminToken));
+  const g = ok(E.get({ accion: 'inicio' })).gremio;
+  assert.equal(g.carnival_horas, '12:00,18:30');
+  assert.equal(g.clash_dia, '5');
+  assert.equal(g.zona_juego_offset_min, '-300');
+  ok(E.post('config.guardar', { clash_dia: '6', clash_hora: '20:15', carnival_horas: '12:00,18:00', zona_juego_offset_min: '-360' }, adminToken));
+});
+
 test('cambiar el código del clan', () => {
   ok(E.post('config.codigoClan', { codigo: 'nuevo-codigo' }, adminToken));
   err(E.post('registro', { codigo_clan: CODIGO, nick: 'Nuevo', pin: '246810' }), 'CODIGO_INVALIDO');

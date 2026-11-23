@@ -31,6 +31,7 @@ ruta('/registro', () => import('./views/registro.js'));
 ruta('/yo', () => import('./views/yo.js'));
 ruta('/yo/adventurer', () => import('./views/adventurer.js'));
 ruta('/yo/adventurer/:id', () => import('./views/adventurer.js'));
+ruta('/admin', () => import('./views/admin.js'));
 ruta('/editor', () => import('./views/editor.js'));
 ruta('/editor/noticia', () => import('./views/editar.js'), { seccion: 'noticias' });
 ruta('/editor/noticia/:id', () => import('./views/editar.js'), { seccion: 'noticias' });

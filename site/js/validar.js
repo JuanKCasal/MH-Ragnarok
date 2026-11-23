@@ -111,3 +111,45 @@ export function validarContenido(tipo, d) {
   }
   return { datos, errores };
 }
+
+/** HH:MM de 00:00 a 23:59. */
+export const HORA_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+const TEXTOS_CONFIG = { gremio_nombre: 40, gremio_rango: 10, gremio_etiqueta: 30, gremio_declaracion: 120, lider_juego: 32 };
+const RANGOS_CONFIG = {
+  max_miembros: [1, 200, 'Entre 1 y 200.'], clash_dia: [0, 6, 'Elige el día.'], clash_duracion_min: [5, 600, 'Entre 5 y 600 minutos.'],
+  carnival_duracion_min: [5, 600, 'Entre 5 y 600 minutos.'], zona_juego_offset_min: [-720, 840, 'Zona horaria no válida.'],
+  nick_cambios_semana: [0, 10, 'Entre 0 y 10.'],
+};
+
+/**
+ * Configuración del gremio (espejo de Code.gs › guardarConfig_). Solo valida las claves que trae `d`.
+ * Pura, para poder probarla.
+ */
+export function validarConfig(d) {
+  const datos = {};
+  const errores = {};
+  for (const [k, v] of Object.entries(d)) {
+    const s = String(v ?? '').trim();
+    if (TEXTOS_CONFIG[k] !== undefined) {
+      if (s.length > TEXTOS_CONFIG[k]) errores[k] = `Máximo ${TEXTOS_CONFIG[k]} caracteres.`;
+      datos[k] = s;
+    } else if (RANGOS_CONFIG[k]) {
+      const [min, max, msg] = RANGOS_CONFIG[k];
+      if (!/^-?\d+$/.test(s) || Number(s) < min || Number(s) > max) errores[k] = msg;
+      else datos[k] = String(Number(s));
+    } else if (k === 'clash_hora') {
+      if (!HORA_RE.test(s)) errores[k] = 'Hora con formato HH:MM, por ejemplo 20:15.';
+      datos[k] = s;
+    } else if (k === 'carnival_horas') {
+      const horas = s.split(',').map((h) => h.trim()).filter(Boolean);
+      if (!horas.length || horas.some((h) => !HORA_RE.test(h))) errores[k] = 'Horas HH:MM separadas por coma, por ejemplo 12:00, 18:00.';
+      datos[k] = horas.join(',');
+    } else if (k === 'whatsapp_invitacion') {
+      if (s && !esInvitacionWhatsapp(s)) errores[k] = 'Pega el enlace de invitación del grupo: https://chat.whatsapp.com/…';
+      datos[k] = s;
+    }
+  }
+  if ('gremio_nombre' in datos && !datos.gremio_nombre) errores.gremio_nombre = 'El gremio necesita un nombre.';
+  return { datos, errores };
+}

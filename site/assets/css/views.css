@@ -615,3 +615,62 @@ textarea.editor-cuerpo { min-height: 18lh; line-height: 1.6; field-sizing: conte
   .editor-item { transition: none; }
 }
 .editor-aviso:empty, .editor-pie:empty { display: none; }
+
+/* ---------- Administración ---------- */
+
+.segmentos button {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px;
+  background: none; border: 1px solid var(--filete); border-radius: var(--filo);
+  font: inherit; font-size: 0.875rem; font-weight: 700; color: var(--texto-suave); cursor: pointer;
+  transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
+}
+.segmentos button:hover { border-color: var(--filete-fuerte); color: var(--marfil); }
+.segmentos button[aria-pressed='true'] { border-color: var(--oro); background: rgba(230, 192, 104, 0.14); color: var(--oro-claro); }
+.segmentos button:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+.segmentos button .nota { font-weight: 700; }
+
+.admin-lista { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); margin: 0; padding: 0; list-style: none; }
+@media (min-width: 900px) { .admin-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; } }
+.admin-fila {
+  border: 1px solid var(--filete-suave); border-radius: var(--filo);
+  background: linear-gradient(160deg, var(--panel), var(--panel-hondo));
+}
+.admin-fila[open] { border-color: var(--filete-fuerte); }
+.admin-fila--inactiva { opacity: 0.75; }
+.admin-fila--inactiva[open] { opacity: 1; }
+.admin-fila > summary {
+  display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 14px;
+  cursor: pointer; list-style: none;
+}
+.admin-fila > summary::-webkit-details-marker { display: none; }
+.admin-fila > summary::after {
+  content: ''; flex: none; margin-left: auto; width: 8px; height: 8px;
+  border-right: 1.5px solid var(--oro); border-bottom: 1.5px solid var(--oro);
+  transform: rotate(45deg); transition: transform 160ms ease;
+}
+.admin-fila[open] > summary::after { transform: rotate(-135deg); }
+.admin-fila > summary:focus-visible { outline: 2px solid var(--oro); outline-offset: -2px; }
+.admin-fila__texto { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.admin-fila__nick { font-weight: 800; color: var(--marfil-claro); overflow-wrap: anywhere; }
+.admin-fila__marcas { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.8125rem; }
+.admin-fila__marcas:empty { display: none; }
+.marca-admin { padding: 1px 6px; border: 1px solid var(--filete-fuerte); border-radius: var(--filo); font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--oro-claro); }
+.marca-admin--alerta { border-color: rgba(241, 154, 143, 0.6); color: var(--error); }
+.marca-admin--inactivo { border-style: dashed; color: var(--texto-tenue); }
+.admin-fila__cuerpo { display: flex; flex-direction: column; gap: 10px; padding: 2px 14px 14px; }
+.admin-fila__cuerpo p { margin: 0; }
+.admin-fila__acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.admin-fila__perfil { align-self: flex-start; font-size: 0.875rem; font-weight: 700; min-height: 44px; display: inline-flex; align-items: center; }
+
+.pin-temporal {
+  display: flex; flex-direction: column; gap: 8px; padding: 14px;
+  border: 1px solid var(--oro); border-radius: var(--filo);
+  background: rgba(230, 192, 104, 0.1); color: var(--marfil);
+}
+.pin-temporal:focus { outline: 2px solid var(--oro); outline-offset: 2px; }
+.pin-temporal__cifra { font-family: var(--f-display); font-size: 2rem; font-weight: 700; letter-spacing: 0.18em; color: var(--oro-claro); font-variant-numeric: tabular-nums; user-select: all; }
+.pin-temporal .boton { align-self: flex-start; }
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-fila > summary::after, .segmentos button { transition: none; }
+}

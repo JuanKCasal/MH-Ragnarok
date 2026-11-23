@@ -213,7 +213,7 @@ Registro de cada archivo subido por el backend. Sirve para validar que un ID de 
 | `miembro.resetPin` | oficial | genera PIN temporal de 6 dígitos que se muestra **una vez** al oficial; obliga a cambiarlo al entrar |
 | `miembro.estado` | oficial | activar / desactivar |
 | `miembro.rol` | admin | nombra o quita oficiales |
-| `config.guardar` | admin | claves públicas de `Config` |
+| `config.guardar` | admin | claves públicas de `Config`; valida rangos numéricos y horas `HH:MM` (Clash y Carnival) |
 | `config.codigoClan` | admin | cambia el código del clan (se guarda como hash) |
 
 Todas las escrituras usan `LockService` (evita choques entre dos oficiales) y registran en `Log`.

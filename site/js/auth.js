@@ -10,10 +10,10 @@ const NIVEL = { miembro: 1, oficial: 2, admin: 3 };
 const SESION_CAIDA = new Set(['SIN_SESION', 'SESION_VENCIDA', 'SIN_ACCESO']);
 
 /**
- * En modo demostración se navega como "Midori", oficial de ejemplo. La sesión vive solo en
+ * En modo demostración se navega como "Midori", admin de ejemplo (ve también lo de oficial). La sesión vive solo en
  * memoria: se puede cerrar y volver a entrar para probar el flujo, y se reinicia al recargar.
  */
-let miembroDemo = { id: 'demo-yo', nick: 'Midori', rol: 'oficial', pin_temporal: false };
+let miembroDemo = { id: 'demo-yo', nick: 'Midori', rol: 'admin', pin_temporal: false };
 let demoFuera = false;
 
 export function sesion() {

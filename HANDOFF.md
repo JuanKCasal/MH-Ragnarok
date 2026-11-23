@@ -6,22 +6,37 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 ## Punto de partida exacto para la sesión 8
 
 1. Leer `CLAUDE.md`, este archivo, `SPEC.md` y `DESIGN.md`.
-2. **Commit pendiente de la sesión 7** (ver "Commit pendiente" abajo). Después del push, Juan prueba en el celular el **editor** (Mi perfil → Herramientas de oficial, o "Escribir o editar · oficiales" en Noticias/Guías).
-3. Siguiente bloque del frontend v1 (`SPEC.md` §2): **admin** (`#/admin`: miembros con rol/estado/reset de PIN — el PIN temporal se muestra una sola vez —, código del clan, configuración del gremio). Endpoints ya hechos en el backend: `admin.miembros`, `miembro.resetPin`, `miembro.estado`, `miembro.rol`, `config.guardar`, `config.codigoClan`. Faltan sus simulaciones en `demo-data.js`. Enlazarlo desde "Herramientas de oficial" en Mi perfil.
-4. Juan monta el backend con `docs/SETUP-backend.md` y pega la URL `/exec` en `site/config.js` (con eso se apaga el modo demostración solo). **Al montarlo, probar** una noticia cuyo texto empiece con `- ` o `=` (lista o signo igual al inicio): todas las celdas se escriben con `setValues`/`appendRow` y hay que confirmar que Sheets no las toma como fórmula (las hojas tienen formato texto `@`). Si fallara, anteponer `'` al serializar en `Db.gs` (`serializar_`).
-5. Pendiente menor: subir las acciones de GitHub Pages a versiones con Node 24 (hoy corren en Node 20, deprecado). Verificar versiones vigentes antes de cambiarlas.
+2. **Commit pendiente del panel de Admin** (ver "Commit pendiente" abajo; el editor ya se publicó en `a718a0f`). Después del push, Juan prueba en el celular el editor y Administración (Mi perfil → Herramientas de oficial).
+3. **Con el frontend v1 completo**, el siguiente paso grande es que Juan **monte el backend** con `docs/SETUP-backend.md` y pegue la URL `/exec` en `site/config.js` (con eso se apaga el modo demostración). Claude lo acompaña paso a paso. **Al montarlo, probar**:
+   - una noticia cuyo texto empiece con `- ` o `=`: las celdas se escriben con `setValues`/`appendRow` sobre hojas con formato texto `@`; confirmar que Sheets no las toma como fórmula. Si fallara, anteponer `'` en `Db.gs` › `serializar_`.
+   - el flujo de reset de PIN de punta a punta (oficial resetea → miembro entra con el temporal → `#/yo?pin=1` obliga a cambiarlo).
+4. Decisión pendiente de Juan: hoy un **oficial puede resetear el PIN de otro oficial** (el backend solo protege al admin). Quien resetea ve el PIN temporal, así que podría entrar como ese oficial. ¿Se limita a que solo el admin resetee PIN de oficiales? (cambio chico en `Auth.gs` › `resetPin_`, en `demo-data.js` y en `admin.js` › `permisos`).
+5. Pendientes menores: acciones de GitHub Pages a Node 24 (verificar versiones vigentes); glosario ES con capturas del juego en español.
 
-## Commit pendiente (sesión 7)
+## Commit pendiente (panel de Admin, sesión 7)
 
 ```powershell
 cd C:\dev\mh-ragnarok
 git add .
 git status
-git commit -m "Editor de noticias y guías para oficiales (formato, vista previa, portada, borradores)"
+git commit -m "Panel de administración: miembros, PIN temporal, roles, gremio, horarios y código del clan"
 git push
 ```
 
-## Hecho en la sesión 7
+## Hecho en la sesión 7 (segunda parte: Admin)
+
+- **`views/admin.js`** (`#/admin`, oficiales; `?ver=gremio` y `?ver=codigo` solo admin). Volver a Mi perfil; atajo "Administración" en Herramientas de oficial.
+  - **Miembros**: buscador (nick o nombre en el juego, sin tildes), filtros Activos / Bloqueados o PIN temporal / Inactivos con contador, orden admin → oficiales → miembros → nick. Cada fila se despliega (`<details>`, recuerda cuáles están abiertas): país, insignias Inactivo / Bloqueado / PIN temporal con su explicación, "En el gremio desde…", Ver perfil.
+  - Acciones (con doble toque): **Resetear PIN** → muestra el PIN temporal **una sola vez** en grande, con "Copiar PIN" y la indicación de mandarlo por privado; **Nombrar/Quitar oficial** (solo admin); **Desactivar/Reactivar** (no al admin; a oficiales solo el admin). Sobre uno mismo no hay acciones ("Tu PIN lo cambias en Mi perfil"). Al desactivar sale del directorio y pasa a "Inactivos".
+  - **Gremio** (admin): datos (nombre, rango, cupo, etiqueta, declaración, líder, enlace de WhatsApp) y **horarios y reglas** (zona horaria del juego UTC−12…+14, día/hora/duración del Clash, horas y duración del Carnival, cambios de nick por semana), cada bloque con su botón; muestra **"el próximo Clash en tu hora es…"** mientras se edita. Al guardar el WhatsApp se actualiza la copia de la sesión del dispositivo.
+  - **Código** (admin): nuevo código ×2 (mín. 6); explica que no se puede ver porque se guarda cifrado.
+- `validar.js`: `validarConfig` y `HORA_RE`. **Backend** `Code.gs` › `guardarConfig_` ahora valida rangos (cupo 1–200, día 0–6, duraciones 5–600, zona −720…840, nick 0–10), `HH:MM` del Clash y del Carnival (normaliza "12:00 , 18:00" → "12:00,18:00") y nombre no vacío. Prueba nueva en `apps-script.test.mjs`.
+- **Modo demostración**: "Midori" ahora es **admin** de prueba (para ver todo el panel); hay otro oficial de ejemplo, 2 cuentas inactivas, una bloqueada y una con PIN temporal; simuladas `admin.miembros`, `miembro.resetPin/estado/rol`, `config.guardar`, `config.codigoClan` (si el admin pone un código, el registro de ejemplo lo exige).
+- Estilos: `.segmentos button` (filtros con `aria-pressed`), `.admin-fila`, `.marca-admin`, `.pin-temporal`.
+- Verificado con Playwright a 390 y 320 px: búsqueda, filtros, reset + copiar, nombrar oficial, desactivar/reactivar (y su efecto en el directorio), sin acciones sobre uno mismo, errores de hora y de código repetido, WhatsApp visible en Mi perfil. Sin errores de consola ni desborde.
+- Pruebas: **78** (`npm test`), nueva `tests/admin.test.mjs`.
+
+## Hecho en la sesión 7 (primera parte: editor, publicado en `a718a0f`)
 
 - Juan revisó en el celular el aviso de versión nueva, Miembros, Noticias y Guías: todo bien.
 - **Editor** (oficiales; en demo, "Midori" es oficial):
