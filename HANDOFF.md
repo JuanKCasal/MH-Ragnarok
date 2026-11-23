@@ -7,10 +7,10 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 
 ### Punto de partida exacto para la sesión 12
 1. Leer `CLAUDE.md`, este bloque y **`docs/BUILDER.md` §8** (qué quedó hecho en E2) y §5 (plan E3–E7).
-2. **Antes de seguir, Juan tiene que publicar la E2** (orden importa: el backend primero):
+2. **Publicación de la E2** (falta solo el punto 4, la prueba en el celular):
    1. ~~`npm test` en su PC~~ **HECHO:** 104 pasan en Windows.
    2. ~~Backend~~ **HECHO 2026-11-23 (Claude con el Chrome de Juan):** código pegado y verificado idéntico al paquete probado (SHA-256), `instalar()` ejecutado sin errores (hoja `Builds` creada) y **versión 3** publicada ("v3 (builder E2: hoja Builds)"); `builds?clase=ejemplo` responde `{ok:true,data:[]}`. Para la próxima vez: `npm run gs` → pegar `Claude outputs/MH-Ragnarok.gs` en el editor de Apps Script (ahora son 11 módulos, incluye `Builds.gs`), ejecutar **`instalar()`** (solo agrega la hoja `Builds`; no toca las demás) y publicar la **versión 3** del Web App (misma URL: Implementar → Gestionar implementaciones → editar → Versión nueva).
-   3. Commit + push (lo que está sin commit, abajo). GitHub Pages publica la web.
+   3. ~~Commit + push~~ **HECHO:** commit `c8274cf`, publicado en Pages (`version.json` = c8274cf).
    4. Probar en el celular: Mi perfil → **Mis builds** → Nueva build; elegir adventurer, arma y piezas; pestaña Habilidades; Guardar; volver a abrirla.
    - Si se publica la web antes que el backend: el perfil funciona igual, pero guardar una build da "Acción desconocida".
 3. **Siguiente entrega: E3 · Tarjeta de build** (perfil público debajo de cada adventurer, `[[build:ID]]` en guías, Compartir, "Usar de base" ya existe en la vista). Confirmar con Juan antes de empezar. Alternativas que Juan puede preferir: E4 (Rostros, Camarada, Keepsake, Reflexiones) o E5 (Comparar).
@@ -22,7 +22,7 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 - Pruebas: **104** (nuevas `tests/build-calc.test.mjs` y `tests/builds.test.mjs`; `empaquetar-gs` ahora espera 11 archivos).
 - Revisado en navegador (modo demo, 390 px y 1280 px): hoja, selector con "si la cambias…", selector de arma, matriz de habilidades, sets, guardar/crear, "atrás" cierra el selector, sin errores de consola.
 
-### Git (sin commit al cierre de la sesión 11)
+### Git (sesión 11 subida en `c8274cf`; después solo cambió `HANDOFF.md`)
 Modificados: `HANDOFF.md`, `SPEC.md`, `docs/BUILDER.md`, `apps-script/{Db,Code,Adventurers}.gs`, `scripts/empaquetar-gs.mjs`, `site/js/{app,demo-data}.js`, `site/js/views/yo.js`, `site/assets/css/views.css`, `tests/gas-mock.mjs`, `tests/empaquetar-gs.test.mjs`. Nuevos: `apps-script/Builds.gs`, `site/js/{build-calc,catalogo}.js`, `site/js/views/build.js`, `site/js/ui/{selector-pieza,build-textos}.js`, `tests/{build-calc,builds}.test.mjs`.
 Mensaje sugerido: `Sesión 11: builder E2 (hoja con cajones, selector de pieza, habilidades y hoja Builds)`.
 
