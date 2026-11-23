@@ -10,8 +10,26 @@ import crypto from 'node:crypto';
 const firmados = (buf) => Array.from(buf, (b) => (b > 127 ? b - 256 : b));
 const aBuffer = (bytes) => Buffer.from(bytes.map((b) => (b + 256) % 256));
 
+/**
+ * Lo que hace Sheets con un texto escrito en una celda que NO tiene formato '@' (y siempre con
+ * appendRow, que ignora el formato): números, horas, fechas y TRUE/FALSE dejan de ser texto.
+ */
+export function comoSheets(x) {
+  if (typeof x !== 'string') return x;
+  const t = x.trim();
+  if (/^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i.test(t)) return Number(t);
+  if (/^TRUE$|^FALSE$/i.test(t)) return t.toUpperCase() === 'TRUE';
+  const hm = /^(\d{1,2}):(\d{2})$/.exec(t);
+  if (hm) return new Date(Date.UTC(1899, 11, 30, +hm[1], +hm[2]));
+  if (/^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/.test(t)) return new Date(t);
+  return x;
+}
+
 class Rango {
-  constructor(hoja, f, c, nf, nc) { Object.assign(this, { hoja, f, c, nf, nc }); }
+  constructor(hoja, f, c, nf, nc) {
+    if (f + nf - 1 > hoja.maxFilas) throw new Error(`Rango fuera de la hoja ${hoja.nombre}: fila ${f + nf - 1} > ${hoja.maxFilas}`);
+    Object.assign(this, { hoja, f, c, nf, nc });
+  }
   getValues() {
     return Array.from({ length: this.nf }, (_, i) =>
       Array.from({ length: this.nc }, (_, j) => this.hoja.celdas[this.f - 1 + i]?.[this.c - 1 + j] ?? ''));
@@ -20,25 +38,34 @@ class Rango {
     v.forEach((fila, i) => fila.forEach((x, j) => {
       const r = this.f - 1 + i;
       this.hoja.celdas[r] = this.hoja.celdas[r] || [];
-      this.hoja.celdas[r][this.c - 1 + j] = x;
+      const col = this.c - 1 + j;
+      this.hoja.celdas[r][col] = this.hoja.formatos[r]?.[col] === '@' ? x : comoSheets(x);
     }));
     return this;
   }
   setFontWeight() { return this; }
-  setNumberFormat() { return this; }
+  setNumberFormat(fmt) {
+    for (let i = 0; i < this.nf; i++) {
+      const r = this.f - 1 + i;
+      this.hoja.formatos[r] = this.hoja.formatos[r] || [];
+      for (let j = 0; j < this.nc; j++) this.hoja.formatos[r][this.c - 1 + j] = fmt;
+    }
+    return this;
+  }
 }
 
 class Hoja {
-  constructor(nombre) { this.nombre = nombre; this.celdas = []; }
+  constructor(nombre) { this.nombre = nombre; this.celdas = []; this.formatos = []; this.maxFilas = 1000; }
   getName() { return this.nombre; }
   getLastRow() {
     for (let i = this.celdas.length - 1; i >= 0; i--) if ((this.celdas[i] || []).some((x) => x !== '' && x != null)) return i + 1;
     return 0;
   }
-  getMaxRows() { return 1000; }
+  getMaxRows() { return this.maxFilas; }
+  insertRowsAfter(despues, n) { this.maxFilas += n; this.formatos.splice(despues, 0, ...Array.from({ length: n }, () => [])); }
   getRange(f, c, nf = 1, nc = 1) { return new Rango(this, f, c, nf, nc); }
-  appendRow(fila) { this.celdas[this.getLastRow()] = [...fila]; }
-  deleteRow(f) { this.celdas.splice(f - 1, 1); }
+  appendRow(fila) { this.celdas[this.getLastRow()] = fila.map(comoSheets); } // como Sheets: ignora '@'
+  deleteRow(f) { this.celdas.splice(f - 1, 1); this.formatos.splice(f - 1, 1); this.maxFilas -= 1; }
   setFrozenRows() {}
   setTabColor() {}
 }

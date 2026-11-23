@@ -97,16 +97,28 @@ function filaDe_(nombre, obj) {
   return columnas_(nombre).map(function (c) { return serializar_(esquema[c], obj[c]); });
 }
 
+/**
+ * Escribe filas como TEXTO desde la fila `desde`. No usar appendRow: ignora el formato '@'
+ * y Sheets convierte "20:15" en hora, "8" en número o un hash "12e4…" en notación científica.
+ * Se fija '@' en el rango justo antes de setValues (que sí lo respeta).
+ */
+function escribirFilas_(h, desde, filas) {
+  if (!filas.length) return;
+  var falta = desde + filas.length - 1 - h.getMaxRows();
+  if (falta > 0) h.insertRowsAfter(h.getMaxRows(), Math.max(falta, 100));
+  h.getRange(desde, 1, filas.length, filas[0].length).setNumberFormat('@').setValues(filas);
+}
+
 function insertar_(nombre, obj) {
-  hoja_(nombre).appendRow(filaDe_(nombre, obj));
+  var h = hoja_(nombre);
+  escribirFilas_(h, h.getLastRow() + 1, [filaDe_(nombre, obj)]);
   delete memoTablas_[nombre];
   return obj;
 }
 
 function actualizar_(nombre, obj) {
   if (!obj._fila) throw new Error('actualizar_ sin _fila');
-  var cols = columnas_(nombre);
-  hoja_(nombre).getRange(obj._fila, 1, 1, cols.length).setValues([filaDe_(nombre, obj)]);
+  escribirFilas_(hoja_(nombre), obj._fila, [filaDe_(nombre, obj)]);
   delete memoTablas_[nombre];
   return obj;
 }

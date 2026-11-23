@@ -1,17 +1,36 @@
-# HANDOFF — MH-Ragnarok (fin de sesión 7 en Cowork)
+# HANDOFF — MH-Ragnarok (fin de sesión 8 en Cowork)
 
 Fecha: 2026-11-22
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
 
-## Punto de partida exacto para la sesión 8
+## Punto de partida exacto para la sesión 9
 
 1. Leer `CLAUDE.md`, este archivo, `SPEC.md` y `DESIGN.md`.
-2. **Commit + push del editor (`a718a0f`) y del panel de Admin (`57090d0`) hechos.** Juan prueba en el celular el editor y Administración (Mi perfil → Herramientas de oficial).
-3. **Con el frontend v1 completo**, el siguiente paso grande es que Juan **monte el backend** con `docs/SETUP-backend.md` y pegue la URL `/exec` en `site/config.js` (con eso se apaga el modo demostración). Claude lo acompaña paso a paso. **Al montarlo, probar**:
-   - una noticia cuyo texto empiece con `- ` o `=`: las celdas se escriben con `setValues`/`appendRow` sobre hojas con formato texto `@`; confirmar que Sheets no las toma como fórmula. Si fallara, anteponer `'` en `Db.gs` › `serializar_`.
-   - el flujo de reset de PIN de punta a punta (oficial resetea → miembro entra con el temporal → `#/yo?pin=1` obliga a cambiarlo).
-4. Decisión pendiente de Juan: hoy un **oficial puede resetear el PIN de otro oficial** (el backend solo protege al admin). Quien resetea ve el PIN temporal, así que podría entrar como ese oficial. ¿Se limita a que solo el admin resetee PIN de oficiales? (cambio chico en `Auth.gs` › `resetPin_`, en `demo-data.js` y en `admin.js` › `permisos`).
-5. Pendientes menores: acciones de GitHub Pages a Node 24 (verificar versiones vigentes); glosario ES con capturas del juego en español.
+2. **Backend montado y publicado** (sesión 8). El commit de la sesión 8 lleva `site/config.js` con la URL `/exec`: al publicarse en GitHub Pages **se apaga el modo demostración** en la web pública.
+3. Juan, en la web publicada (celular o PC):
+   - Entrar como **MyMarLa** (admin) y **cambiar el PIN** en Mi perfil (el que usó al crear el admin quedó visible en pantalla).
+   - Poner el **código del clan** en Mi perfil → Administración → Código (mientras no haya código nadie puede registrarse: error `NO_INSTALADO`).
+   - Revisar Gremio → datos y horarios (ya vienen de `CONFIG_INICIAL`) y pegar el **enlace de WhatsApp**.
+4. Pruebas pendientes con el backend real (Claude acompaña):
+   - Noticia cuyo texto empiece con `- ` o `=` (ahora todo se escribe con formato `@` justo antes de `setValues`; confirmar que no se toma como fórmula. Si fallara, anteponer `'` en `Db.gs` › `serializar_`).
+   - Flujo de reset de PIN de punta a punta con una cuenta de prueba (oficial/admin resetea → entra con el temporal → `#/yo?pin=1` obliga a cambiarlo).
+   - Registro con el código, subir avatar y capturas (Drive), asistencia y armado de brigadas.
+5. Opcional: activador diario de `limpiarSesiones` (Apps Script → Activadores).
+6. Pendientes menores: acciones de GitHub Pages a Node 24; glosario ES con capturas del juego en español; si se quiere seguir viendo la demo con la API puesta, añadir un interruptor (p. ej. `?demo=1`).
+
+## Hecho en la sesión 8 (Cowork, Claude manejó el Chrome de Juan)
+
+- **Reset de PIN**: un oficial ya no puede resetear el PIN de otro oficial (vería el temporal y podría entrar como él); solo el admin. `Auth.gs` › `resetPin_`, `demo-data.js`, `admin.js` › `permisos` (+ nota "Solo el admin puede resetear el PIN de un oficial"), prueba nueva, `SPEC.md` y `CLAUDE.md`. Commit `acde40c`.
+- **Backend en un solo archivo**: `scripts/empaquetar-gs.mjs` (`npm run gs`) une `apps-script/*.gs` en orden alfabético (el mismo que usa `tests/gas-mock.mjs`) en `Claude outputs/MH-Ragnarok.gs`, con cabecera de versión (commit). Prueba `tests/empaquetar-gs.test.mjs`. `docs/SETUP-backend.md` actualizado (un archivo; código del clan desde la web).
+- **Montaje** (cuenta personal de Juan, la que ya usa Apps Script):
+  - Proyecto Apps Script **"MH-Ragnarok API"** con un único archivo `MH-Ragnarok.gs` + `appsscript.json` del repo. Para actualizar: Claude pega el código nuevo en el editor (vía `monaco` del editor, comparando hash con el archivo local) o Juan pega `Claude outputs/MH-Ragnarok.gs` entero; luego **Implementar → Gestionar implementaciones → lápiz → Versión nueva** (la URL no cambia).
+  - `instalar` creó el Sheet **"MH-Ragnarok · Base de datos"** y la carpeta **"MH-Ragnarok · Imágenes"** en su Drive (los IDs están en Propiedades del script; no van al repo).
+  - Web App: ejecutar como Juan, acceso "Cualquier usuario". Implementación **versión 2** ("v2 (escritura como texto)"). URL en `site/config.js`.
+  - Admin **MyMarLa** creado con `crearAdmin` (Juan escribió el PIN; luego se dejaron NICK y PIN vacíos).
+- **Arreglo importante (`Db.gs`)**: `appendRow` ignora el formato de texto `@` y Sheets convertía `20:15` en hora, `8` en número (y habría estropeado hashes, sales e IDs). La API respondía `INTERNO` ("No se pudo calcular la semana"). Ahora `escribirFilas_` fija `@` en el rango justo antes de `setValues` (y agranda la hoja si hace falta); lo usan `insertar_`, `actualizar_` y el guardado de brigadas en `Clash.gs`. Se limpió `Config` y se re-ejecutó `instalar`.
+- **Simulador** (`tests/gas-mock.mjs`): ahora imita a Sheets (`comoSheets`: números, horas, fechas y TRUE/FALSE dejan de ser texto si la celda no tiene `@`, y `appendRow` siempre convierte; formatos por celda; límite de filas e `insertRowsAfter`). Con el código viejo fallan 5 pruebas; con el arreglo pasan.
+- `crearAdmin_` ahora invalida la caché pública (si no, el directorio tarda hasta 10 min en mostrar al admin).
+- Pruebas: **79** (`npm test`).
 
 ## Hecho en la sesión 7 (segunda parte: Admin, publicado en `57090d0`)
 

@@ -138,8 +138,7 @@ function guardarEquiposClash_(token, d) {
   borrarFilas_('ClashEquipos', filtrar_('ClashEquipos', function (x) { return x.semana_id === id; }));
   var h = hoja_('ClashEquipos');
   if (filas.length) {
-    h.getRange(h.getLastRow() + 1, 1, filas.length, columnas_('ClashEquipos').length)
-      .setValues(filas.map(function (f) { return filaDe_('ClashEquipos', f); }));
+    escribirFilas_(h, h.getLastRow() + 1, filas.map(function (f) { return filaDe_('ClashEquipos', f); }));
     delete memoTablas_.ClashEquipos;
   }
   s.estado = 'armada';

@@ -83,6 +83,7 @@ function crearAdmin_(nick, pin) {
   insertar_('Credenciales', { miembro_id: m.id, pin_hash: hashPin_(pin, sal), sal: sal, intentos_fallidos: 0,
     bloqueado_hasta: '', pin_temporal: false, actualizado: ahora });
   log_(m.id, 'admin_creado', 'Miembros', m.id);
+  invalidarCache_(); // que el directorio público lo muestre ya
   return m;
 }
 
