@@ -477,7 +477,8 @@ export function limpiarCamarada(cat, c) {
 /**
  * Ficha del camarada para la hoja: el del catálogo + lo que escribió el miembro.
  * `compatible`: false si el adventurer tiene tipo conocido y no coincide con el del camarada
- * (el tipo del camarada depende del tipo de Definitiva del adventurer, según GameWith; por confirmar).
+ * (el juego no deja equiparlo: confirmado con capturas de Juan, 2026-11-23). Solo pasa con builds
+ * viejas; la web ya no deja elegirlo ni lo conserva al cambiar de adventurer (`conAdventurer`).
  */
 export function calcularCamarada(cat, c, adv = null, avisos = []) {
   if (!c?.id) return null;
@@ -496,6 +497,28 @@ export function conCamarada(build, id, datos = null) {
   b.camarada = { id };
   for (const k of ['nv', 'estrellas', 'poder']) if (base[k] !== undefined && base[k] !== null && base[k] !== '') b.camarada[k] = base[k];
   return b;
+}
+
+/**
+ * Cambia el adventurer (id vacío = ninguno) y quita lo que el juego no deja llevar: el arma si es de
+ * otro tipo y el camarada si es de otro tipo (Asalto / Alterador / Apoyo). El Fated Adventurer no tiene
+ * tipo en el catálogo → su camarada se conserva. Devuelve { build, quitados: ['arma'|'camarada'] }.
+ */
+export function conAdventurer(cat, build, id) {
+  const b = structuredClone(build || buildVacia());
+  const nuevo = id ? cat.adventurers?.get(id) : null;
+  b.adv = nuevo ? { id: nuevo.id, ...(b.adv?.nivel ? { nivel: b.adv.nivel } : {}) } : null;
+  const quitados = [];
+  const w = b.arma?.id ? cat.armas?.get(b.arma.id) : null;
+  if (w && nuevo && w.arma !== nuevo.arma) { b.arma = null; quitados.push('arma'); }
+  const cam = b.camarada?.id ? cat.camaradas?.get(b.camarada.id) : null;
+  if (cam && nuevo?.tipo && cam.tipo !== nuevo.tipo) { delete b.camarada; quitados.push('camarada'); }
+  return { build: b, quitados };
+}
+
+/** Los que puede llevar el adventurer: si su tipo se conoce, solo ese tipo (el juego no deja otros). */
+export function camaradasPara(lista, tipo = '') {
+  return tipo ? lista.filter((x) => x.tipo === tipo) : [...lista];
 }
 
 /** Camaradas que encajan con el adventurer primero (mismo tipo), luego por rareza y nombre. */

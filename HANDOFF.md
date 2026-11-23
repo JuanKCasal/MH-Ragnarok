@@ -1,18 +1,53 @@
-# HANDOFF — MH-Ragnarok (sesión 14: E4 · Camarada hecha, sin commit · siguen Reflexiones y Keepsake)
+# HANDOFF — MH-Ragnarok (sesión 15: ajuste de tipo del camarada listo para publicar · sigue Reflexiones)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
 
-## Sesión 14 — Camarada (sin commit todavía)
+## Sesión 15 — Camarada: solo los del tipo del adventurer (sin commit todavía)
+
+### Punto de partida exacto para la sesión 16
+1. Leer `CLAUDE.md`, este bloque y `docs/BUILDER.md` §13 (final: "Ajuste de tipo").
+2. **Publicar el ajuste** (no toca el backend; no hace falta versión nueva del Web App):
+   1. `npm test` → **127** (Claude ya las corrió en su PC: 127 pasan).
+   2. Commit + push (Juan):
+      ```
+      git add -A
+      git commit -m "Sesión 15: camarada solo del tipo del adventurer y Aumento (Nv 80)"
+      git push
+      ```
+   3. Revisar el despliegue de Pages (si sale "No artifacts named github-pages": Re-run failed jobs).
+   4. Probar en el celular: abrir una build → Camarada → Elegir: solo salen los del tipo del adventurer; cambiar a un adventurer de otro tipo → toast y el camarada se quita.
+3. **Siguiente entrega (decidida por Juan): Reflexiones** — ver punto 5 del bloque de la sesión 14 (catálogo de nodos por adventurer desde GameWith, tabla "Insights"; página >100.000 caracteres, leer por partes). Después Keepsake.
+4. Siguen abiertos: probar en el celular Camarada, equipo en español, E6 y Rostros; rarezas de GameWith (§11); Pages a Node 24; activador de `limpiarSesiones`.
+
+### Hecho en la sesión 15
+- `site/js/build-calc.js`: `camaradasPara` y `conAdventurer` (quita arma de otra clase y camarada de otro tipo).
+- `site/js/ui/selector-camarada.js`: solo los del tipo del adventurer cuando se conoce (sin filtro Tipo ni "quizá no puedas"); "Aumento (Nv 80)".
+- `site/js/views/build.js`: cambio de adventurer con `conAdventurer` + toast; aviso "el juego no deja ponérselo"; "Aumento (Nv 80)"; nota del cajón.
+- `site/assets/css/views.css`: se quitó `.bld-aviso-cam` (ya no se usa).
+- `tests/build-calc.test.mjs`: 2 pruebas nuevas (127 en total).
+
+### Git (sesión 15)
+Modificados: `HANDOFF.md`, `docs/BUILDER.md`, `site/js/build-calc.js`, `site/js/ui/selector-camarada.js`, `site/js/views/build.js`, `site/assets/css/views.css`, `tests/build-calc.test.mjs` (más las notas de cierre de la sesión 14 en `HANDOFF.md` y `docs/BUILDER.md`).
+
+---
+
+# (Sesión 14) HANDOFF — MH-Ragnarok (sesión 14: E4 · Camarada publicada (`87a5205` + backend v6) · siguen ajuste de tipo, Reflexiones y Keepsake)
+
+Fecha: 2026-11-23
+Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
+
+## Sesión 14 — Camarada (publicada: `87a5205` + backend v6)
 
 ### Punto de partida exacto para la sesión 15
 1. Leer `CLAUDE.md`, este bloque y **`docs/BUILDER.md` §13** (Camarada: decisiones de Juan para todo el resto de la E4, fuente, qué se hizo, qué falta confirmar) y §10 (notas del Keepsake).
 2. **Publicar Camarada (en este orden)**:
    1. `npm test` en su PC → **125** (Claude ya las corrió en su PC el 2026-11-23: 125 pasan).
    2. ~~Backend versión 6~~ **HECHO 2026-11-23 (Claude con el Chrome de Juan):** el editor tenía exactamente la v5 (SHA-256 `1f743716…`); se aplicó el cambio de `Builds.gs` y se verificó idéntico al paquete probado `Claude outputs/MH-Ragnarok.gs` (SHA-256 `f6d4bdf892aa…`), guardado y publicada la **versión 6** ("v6 (E4: Camarada)", misma URL). `builds?clase=ejemplo` → `{ok:true,data:[]}`. Sin `instalar()`.
-   3. **Commit + push (lo hace Juan; comandos abajo).** Hasta entonces la web publicada no muestra el cajón Camarada (el backend ya lo acepta).
+   3. ~~Commit + push~~ **HECHO:** commit `87a5205`, pusheado por Juan. El despliegue de Pages falló otra vez por GitHub ("No artifacts named github-pages"); Claude lo relanzó con "Re-run failed jobs".
    4. Probar en el celular: abrir "Fire Heavy" → cajón Camarada → Elegir → el tuyo → escribir Nivel, Estrellas y Poder de tu captura → Guardar → volver a abrir: debe seguir ahí.
-3. **Confirmado con capturas de Juan (2026-11-23)**: su camarada es **Kojiro** (SSR, Lv 80/80, 6 estrellas, poder 1998); estrellas **0–6** (ajustado en web, backend y pruebas). **Falta preguntar**: ¿se puede poner un camarada de otro tipo que el adventurer? ¿ve 38 camaradas o 42?
+3. **Confirmado con capturas de Juan (2026-11-23)**: su camarada es **Kojiro** (SSR, Lv 80/80, 6 estrellas, poder 1998); estrellas **0–6**; son **38** camaradas; **no se puede equipar uno de otro tipo**; el aumento del catálogo es el de Lv 80 (BUILDER §13).
+   - **Primera tarea de la sesión 15 (chica, antes de Reflexiones)**: en `ui/selector-camarada.js` mostrar solo los del tipo del adventurer cuando se conoce (sin "Usar este" para otros tipos); en `views/build.js`, al cambiar a un adventurer de otro tipo, quitar el camarada con toast (como el arma) y cambiar el aviso del cajón a "no se puede equipar"; rotular "Aumento (Nv 80)". Pruebas + revisar en navegador + commit/push (Juan) + revisar el despliegue de Pages.
 4. Siguen abiertos de antes: probar en el celular equipo en español, E6 (nombre de Scintillant Bayard) y Rostros (sus 4 cartas); rarezas de GameWith (§11); Pages a Node 24; activador de `limpiarSesiones`.
 5. **Siguiente entrega (ya decidida por Juan): Reflexiones** — catálogo de nodos por adventurer desde GameWith (página de cada adventurer, tabla "Insights": nombre, tipo, puntos, efecto; 8 Fated por arma + 13 con nombre; ES "Reflexión" por confirmar), capacidad escrita por el miembro (65 en su captura), marcar nodos activos y sumar puntos. La página de GameWith es larga (>100.000 caracteres): leerla por partes. Después: **Keepsake** (nivel + poder + matriz de grabados, §10 y §13).
 

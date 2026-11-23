@@ -11,7 +11,7 @@ import { avisoDemo, cargando, fallo } from '../ui/comun.js';
 import { toast } from '../ui/toast.js';
 import { ARMAS } from '../etiquetas.js';
 import { cargarCatalogo } from '../catalogo.js';
-import { calcular, limpiarBuild, buildVacia, conPieza, conRostro, conCamarada, resumenParaGuardar, PARTES, NOMBRE_PARTE,
+import { calcular, limpiarBuild, buildVacia, conPieza, conRostro, conCamarada, conAdventurer, resumenParaGuardar, PARTES, NOMBRE_PARTE,
   CALIDADES, COSTO_ROSTROS, CARTAS_ROSTROS, CAMARADA_NV_MAX, ESTRELLAS_MAX, PODER_MAX } from '../build-calc.js';
 import { abrirSelector } from '../ui/selector-pieza.js';
 import { abrirSelectorRostro } from '../ui/selector-rostro.js';
@@ -294,11 +294,11 @@ export default async function vistaBuild(el, { params, query, recargar }) {
           <div class="bld-pieza__texto">
             <p class="bld-pieza__nombre">${bil(cam.item.es, cam.item.en)}</p>
             <p class="nota">${tipoCamarada(cam.item.tipo)}</p>
-            <p class="nota"><span class="rotulo">Aumento</span> ${textoAumento(cam.item)}</p>
+            <p class="nota"><span class="rotulo">Aumento (Nv 80)</span> ${textoAumento(cam.item)}</p>
           </div>
           ${editable ? html`<button type="button" class="bld-cambiar" data-elegir-camarada data-foco="ecam" aria-label="Cambiar camarada"><span aria-hidden="true">⇄</span></button>` : ''}
         </li></ul>
-        ${cam.compatible ? '' : html`<p class="alerta bld-alerta-cam">Es de tipo ${TIPOS_CAMARADA[cam.item.tipo].es} y tu adventurer es ${TIPOS_CAMARADA[advTipo].es}: en el juego quizá no puedas ponérselo.</p>`}
+        ${cam.compatible ? '' : html`<p class="alerta bld-alerta-cam">Es de tipo ${TIPOS_CAMARADA[cam.item.tipo].es} y tu adventurer es ${TIPOS_CAMARADA[advTipo].es}: el juego no deja ponérselo. Cámbialo por uno de tipo ${TIPOS_CAMARADA[advTipo].es}.</p>`}
         <div class="campos-tres bld-cam-datos">
           <label class="campo"><span class="campo__etiqueta">Nivel</span>
             <input class="entrada" data-cam="nv" data-foco="cam-nv" inputmode="numeric" maxlength="2" value="${numero_(cam.nv)}" placeholder="1–${CAMARADA_NV_MAX}" ${editable ? '' : 'disabled'}></label>
@@ -311,7 +311,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
             <input class="entrada" data-cam="poder" data-foco="cam-po" inputmode="numeric" maxlength="6" value="${numero_(cam.poder)}" placeholder="1998" ${editable ? '' : 'disabled'}></label>
         </div>`;
     return cajon('camarada', 'Camarada', resumen, html`${cuerpo}
-      <p class="nota bld-cajon__nota">Nivel, estrellas y poder: cópialos de la pantalla del camarada en el juego (no hay tablas públicas). Aumento de aventurero según GameWith, por confirmar.</p>`);
+      <p class="nota bld-cajon__nota">Nivel, estrellas y poder: cópialos de la pantalla del camarada en el juego (no hay tablas públicas). El aumento de aventurero es el de Nv 80 (GameWith); con menos nivel es menor.</p>`);
   }
 
   const cajonesPronto = () => html`
@@ -601,10 +601,13 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       cambiar(() => { b = conPieza(b, parte, actual.id, Number(t.value)); });
     } else if (t.matches('[data-adv]')) {
       cambiar(() => {
-        const nuevo = t.value ? cat.adventurers.get(t.value) : null;
-        b = { ...b, adv: nuevo ? { id: nuevo.id, ...(b.adv?.nivel ? { nivel: b.adv.nivel } : {}) } : null };
-        const w = b.arma?.id ? cat.armas.get(b.arma.id) : null;
-        if (w && nuevo && w.arma !== nuevo.arma) { b.arma = null; toast('Quitamos el arma: ese adventurer usa otra.'); }
+        const r = conAdventurer(cat, b, t.value);
+        b = r.build;
+        const arma = r.quitados.includes('arma'), cam = r.quitados.includes('camarada');
+        const tipo = TIPOS_CAMARADA[cat.adventurers.get(t.value)?.tipo]?.es || '';
+        if (arma && cam) toast(`Quitamos el arma y el camarada: ese adventurer usa otra arma y lleva camarada de tipo ${tipo}.`);
+        else if (arma) toast('Quitamos el arma: ese adventurer usa otra.');
+        else if (cam) toast(`Quitamos el camarada: ese adventurer lleva uno de tipo ${tipo}.`);
       });
     } else if (t.matches('[data-nivel]')) {
       const n = Math.round(Number(t.value));

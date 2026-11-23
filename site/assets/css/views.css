@@ -789,7 +789,6 @@ textarea.editor-cuerpo { min-height: 18lh; line-height: 1.6; field-sizing: conte
 .bld-rareza-cam--sr { border-color: var(--filete-fuerte); color: var(--marfil); }
 .bld-cam-datos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 12px 16px 4px; }
 .bld-cam-datos .entrada { min-width: 0; }
-.bld-aviso-cam { color: var(--error); }
 .bld-alerta-cam { margin: 12px 16px 0; }
 .bld-nucleo-texto { margin: 0; overflow-wrap: anywhere; }
 .bld-nucleo-texto .rotulo { margin-right: 4px; }

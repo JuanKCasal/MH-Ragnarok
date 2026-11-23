@@ -5,7 +5,7 @@ import {
   indexarCatalogo, calcular, diferencia, conPieza, buscarPiezas, rarezaDe, enRareza, nombreEn,
   habilidadesDePieza, limpiarBuild, resumenParaGuardar, buildVacia, PARTES,
   calcularRostros, conRostro, diferenciaRostros, limpiarRostros,
-  calcularCamarada, conCamarada, limpiarCamarada, ordenarCamaradas,
+  calcularCamarada, conCamarada, limpiarCamarada, ordenarCamaradas, conAdventurer, camaradasPara,
 } from '../site/js/build-calc.js';
 import { ARCHIVOS } from '../site/js/catalogo.js';
 
@@ -286,4 +286,37 @@ test('camarada: 38 de GameWith; los del tipo del adventurer van primero, luego p
   assert.equal(orden[0].rareza, 'SSR');
   assert.equal(orden[12].tipo === 'support', false);
   assert.equal(cat.camaradas.get('shadow').es, 'Sombra');
+});
+
+test('camarada: solo los del tipo del adventurer; sin tipo, todos', () => {
+  const apoyo = camaradasPara(cat.lista.camaradas, 'support');
+  assert.equal(apoyo.length, 12);
+  assert.ok(apoyo.every((c) => c.tipo === 'support'));
+  assert.equal(camaradasPara(cat.lista.camaradas, 'assault').length, 14);
+  assert.equal(camaradasPara(cat.lista.camaradas, '').length, 38);
+});
+
+test('conAdventurer: quita el arma y el camarada que el juego no deja llevar', () => {
+  assert.equal(cat.camaradas.get('kojiro').tipo, 'assault');
+  const base = { v: 1, piezas: {}, adv: { id: 'pepper', nivel: 50 }, arma: { id: 'blooming-shooter-i', r: 14 }, camarada: { id: 'devu', nv: 80 } };
+  // Pepper (Alterador, ballesta pesada) → Fated de ballesta pesada: sin tipo → se conserva todo.
+  let r = conAdventurer(cat, base, 'fated-adventurer-heavy-bowgun');
+  assert.deepEqual(r.quitados, []);
+  assert.deepEqual(r.build.adv, { id: 'fated-adventurer-heavy-bowgun', nivel: 50 });
+  assert.deepEqual(r.build.camarada, { id: 'devu', nv: 80 });
+  assert.deepEqual(base.camarada, { id: 'devu', nv: 80 }); // no muta
+  // → Midori (Asalto, espada larga): otra arma y otro tipo.
+  r = conAdventurer(cat, base, 'midori');
+  assert.deepEqual(r.quitados, ['arma', 'camarada']);
+  assert.equal(r.build.arma, null);
+  assert.equal(r.build.camarada, undefined);
+  // Midori con Kojiro (Asalto) → Ryunosuke (Apoyo, espada larga): se queda el arma, se va el camarada.
+  r = conAdventurer(cat, { ...base, adv: { id: 'midori' }, arma: { id: 'first-dance-i', r: 14 }, camarada: { id: 'kojiro' } }, 'ryunosuke');
+  assert.deepEqual(r.quitados, ['camarada']);
+  assert.equal(r.build.arma.id, 'first-dance-i');
+  // Mismo tipo: se conserva. Sin adventurer: no se quita nada.
+  assert.deepEqual(conAdventurer(cat, { ...base, adv: { id: 'pepper' } }, 'pepper').quitados, []);
+  r = conAdventurer(cat, base, '');
+  assert.equal(r.build.adv, null);
+  assert.deepEqual(r.quitados, []);
 });
