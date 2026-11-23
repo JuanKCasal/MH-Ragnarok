@@ -1,13 +1,52 @@
-# HANDOFF — MH-Ragnarok (fin de sesión 8 en Cowork)
+# HANDOFF — MH-Ragnarok (sesión 9 en curso: builder interactivo)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
+
+## Sesión 9 — Builder interactivo de builds (fase de preguntas cerrada; nada programado aún)
+
+### Punto de partida exacto
+1. Leer `CLAUDE.md`, este bloque, `SPEC.md` (§5.4, §5.13, §11) y `DESIGN.md`.
+2. **Siguiente paso:** buscar fuentes para lo que falta (Rostros/Visage carta por carta, Weapon Insight, Charm; nivel/poder de Camaradas): GameWith (gamewith.ai/monster-hunter-outlanders), Game8, otras. Lo que no aparezca → lo cargan oficiales desde capturas.
+3. Luego, **antes de programar**, hacer **opciones de diseño en Claude Design** (tipo "Design" del Artifact tool), celular 390 px, **misma estética B** (tokens de `DESIGN.md`); las opciones varían solo la **interacción** (ideas: A = muñeco con ranuras como en el juego, B = asistente paso a paso, C = hoja única con cajones). Pantallas pedidas:
+   - Editor de build (adventurer, arma, 5 piezas con rareza, joyas, Rostros, camarada, Weapon Insight).
+   - Selector de pieza (buscador + filtros por monstruo, elemento, habilidad).
+   - **Skills resultantes** de la build (nivel sumado/máximo por habilidad, sets activos por nº de piezas) — Juan lo marcó como importante.
+   - Tarjeta de build (en el perfil y embebida en una guía, compartible).
+   - Comparar builds (lado a lado / "qué cambia si cambio esta pieza").
+4. Juan elige dirección → recién ahí se programa.
+5. Sesión 8 cerrada: Juan confirmó (2026-11-23) que ya puso el **código del clan**, cambió el PIN de MyMarLa y pegó el enlace de WhatsApp. **El clan ya está usando la web.** Siguen abiertos de esa lista solo los puntos 4–6 de la versión anterior (pruebas con el backend real, publicar versión 3 en el próximo cambio de backend, activador de `limpiarSesiones`, Node 24 en Pages, glosario ES).
+6. Como hay usuarios reales: no romper datos existentes (hojas, columnas, sesiones) al agregar lo del builder; cambios de backend con migración compatible.
+7. Git: `HANDOFF.md` modificado y `datos/` nuevo (datos de gacha.gg) quedaron sin commit al cierre de la sesión 9; ver si Juan ya los subió.
+
+### Decisiones de Juan (2026-11-23)
+- El builder sirve para **ambas cosas**: registrar la build real del miembro en su perfil y que los oficiales inserten builds de ejemplo en las guías.
+- Alcance: **todo** (equipo + Rostros + Camarada + Weapon Insight + Charm), no solo equipo.
+- Nombres: **EN ahora, ES después** (un oficial agrega el nombre ES desde la web, marcado "por confirmar" hasta validarlo).
+- Catálogo: **JSON estático en la web** (`site/data/…`), actualizado re-descargando de gacha.gg y haciendo commit.
+- Cálculo: sumar stats y skills **y además intentar estimar el Adventurer Power** (fórmula aproximada ajustada con los poderes reales que carguen los miembros; mostrar como "estimado"). El poder que usa el Clash sigue siendo el que escribe el miembro.
+
+### Datos recibidos (`datos/gacha-gg/`, fuente gacha.gg, descargados 2026-11-23)
+- `mho-equipo.json`: `{source, fetched, items[563], skills[205]}`.
+  - items: 245 armaduras (49 por parte: Head/Chest/Armguards/Waist/Leg) y ~318 armas (8 tipos). Campos: `id, cat, kind, series, monster, slots, sharp, test, intr, steps[], skills[], sets[]`.
+  - `steps[]` por rareza 1–14: `r`, `n` (nombre al cambiar de etapa), `s` (Physical Attack, Defense, Affinity, ataque elemental o estado: Fire/Water/Thunder/Ice/Dragon, Poison/Paralysis/Sleep/Blast), `z` (zenny, solo 240 pasos).
+  - Armaduras: `skills[]` = habilidades que se desbloquean por rareza (`{r, k:[[nombre, nivel]]}`); `sets[]` = bonificación por nº de piezas. Armas: sin `skills`; `intr` = efecto intrínseco (`text, level, skill`), algunos "Season 0 only".
+  - `skills[]`: `name, max, text, levels[], beads[]` (joyas que la dan). Hay duplicados (p. ej. "Affinity Bonus" ×2).
+  - Ruido a filtrar: 25 entradas `test:true` (datamine: `itemweapon-…`, `…-test`), 1 "Gunlance" y 1 cat "Weapons" (ambas de prueba).
+  - Dudas: armadura llega a rareza 14 (en las capturas de Juan era x/13; arma x/14); `slots` casi siempre `[1,1]` (significado por confirmar); "calidad" de pieza no viene.
+- `mho-equipo-por-rareza.csv` (`;`, UTF-8 con BOM): 4.987 filas, una por pieza y rareza, con columnas en español (categoría/parte traducidas; nombres siguen en EN).
+- gacha.gg además tiene: 14 adventurers (`/characters`), 42 camaradas (`/buddies`: 10 SSR, 15 SR, 17 R; solo nombre, rareza, rol y efecto), skills, `/build-calculator` (solo recomendaciones del Growth Guide por arma/rol/elemento/etapa: equipo, 3 camaradas, set de Rostros con bonos 2/4 y núcleo, joyas). **No** tiene Rostros carta por carta, Weapon Insight ni Charm. No muestra licencia de datos (solo "© 2026 gacha.gg") → citar la fuente en la web.
+
+---
+
+## (Versión anterior) HANDOFF — MH-Ragnarok (fin de sesión 8 en Cowork)
+
 
 ## Punto de partida exacto para la sesión 9
 
 1. Leer `CLAUDE.md`, este archivo, `SPEC.md` y `DESIGN.md`.
 2. **Backend montado y web en vivo.** Commit `5257516` publicado y verificado en `juankcasal.github.io/MH-Ragnarok` (versión `5257516`): ya **no** hay modo demostración; Inicio muestra 1/52 miembros, el Clash del sáb. 28-11 y el Carnival con datos reales. La primera carga tarda ~10 s (arranque en frío de Apps Script).
-3. **Primero, preguntar a Juan si ya hizo esto** (al cierre de la sesión 8 estaba pendiente; los del clan ya le pedían el código):
+3. **[HECHO, confirmado por Juan el 2026-11-23]** (al cierre de la sesión 8 estaba pendiente):
    - **Código del clan**: aún **no existe**. Juan lo elige y lo pone en Mi perfil → Herramientas de oficial → Administración → Código (mín. 6 caracteres, ×2). Se guarda solo como hash: ni Claude ni el Sheet pueden mostrarlo después; si se olvida o se filtra, se cambia ahí mismo (no afecta a los ya registrados). Se comparte solo por el grupo de WhatsApp. Nunca escribirlo en el repo. Mientras no exista, el registro responde `NO_INSTALADO` ("El código del clan no está configurado").
    - Entrar como **MyMarLa** (admin) y **cambiar el PIN** en Mi perfil (el que usó al crear el admin quedó visible en pantalla).
    - Revisar Gremio → datos y horarios (ya vienen de `CONFIG_INICIAL`) y pegar el **enlace de WhatsApp**.
