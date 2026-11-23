@@ -67,8 +67,46 @@ function camaradaValido_(c) {
 }
 
 /**
+ * Bloque reflexiones (E4): { cap?, activas: [ids] }. El backend no conoce el catálogo: solo valida
+ * la forma (ids tipo slug, sin repetir, máx. 20). La web filtra las que no son del adventurer.
+ */
+function reflexionesValidas_(r) {
+  if (!r || typeof r !== 'object' || Array.isArray(r)) return null;
+  var act = Array.isArray(r.activas) ? r.activas : [];
+  if (act.length > 20) fallar_('DATO_INVALIDO', 'Demasiadas Reflexiones.');
+  var out = { activas: [] };
+  act.forEach(function (x) {
+    var id = idCatalogo_(x, 'reflexión');
+    if (out.activas.indexOf(id) === -1) out.activas.push(id);
+  });
+  var cap = numeroValido_(r.cap, 0, 300, 'puntos de Reflexión', true);
+  if (cap !== '') out.cap = cap;
+  return out.cap !== undefined || out.activas.length ? out : null;
+}
+
+var GRABADO_RE = /^(hab-[0-4]|def-[0-5]|ele-[0-5]|pas-[0-3]|atr-0)$/;
+
+/** Bloque keepsake (E4): { nv?, poder?, grabados: [ids de la matriz] }. Ver GRABADOS en build-calc.js. */
+function keepsakeValido_(k) {
+  if (!k || typeof k !== 'object' || Array.isArray(k)) return null;
+  var gra = Array.isArray(k.grabados) ? k.grabados : [];
+  if (gra.length > 22) fallar_('DATO_INVALIDO', 'Demasiados grabados.');
+  var out = { grabados: [] };
+  gra.forEach(function (x) {
+    var id = String(x);
+    if (!GRABADO_RE.test(id)) fallar_('DATO_INVALIDO', 'Grabado no válido: ' + id.slice(0, 20));
+    if (out.grabados.indexOf(id) === -1) out.grabados.push(id);
+  });
+  var nv = numeroValido_(k.nv, 1, 80, 'nivel del Recuerdo', true);
+  var poder = numeroValido_(k.poder, 0, 999999, 'poder del Recuerdo', true);
+  if (nv !== '') out.nv = nv;
+  if (poder !== '') out.poder = poder;
+  return out.nv !== undefined || out.poder !== undefined || out.grabados.length ? out : null;
+}
+
+/**
  * Reconstruye la composición solo con lo conocido (versión 1). Bloques opcionales.
- * Rostros y Camarada desde la E4; Keepsake y Reflexiones todavía se descartan.
+ * Rostros, Camarada, Reflexiones y Recuerdo (Keepsake) desde la E4.
  */
 function composicionValida_(entrada) {
   var d = entrada;
@@ -96,6 +134,10 @@ function composicionValida_(entrada) {
   if (rostros) out.rostros = rostros;
   var camarada = camaradaValido_(d.camarada);
   if (camarada) out.camarada = camarada;
+  var reflexiones = reflexionesValidas_(d.reflexiones);
+  if (reflexiones) out.reflexiones = reflexiones;
+  var keepsake = keepsakeValido_(d.keepsake);
+  if (keepsake) out.keepsake = keepsake;
   if (d.poder && typeof d.poder === 'object') {
     var poder = {};
     ['total', 'equipo', 'rostros', 'camarada'].forEach(function (k) {

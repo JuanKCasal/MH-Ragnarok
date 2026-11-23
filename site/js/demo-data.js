@@ -154,7 +154,12 @@ let buildsDemo = [
       rostros: { nucleo: { id: 'kushala-daora', cal: 'superior', nv: 10 },
         cartas: ['barnos', 'kestodon', 'rathian', 'radiant-rathian'].map((id) => ({ id, cal: 'superior', nv: 10 })), maestria: true },
       // Camarada como en la captura de Juan (2026-11-23): Kojiro SSR, Lv 80/80, 6 estrellas, poder 1998.
-      camarada: { id: 'kojiro', nv: 80, estrellas: 6, poder: 1998 } } },
+      camarada: { id: 'kojiro', nv: 80, estrellas: 6, poder: 1998 },
+      // Reflexiones: 65 puntos como en la captura de Juan; cuáles van marcadas es solo un ejemplo.
+      reflexiones: { cap: 65, activas: ['internal-ammo', 'protection', 'monsoon'] },
+      // Recuerdo como en la captura de Juan (Lv 80/80, poder 5798, "Engrave 87%"); los grabados marcados son de ejemplo.
+      keepsake: { nv: 80, poder: 5798, grabados: ['hab-0', 'hab-1', 'hab-2', 'hab-3', 'def-0', 'def-1', 'def-2', 'def-3', 'def-4', 'def-5',
+        'ele-0', 'ele-1', 'ele-2', 'ele-3', 'ele-4', 'ele-5', 'pas-0', 'pas-1', 'pas-2'] } } },
 ];
 // Nombres ES corregidos por oficiales (E6): uno de ejemplo para ver el ✓ en el modo demo.
 let nombresDemo = [
@@ -197,6 +202,26 @@ function composicionDemo(d) {
     if (es !== null) c.estrellas = es;
     if (po !== null) c.poder = po;
     out.camarada = c;
+  }
+  // Reflexiones y Recuerdo (E4): misma validación que Builds.gs (reflexionesValidas_, keepsakeValido_).
+  const opc = (v, min, max, nombre) => (v === undefined || v === null || v === '' ? null : numeroDemo(v, min, max, nombre, false));
+  if (d.reflexiones && typeof d.reflexiones === 'object') {
+    const act = Array.isArray(d.reflexiones.activas) ? d.reflexiones.activas : [];
+    if (act.length > 20) falla('DATO_INVALIDO', 'Demasiadas Reflexiones.');
+    const r = { activas: [...new Set(act.map(id))] };
+    const cap = opc(d.reflexiones.cap, 0, 300, 'puntos de Reflexión');
+    if (cap !== null) r.cap = cap;
+    if (r.cap !== undefined || r.activas.length) out.reflexiones = r;
+  }
+  if (d.keepsake && typeof d.keepsake === 'object') {
+    const gra = Array.isArray(d.keepsake.grabados) ? d.keepsake.grabados : [];
+    if (gra.length > 22 || gra.some((g) => !/^(hab-[0-4]|def-[0-5]|ele-[0-5]|pas-[0-3]|atr-0)$/.test(String(g)))) falla('DATO_INVALIDO', 'Grabado no válido.');
+    const k = { grabados: [...new Set(gra.map(String))] };
+    const nv = opc(d.keepsake.nv, 1, 80, 'nivel del Recuerdo');
+    const po = opc(d.keepsake.poder, 0, 999999, 'poder del Recuerdo');
+    if (nv !== null) k.nv = nv;
+    if (po !== null) k.poder = po;
+    if (k.nv !== undefined || k.poder !== undefined || k.grabados.length) out.keepsake = k;
   }
   return out;
 }

@@ -168,3 +168,22 @@ test('catálogo con nombres ES: piezas [r, en, es], habilidades/sets/monstruos c
   assert.ok(cat.faltanEs.some((t) => t.includes('Scintillant Bayard')));
   for (const x of [...cat.armaduras, ...cat.armas]) for (const n of x.nombres) assert.ok(n.length === 2 || (typeof n[2] === 'string' && n[2]), x.id);
 });
+
+test('reflexiones: una fila por adventurer; Fated 4 + 4 + 6, el resto 6 + 4; Haze solo comunes', () => {
+  assert.equal(cat.reflexiones.length, cat.adventurers.length);
+  const fila = porId(cat.reflexiones.map((r) => ({ ...r, id: r.adv })));
+  const hbg = fila.get('fated-adventurer-heavy-bowgun');
+  assert.equal(hbg.nodos.length, 14);
+  assert.deepEqual(['arma', 'clase', 'comun'].map((g) => hbg.nodos.filter((n) => n.grupo === g).length), [4, 6, 4]);
+  assert.equal(hbg.nodos.find((n) => n.id === 'internal-ammo').es, 'Munición interna');
+  const pepper = fila.get('pepper');
+  assert.equal(pepper.nodos.length, 10);
+  assert.equal(pepper.nodos.reduce((t, n) => t + n.pts, 0), 210);
+  assert.equal(fila.get('haze').incompleto, true);
+  assert.equal(fila.get('haze').nodos.length, 4);
+  for (const r of cat.reflexiones) {
+    assert.equal(new Set(r.nodos.map((n) => n.id)).size, r.nodos.length, r.adv);
+    assert.ok(r.nodos.every((n) => [5, 10, 30].includes(n.pts) && n.efecto && n.es), r.adv);
+  }
+  assert.equal(cat.meta.conteos.reflexiones, cat.reflexiones.reduce((t, r) => t + r.nodos.length, 0));
+});

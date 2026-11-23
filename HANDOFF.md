@@ -1,34 +1,45 @@
-# HANDOFF — MH-Ragnarok (sesión 15: ajuste de tipo del camarada listo para publicar · sigue Reflexiones)
+# HANDOFF — MH-Ragnarok (sesión 15: E4 completa — Reflexiones y Recuerdo listos, falta backend v7 + commit/push)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
 
-## Sesión 15 — Camarada: solo los del tipo del adventurer (sin commit todavía)
+## Sesión 15 — Camarada por tipo (publicado `d09e316`) + Reflexiones + Recuerdo (sin commit)
+
+Juan pidió "haz todo lo pendiente, sin detenerte" y estuvo lejos de la PC.
 
 ### Punto de partida exacto para la sesión 16
-1. Leer `CLAUDE.md`, este bloque y `docs/BUILDER.md` §13 (final: "Ajuste de tipo").
-2. **Publicar el ajuste** (no toca el backend; no hace falta versión nueva del Web App):
-   1. `npm test` → **127** (Claude ya las corrió en su PC: 127 pasan).
-   2. Commit + push (Juan):
+1. Leer `CLAUDE.md`, este bloque y `docs/BUILDER.md` §14 (Reflexiones) y §15 (Recuerdo y grabados).
+2. **Publicar (en este orden)**:
+   1. `npm test` → **133** (Claude ya las corrió en su PC: 133 pasan).
+   2. **Backend versión 7** (pendiente: el sistema no dejó a Claude tocar el editor de Apps Script sin el permiso explícito de Juan). Juan o Claude con permiso: abrir el proyecto "MH-Ragnarok API" → el editor tiene **exactamente la v6** (SHA-256 `f6d4bdf892aa…`, comprobado por Claude el 2026-11-23) → pegar entero `Claude outputs/MH-Ragnarok.gs` (SHA-256 `4dc4d558b460…`; solo cambia `Builds.gs`: `reflexionesValidas_` y `keepsakeValido_`) → Guardar → Implementar → Gestionar implementaciones → lápiz → **Versión nueva** "v7 (E4: Reflexiones y Recuerdo)" (misma URL). No hace falta `instalar()` (no cambia hojas). Si la web sale antes que la v7, las builds se guardan igual pero sin Reflexiones ni Recuerdo.
+   3. Commit + push (Juan):
       ```
       git add -A
-      git commit -m "Sesión 15: camarada solo del tipo del adventurer y Aumento (Nv 80)"
+      git commit -m "Sesión 15: E4 Reflexiones y Recuerdo (grabados), backend v7 y acciones de Pages en Node 24"
       git push
       ```
-   3. Revisar el despliegue de Pages (si sale "No artifacts named github-pages": Re-run failed jobs).
-   4. Probar en el celular: abrir una build → Camarada → Elegir: solo salen los del tipo del adventurer; cambiar a un adventurer de otro tipo → toast y el camarada se quita.
-3. **Siguiente entrega (decidida por Juan): Reflexiones** — ver punto 5 del bloque de la sesión 14 (catálogo de nodos por adventurer desde GameWith, tabla "Insights"; página >100.000 caracteres, leer por partes). Después Keepsake.
-4. Siguen abiertos: probar en el celular Camarada, equipo en español, E6 y Rostros; rarezas de GameWith (§11); Pages a Node 24; activador de `limpiarSesiones`.
+   4. Revisar el despliegue de Pages: es el primero con las acciones nuevas (Node 24). Si falla en "upload-pages-artifact" o "deploy-pages", volver a las versiones de antes en `.github/workflows/pages.yml` (checkout@v4, setup-node@v4, configure-pages@v5, upload-pages-artifact@v3, deploy-pages@v4) y avisar.
+   5. Probar en el celular: abrir "Fire Heavy" → cajón Reflexiones: escribir tus puntos (65), marcar las que tienes, Guardar, volver a abrir. Cajón Recuerdo y grabados: Nivel 80, Poder 5798, marcar tus grabados (deberían quedar ~19 de 22 = tu 87 %).
+3. **Por confirmar con el juego (Juan)**:
+   - Que el Fated solo pueda equipar las Reflexiones de su clase y que su clase vaya con el tipo del camarada (la web lo supone).
+   - Qué Reflexiones tienes equipadas de verdad (las de la build de ejemplo son inventadas) y sus nombres en español (GameWith es-MX; Thrust Mania y las de la Hacha cargada no tienen ES).
+   - Grabados: si todos piden hacer el anterior de la misma columna (la web marca los anteriores); el 87 % de tu captura.
+   - Las Reflexiones de **Haze** (GameWith no las publica: hoy solo salen las comunes).
+4. Siguen abiertos (necesitan a Juan): activador diario de `limpiarSesiones` (Apps Script → Activadores; toca su cuenta de Google); revisar con el juego en español las rarezas de GameWith (`docs/BUILDER.md` §11); probar en el celular Camarada, equipo en español, E6 y Rostros.
+5. **Siguiente entrega (a decidir con Juan)**: E3 tarjeta de build (perfil y guías), E5 Comparar o E7 poder estimado (ya hay datos de poder de Recuerdo, camarada y Rostros).
 
 ### Hecho en la sesión 15
-- `site/js/build-calc.js`: `camaradasPara` y `conAdventurer` (quita arma de otra clase y camarada de otro tipo).
-- `site/js/ui/selector-camarada.js`: solo los del tipo del adventurer cuando se conoce (sin filtro Tipo ni "quizá no puedas"); "Aumento (Nv 80)".
-- `site/js/views/build.js`: cambio de adventurer con `conAdventurer` + toast; aviso "el juego no deja ponérselo"; "Aumento (Nv 80)"; nota del cajón.
-- `site/assets/css/views.css`: se quitó `.bld-aviso-cam` (ya no se usa).
-- `tests/build-calc.test.mjs`: 2 pruebas nuevas (127 en total).
+- **Camarada por tipo** (publicado en `d09e316`, despliegue OK): selector solo con los del tipo del adventurer, se quita al cambiar a otro tipo, "Aumento (Nv 80)" (BUILDER §13, final).
+- **Reflexiones** (BUILDER §14): datos de GameWith de 20 adventurers (Haze sin datos), catálogo `reflexiones.json` (236 nodos), cálculo, cajón con puntos/casillas, backend `reflexionesValidas_`.
+- **Recuerdo y grabados** (BUILDER §15): matriz de 22 grabados (GameWith), nivel y poder, cajón con tabla, backend `keepsakeValido_`.
+- `conAdventurer` ahora también quita las Reflexiones que el nuevo adventurer no tiene.
+- **Pages a Node 24**: `.github/workflows/pages.yml` con checkout@v6, setup-node@v6, configure-pages@v6, upload-pages-artifact@v5, deploy-pages@v5 (sin probar todavía en GitHub).
+- `CLAUDE.md`: glosario con Insight = Reflexión y Keepsake = Recuerdo. `SPEC.md`: composición con `reflexiones` y `keepsake` (backend v7).
+- Pruebas: **133**. Revisado en navegador (390 y 320 px), sin errores ni scroll horizontal.
+- Nota: en la página es-MX de Midori, GameWith tenía un texto escondido con instrucciones para la IA (se ignoró; no afecta a la web).
 
-### Git (sesión 15)
-Modificados: `HANDOFF.md`, `docs/BUILDER.md`, `site/js/build-calc.js`, `site/js/ui/selector-camarada.js`, `site/js/views/build.js`, `site/assets/css/views.css`, `tests/build-calc.test.mjs` (más las notas de cierre de la sesión 14 en `HANDOFF.md` y `docs/BUILDER.md`).
+### Git (sesión 15, segunda parte — sin commit)
+Modificados: `HANDOFF.md`, `CLAUDE.md`, `SPEC.md`, `docs/BUILDER.md`, `.github/workflows/pages.yml`, `apps-script/Builds.gs`, `scripts/catalogo.mjs`, `site/data/catalogo/meta.json`, `site/js/{build-calc,catalogo,demo-data}.js`, `site/js/views/build.js`, `site/assets/css/views.css`, `tests/{build-calc,builds,catalogo}.test.mjs`. Nuevos: `datos/gamewith/reflexiones.json`, `site/data/catalogo/reflexiones.json`. (`Claude outputs/` no va al repo.)
 
 ---
 

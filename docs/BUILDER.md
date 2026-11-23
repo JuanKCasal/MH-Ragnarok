@@ -108,7 +108,7 @@ Todo bloque es opcional (una build puede ser solo equipo). Los números de `pode
 | **E1** | Catálogo limpio | Script + tablas manuales + JSON en `site/data/catalogo/` + pruebas. Sin pantallas | — |
 | **E2** | Hoja con cajones · equipo | Ruta `#/build/nueva` y `#/build/:id`: adventurer, arma y 5 piezas con rareza; **selector de pieza** (buscador, filtros por monstruo/elemento/habilidad, "si la cambias…"); barra fija; vista **Habilidades** (matriz). `build-calc.js`. Guardar en `Builds` (backend v3) y en modo demo | E1 |
 | **E3** | Tarjeta de build | En el perfil (debajo de cada adventurer) y en guías con `[[build:ID]]` en el Markdown; Compartir y "Usar de base" | E2 |
-| **E4** | Resto de cajones | Rostros (catálogo de GameWith: 56 cartas, 12 sets, núcleo, calidad y nivel), Camarada (42 de gacha.gg; nivel/estrellas/poder los escribe el miembro), Keepsake (nivel + grabados), Reflexiones (nodos por adventurer) | E2 |
+| **E4** | Resto de cajones | **Hecha (sesiones 12–15)**: Rostros (§9), Camarada (§13), Reflexiones (§14) y Recuerdo/Keepsake con grabados (§15) | E2 |
 | **E5** | Comparar | Modo "cambiar una pieza" y dos builds lado a lado | E2 |
 | **E6** | Nombres ES | **Hecha (sesión 13, §12)**: los oficiales corrigen o confirman el nombre ES (página "Nombres del juego" y atajo en el selector); hoja `Catalogo` | E2 |
 | **E7** | Poder estimado | Ajuste de la fórmula con los poderes reales que carguen los miembros; se muestra como "≈ estimado" | E2 + datos reales |
@@ -230,3 +230,40 @@ Decisiones de Juan (sesión 14): el resto de la E4 va **una entrega por vez** (C
 - `build-calc.js`: `camaradasPara(lista, tipo)` (solo los del tipo; sin tipo, todos) y `conAdventurer(cat, build, id)` (cambia el adventurer conservando el nivel y quita el arma si es de otra clase y el camarada si es de otro tipo; devuelve `quitados`). El Fated Adventurer sigue sin tipo → su camarada se conserva y el selector muestra los 38 con el filtro Tipo.
 - Selector: con tipo conocido muestra solo ese tipo (sin filtro Tipo; "solo puede llevar uno de ese tipo (14)"); se quitó el aviso "quizá no puedas". `views/build.js` usa `conAdventurer` con toast ("Quitamos el camarada: ese adventurer lleva uno de tipo Apoyo."). Aviso del cajón para builds viejas: "el juego no deja ponérselo". Rótulo **"Aumento (Nv 80)"** en cajón y selector; la nota del cajón dice que con menos nivel el aumento es menor.
 - Pruebas: **127** (2 nuevas en `build-calc`). Revisado en navegador (390 px): Midori → 14 de Asalto; elegir Kojiro y cambiar a Ryunosuke → se quita con toast; Fated → 38 con filtro Tipo. Sin scroll horizontal ni errores propios. No toca el backend.
+
+## 14. E4 · Reflexiones — hecho (2026-11-23, sesión 15)
+
+**Fuente**: GameWith, página de cada adventurer (EN y es-MX), tabla "Insights" / "Reflexiones", y la guía de Universal Insight Tickets. Cada Reflexión cuesta **5, 10 o 30 puntos**; los puntos de Reflexión del adventurer son el presupuesto: la suma de las equipadas no puede pasar de ahí (65/65 en la captura de Juan). Puntos de una copia repetida: 30.
+- **Fated Adventurer** (8, uno por arma): 4 comunes (Almacenar carga 10, Espíritu combativo 10, Guardaespaldas 5, Armonía 5) + 4 de su arma (30 c/u) + 6 de clase (Monzón y Ciclón = Asalto; Tormenta de polvo y Viento en contra = Alterador; Espíritu Ascendente y Viento renovador = Apoyo). Usa solo las de su clase → en la web la clase del Fated sale del **tipo del camarada** (que depende de la clase); sin camarada se muestran todas y se avisa si se mezclan.
+- **Resto** (12): 4 comunes + 6 propias de 30. Total posible: 210 en todos.
+- **Haze**: GameWith no publica sus Reflexiones → solo comunes, marcado `incompleto` (aviso en el cajón).
+- Sin nombre ES en GameWith (quedan en inglés): Thrust Mania (lanza del Fated) y las 4 de la Hacha cargada del Fated (la página es-MX no trae la tabla).
+- Los efectos son **resúmenes propios** en español (no citas), por confirmar.
+
+**Hecho**
+- Datos `datos/gamewith/reflexiones.json` (comunes, clase, fated por arma, propias por adventurer, `sin_datos`). Script `armarReflexiones` → `site/data/catalogo/reflexiones.json` (una fila por adventurer: `{adv, nodos: [{id, en, es, pts, tipo, grupo, efecto}], incompleto?}`; `grupo` = propia | arma | clase | comun). `catalogo.js` carga 11 archivos.
+- Composición: `reflexiones: { cap?: 0–300, activas: [ids] }`.
+- Cálculo (`build-calc.js`): `limpiarReflexiones` (solo ids del adventurer, en orden), `calcularReflexiones` (usados, libres, `cabe`, `bloqueada` por clase, `maximo`, avisos), `conReflexion`, `conCapReflexiones`; `conAdventurer` quita las que el nuevo adventurer no tiene (`quitados: 'reflexiones'`, se quedan las comunes y la capacidad).
+- Pantalla: cajón **Reflexiones** (puntos de Reflexión, "X de Y usados · con todo: 210", grupos Propias / Del arma / De clase / Comunes con casillas; las que no caben o son de otra clase salen deshabilitadas con el motivo).
+- Backend `reflexionesValidas_` (forma: ids slug sin repetir, máx. 20; cap 0–300). **Requiere publicar la versión 7** (junto con el Recuerdo).
+
+## 15. E4 · Recuerdo (Keepsake) y grabados — hecho (2026-11-23, sesión 15)
+
+**Fuente**: GameWith, guía de grabados (EN y es-MX). En español: Keepsake = **Recuerdo**, Engraving = **Grabado**. Desde Recuerdo Nv 30 se abren grabados cada 10 niveles hasta 80:
+| Grabado | Niveles |
+|---|---|
+| Mejora de habilidades (Skill Boost) | 40, 60, 70, 80, 80 (el primero de Nv 80 solo cuando controlas al adventurer) |
+| Definitiva (Ultimate) | 30, 40, 50, 60, 70, 80 |
+| Especialización elemental | 30, 40, 50, 60, 70, 80 |
+| Pasiva principal (Core Passive) | 50, 60, 70, 80 |
+| Atributo principal (Core Attribute) | 80 |
+Total **22**. GameWith dice que algunos piden terminar el anterior: la web marca los anteriores de la columna al marcar uno (por confirmar si aplica a todas). El "Engrave 87 %" de la captura de Juan ≈ 19 de 22.
+
+**Hecho**
+- Sin archivo de catálogo: la matriz es `GRABADOS` en `build-calc.js` (ids `hab-0…4`, `def-0…5`, `ele-0…5`, `pas-0…3`, `atr-0`).
+- Composición: `keepsake: { nv?: 1–80, poder?, grabados: [ids] }`.
+- Cálculo: `limpiarKeepsake`, `calcularKeepsake` (matriz con `abierto` según el nivel; aviso si hay grabados por encima del nivel), `conGrabado` (en orden por columna), `conDatoKeepsake`.
+- Pantalla: cajón **Recuerdo y grabados** (Nivel y Poder; tabla Nv × 5 columnas con casillas, 🔒 en las que el nivel no abre; "19 de 22 grabados (86 %)").
+- Backend `keepsakeValido_` (nv 1–80, poder, ids de la matriz). **Requiere publicar la versión 7.**
+- Modo demo: la build de ejemplo trae Reflexiones (65 puntos) y Recuerdo Nv 80, poder 5798, 19 grabados (los marcados son de ejemplo).
+- Pruebas: **133** (Reflexiones y Recuerdo: 4 en `build-calc`, 1 en `builds`, 1 en `catalogo`). Revisado en navegador a 390 y 320 px (build de ejemplo y build nueva: capacidad, no cabe, clase del Fated, cambio de adventurer con aviso, nivel que bloquea grabados), sin scroll horizontal ni errores de consola.

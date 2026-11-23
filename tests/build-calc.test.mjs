@@ -6,6 +6,8 @@ import {
   habilidadesDePieza, limpiarBuild, resumenParaGuardar, buildVacia, PARTES,
   calcularRostros, conRostro, diferenciaRostros, limpiarRostros,
   calcularCamarada, conCamarada, limpiarCamarada, ordenarCamaradas, conAdventurer, camaradasPara,
+  limpiarReflexiones, calcularReflexiones, conReflexion, conCapReflexiones,
+  limpiarKeepsake, calcularKeepsake, conGrabado, conDatoKeepsake, TOTAL_GRABADOS,
 } from '../site/js/build-calc.js';
 import { ARCHIVOS } from '../site/js/catalogo.js';
 
@@ -319,4 +321,83 @@ test('conAdventurer: quita el arma y el camarada que el juego no deja llevar', (
   r = conAdventurer(cat, base, '');
   assert.equal(r.build.adv, null);
   assert.deepEqual(r.quitados, []);
+});
+
+/* ---------- Reflexiones (E4) ---------- */
+
+test('reflexiones: limpiar deja solo las del adventurer, en orden y sin repetir', () => {
+  assert.deepEqual(limpiarReflexiones(cat, { cap: 65, activas: ['monsoon', 'echoing-chimes', 'internal-ammo', 'monsoon'] }, 'fated-adventurer-heavy-bowgun'),
+    { cap: 65, activas: ['internal-ammo', 'monsoon'] });
+  assert.deepEqual(limpiarReflexiones(cat, { cap: 400, activas: ['protection'] }, 'pepper'), { activas: ['protection'] });
+  assert.deepEqual(limpiarReflexiones(cat, { cap: 40, activas: ['protection'] }, ''), { cap: 40, activas: [] });
+  assert.equal(limpiarReflexiones(cat, { activas: ['nada'] }, 'pepper'), null);
+  const b = limpiarBuild(cat, { v: 1, piezas: {}, adv: { id: 'pepper' }, reflexiones: { activas: ['fluffy-spin', 'monsoon'] } });
+  assert.deepEqual(b.reflexiones, { activas: ['fluffy-spin'] });
+});
+
+test('reflexiones: suma de puntos, lo que no cabe y la clase del Fated según el camarada', () => {
+  const fated = cat.adventurers.get('fated-adventurer-heavy-bowgun');
+  let r = calcularReflexiones(cat, { cap: 65, activas: ['internal-ammo', 'protection'] }, fated, 'assault');
+  assert.equal(r.usados, 35);
+  assert.equal(r.libres, 30);
+  assert.equal(r.clase, 'assault');
+  assert.equal(r.maximo, 210);
+  const n = (id) => r.nodos.find((x) => x.id === id);
+  assert.equal(n('monsoon').cabe, true);
+  assert.equal(n('monsoon').bloqueada, false);
+  assert.equal(n('soother').bloqueada, true);
+  r = calcularReflexiones(cat, { cap: 40, activas: ['internal-ammo'] }, fated);
+  assert.equal(r.nodos.find((x) => x.id === 'veteran-gunner').cabe, false);
+  assert.equal(r.nodos.find((x) => x.id === 'power-charge').cabe, true);
+  assert.equal(r.nodos.find((x) => x.id === 'soother').bloqueada, false); // sin camarada no hay clase
+  r = calcularReflexiones(cat, { activas: ['monsoon', 'soother'] }, fated);
+  assert.equal(r.avisos.length, 1);
+  r = calcularReflexiones(cat, { cap: 30, activas: ['internal-ammo', 'protection'] }, fated, 'assault');
+  assert.match(r.avisos[0], /Usas 35 puntos y tienes 30/);
+  assert.equal(calcularReflexiones(cat, null, null), null);
+  const haze = calcular(cat, { v: 1, piezas: {}, adv: { id: 'haze' } }).reflexiones;
+  assert.equal(haze.incompleto, true);
+  assert.equal(haze.maximo, 30);
+});
+
+test('reflexiones: activar, quitar, capacidad y cambio de adventurer', () => {
+  let b = conReflexion({ v: 1, piezas: {}, adv: { id: 'pepper' } }, 'fluffy-spin', true);
+  b = conReflexion(b, 'protection', true);
+  assert.deepEqual(b.reflexiones.activas, ['fluffy-spin', 'protection']);
+  b = conCapReflexiones(b, 45);
+  assert.equal(b.reflexiones.cap, 45);
+  b = conCapReflexiones(b, '');
+  assert.equal(b.reflexiones.cap, undefined);
+  const r = conAdventurer(cat, b, 'midori');
+  assert.deepEqual(r.quitados, ['reflexiones']);
+  assert.deepEqual(r.build.reflexiones.activas, ['protection']);
+  b = conReflexion(conReflexion(b, 'fluffy-spin', false), 'protection', false);
+  assert.equal(b.reflexiones, undefined);
+});
+
+/* ---------- Recuerdo y grabados (E4) ---------- */
+
+test('recuerdo: 22 grabados; marcar en orden por columna y bloquear por nivel', () => {
+  assert.equal(TOTAL_GRABADOS, 22);
+  let b = conGrabado(buildVacia(), 'def-2', true);
+  assert.deepEqual(b.keepsake.grabados, ['def-0', 'def-1', 'def-2']);
+  b = conGrabado(b, 'def-1', false);
+  assert.deepEqual(b.keepsake.grabados, ['def-0']);
+  b = conGrabado(b, 'nada-9', true);
+  assert.deepEqual(b.keepsake.grabados, ['def-0']);
+  b = conDatoKeepsake(b, 'nv', 40);
+  b = conDatoKeepsake(b, 'poder', 5798);
+  b = conGrabado(b, 'atr-0', true);
+  const k = calcularKeepsake(b.keepsake);
+  assert.equal(k.hechos, 2);
+  assert.equal(k.columnas.find((c) => c.id === 'atr').celdas[0].abierto, false);
+  assert.equal(k.columnas.find((c) => c.id === 'def').celdas[1].abierto, true);
+  assert.equal(k.avisos.length, 1);
+  assert.deepEqual(limpiarKeepsake({ nv: 99, poder: -2, grabados: ['atr-0', 'x', 'def-0', 'def-0'] }), { grabados: ['def-0', 'atr-0'] });
+  assert.equal(limpiarKeepsake({ grabados: [] }), null);
+  b = conDatoKeepsake(conDatoKeepsake(conGrabado(conGrabado(b, 'def-0', false), 'atr-0', false), 'nv', null), 'poder', '');
+  assert.equal(b.keepsake, undefined);
+  const c = calcular(cat, { v: 1, piezas: {}, keepsake: { nv: 80, grabados: ['hab-4'] } });
+  assert.equal(c.keepsake.hechos, 1);
+  assert.equal(c.keepsake.avisos.length, 0);
 });

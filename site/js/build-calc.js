@@ -31,6 +31,7 @@ export function indexarCatalogo(raw) {
     rostros: porId(raw.rostros),
     rostrosSets: porId(raw['rostros-sets']),
     camaradas: porId(raw.camaradas),
+    reflexiones: new Map((raw.reflexiones || []).map((r) => [r.adv, r])),
     lista: {
       armaduras: raw.armaduras || [],
       armas: raw.armas || [],
@@ -181,6 +182,8 @@ export function calcular(cat, build) {
 
   const rostros = calcularRostros(cat, b.rostros, avisos);
   const camarada = calcularCamarada(cat, b.camarada, adv, avisos);
+  const reflexiones = calcularReflexiones(cat, b.reflexiones, adv, camarada?.item?.tipo || '');
+  const keepsake = calcularKeepsake(b.keepsake);
   const habNucleo = rostros?.nucleo?.item.nucleo?.hab;
   if (habNucleo) sumar(habNucleo[0], 'rostro', habNucleo[1]);
 
@@ -205,7 +208,7 @@ export function calcular(cat, build) {
   }).sort((x, y) => y.nivel - x.nivel || y.suma - x.suma || porNombre(x, y));
 
   return {
-    adv, arma, piezas, def, atk, afi, ele, estado, habilidades, sets, rostros, camarada,
+    adv, arma, piezas, def, atk, afi, ele, estado, habilidades, sets, rostros, camarada, reflexiones, keepsake,
     resumen: {
       habilidades: habilidades.length,
       sobran: habilidades.filter((h) => h.sobra > 0).length,
@@ -331,6 +334,10 @@ export function limpiarBuild(cat, build) {
   if (ros) b.rostros = ros;
   const cam = limpiarCamarada(cat, build?.camarada);
   if (cam) b.camarada = cam;
+  const ref = limpiarReflexiones(cat, build?.reflexiones, b.adv?.id);
+  if (ref) b.reflexiones = ref;
+  const kee = limpiarKeepsake(build?.keepsake);
+  if (kee) b.keepsake = kee;
   return b;
 }
 
@@ -501,8 +508,9 @@ export function conCamarada(build, id, datos = null) {
 
 /**
  * Cambia el adventurer (id vacío = ninguno) y quita lo que el juego no deja llevar: el arma si es de
- * otro tipo y el camarada si es de otro tipo (Asalto / Alterador / Apoyo). El Fated Adventurer no tiene
- * tipo en el catálogo → su camarada se conserva. Devuelve { build, quitados: ['arma'|'camarada'] }.
+ * otro tipo, el camarada si es de otro tipo (Asalto / Alterador / Apoyo) y las Reflexiones que el nuevo
+ * no tiene. El Fated Adventurer no tiene tipo en el catálogo → su camarada se conserva.
+ * Devuelve { build, quitados: ['arma'|'camarada'|'reflexiones'] }.
  */
 export function conAdventurer(cat, build, id) {
   const b = structuredClone(build || buildVacia());
@@ -513,6 +521,12 @@ export function conAdventurer(cat, build, id) {
   if (w && nuevo && w.arma !== nuevo.arma) { b.arma = null; quitados.push('arma'); }
   const cam = b.camarada?.id ? cat.camaradas?.get(b.camarada.id) : null;
   if (cam && nuevo?.tipo && cam.tipo !== nuevo.tipo) { delete b.camarada; quitados.push('camarada'); }
+  // Las Reflexiones son de cada adventurer: se quedan solo las que también tiene el nuevo (p. ej. las comunes).
+  if (b.reflexiones?.activas?.length) {
+    const r = limpiarReflexiones(cat, b.reflexiones, nuevo?.id);
+    if ((r?.activas.length || 0) < b.reflexiones.activas.length) quitados.push('reflexiones');
+    if (r) b.reflexiones = r; else delete b.reflexiones;
+  }
   return { build: b, quitados };
 }
 
@@ -527,3 +541,162 @@ export function ordenarCamaradas(lista, tipo = '') {
   return [...lista].sort((a, b) => (tipo ? Number(b.tipo === tipo) - Number(a.tipo === tipo) : 0)
     || RAREZA[a.rareza] - RAREZA[b.rareza] || (a.es || a.en).localeCompare(b.es || b.en));
 }
+
+/* ---------------- Reflexiones (Insights) ---------------- */
+
+export const REFLEXION_CAP_MAX = 300; // con todo: 30 + 6 × 30 = 210 (GameWith); margen por si suben
+
+/**
+ * Normaliza { cap?, activas: [ids] }: solo ids que tiene ese adventurer, en el orden del catálogo,
+ * sin repetir. Sin adventurer no hay nodos (se conserva la capacidad). Vacío → null.
+ */
+export function limpiarReflexiones(cat, r, advId) {
+  if (!r || typeof r !== 'object') return null;
+  const out = {};
+  const cap = entero(r.cap, 0, REFLEXION_CAP_MAX);
+  if (cap !== null) out.cap = cap;
+  const fila = advId ? cat.reflexiones?.get(advId) : null;
+  const pedidas = new Set(Array.isArray(r.activas) ? r.activas : []);
+  out.activas = fila ? fila.nodos.filter((n) => pedidas.has(n.id)).map((n) => n.id) : [];
+  return out.cap === undefined && !out.activas.length ? null : out;
+}
+
+/**
+ * Reflexiones del adventurer para la hoja. Cada nodo: { ...catálogo, activa, cabe, bloqueada }.
+ * - cabe: false si, con capacidad conocida, activarlo pasaría de la capacidad.
+ * - bloqueada: nodo de clase de otro tipo. Para el Fated (sin tipo en el catálogo) la clase sale del
+ *   camarada (su tipo depende de la clase); sin camarada no se bloquea nada, solo se avisa si se mezclan.
+ */
+export function calcularReflexiones(cat, r, adv, tipoCamarada = '') {
+  if (!adv) return null;
+  const fila = cat.reflexiones?.get(adv.id);
+  if (!fila) return null;
+  const activas = new Set(r?.activas || []);
+  const cap = r?.cap ?? null;
+  const clase = adv.tipo || tipoCamarada || '';
+  const esClase = (n) => n.grupo === 'clase';
+  const usados = fila.nodos.filter((n) => activas.has(n.id)).reduce((t, n) => t + n.pts, 0);
+  const nodos = fila.nodos.map((n) => {
+    const activa = activas.has(n.id);
+    const bloqueada = esClase(n) && !!clase && n.tipo !== clase;
+    return { ...n, activa, bloqueada, cabe: activa || cap === null || usados + n.pts <= cap };
+  });
+  const avisos = [];
+  if (cap !== null && usados > cap) avisos.push(`Usas ${usados} puntos y tienes ${cap}: quita alguna.`);
+  const clasesActivas = new Set(nodos.filter((n) => n.activa && esClase(n)).map((n) => n.tipo));
+  if (clasesActivas.size > 1) avisos.push('Mezclas Reflexiones de clases distintas: el Fated solo usa las de su clase.');
+  else if (clase && nodos.some((n) => n.activa && n.bloqueada)) avisos.push('Hay una Reflexión de otra clase: el Fated solo usa las de su clase.');
+  // Lo máximo que se puede equipar a la vez: todo menos las de otras clases (el Fated usa las 2 de una sola).
+  const deClase = nodos.filter(esClase);
+  const maximo = nodos.filter((n) => !esClase(n)).reduce((t, n) => t + n.pts, 0)
+    + (deClase.length ? Math.max(...['assault', 'disruptor', 'support'].map((t) => deClase.filter((n) => n.tipo === t).reduce((x, n) => x + n.pts, 0))) : 0);
+  return { nodos, usados, cap, activas: activas.size, libres: cap === null ? null : cap - usados, maximo, clase,
+    incompleto: !!fila.incompleto, avisos };
+}
+
+/** Activa o desactiva un nodo. */
+export function conReflexion(build, id, activa) {
+  const b = structuredClone(build || buildVacia());
+  const r = b.reflexiones || { activas: [] };
+  const lista = new Set(r.activas || []);
+  if (activa) lista.add(id); else lista.delete(id);
+  b.reflexiones = { ...r, activas: [...lista] };
+  if (b.reflexiones.cap === undefined && !b.reflexiones.activas.length) delete b.reflexiones;
+  return b;
+}
+
+/** Cambia la capacidad (null = sin dato). */
+export function conCapReflexiones(build, cap) {
+  const b = structuredClone(build || buildVacia());
+  const r = { activas: [], ...(b.reflexiones || {}) };
+  const n = entero(cap, 0, REFLEXION_CAP_MAX);
+  if (n === null) delete r.cap; else r.cap = n;
+  if (r.cap === undefined && !r.activas.length) delete b.reflexiones; else b.reflexiones = r;
+  return b;
+}
+
+/* ---------------- Recuerdo (Keepsake) y Grabados (Engravings) ---------------- */
+
+export const KEEPSAKE_NV_MAX = 80;
+/**
+ * Matriz de Grabados (GameWith, guía de grabados, 2026-11-23; ES de GameWith es-MX): columna → niveles del
+ * Recuerdo en que se abre cada grabado. Mejora de habilidades tiene dos de Nv 80 (el primero solo cuando
+ * controlas al adventurer). 22 en total.
+ */
+export const GRABADOS = [
+  { id: 'hab', es: 'Mejora de habilidades', en: 'Skill Boost', niveles: [40, 60, 70, 80, 80] },
+  { id: 'def', es: 'Definitiva', en: 'Ultimate', niveles: [30, 40, 50, 60, 70, 80] },
+  { id: 'ele', es: 'Especialización elemental', en: 'Elemental Specialization', niveles: [30, 40, 50, 60, 70, 80] },
+  { id: 'pas', es: 'Pasiva principal', en: 'Core Passive', niveles: [50, 60, 70, 80] },
+  { id: 'atr', es: 'Atributo principal', en: 'Core Attribute', niveles: [80] },
+];
+/** Id de un grabado: columna + índice (hab-0 … hab-4, def-0 … def-5, …, atr-0). */
+export const idGrabado = (col, i) => `${col}-${i}`;
+const GRABADO_NV = new Map(GRABADOS.flatMap((g) => g.niveles.map((nv, i) => [idGrabado(g.id, i), nv])));
+export const TOTAL_GRABADOS = GRABADO_NV.size;
+
+/** Normaliza { nv?, poder?, grabados: [ids] } (ids conocidos, en el orden de la matriz). Vacío → null. */
+export function limpiarKeepsake(k) {
+  if (!k || typeof k !== 'object') return null;
+  const out = {};
+  const nv = entero(k.nv, 1, KEEPSAKE_NV_MAX);
+  const poder = entero(k.poder, 0, PODER_MAX);
+  if (nv !== null) out.nv = nv;
+  if (poder !== null) out.poder = poder;
+  const pedidos = new Set(Array.isArray(k.grabados) ? k.grabados : []);
+  out.grabados = [...GRABADO_NV.keys()].filter((id) => pedidos.has(id));
+  return out.nv === undefined && out.poder === undefined && !out.grabados.length ? null : out;
+}
+
+/**
+ * Ficha para la hoja: matriz con { id, nv, hecho, abierto } por celda (abierto = el nivel del Recuerdo
+ * lo permite; sin nivel, todo abierto), hechos / total y avisos si hay grabados por encima del nivel.
+ */
+export function calcularKeepsake(k) {
+  const hechos = new Set(k?.grabados || []);
+  const nv = k?.nv ?? null;
+  const columnas = GRABADOS.map((g) => ({
+    ...g,
+    celdas: g.niveles.map((n, i) => {
+      const id = idGrabado(g.id, i);
+      return { id, nv: n, hecho: hechos.has(id), abierto: nv === null || n <= nv };
+    }),
+  }));
+  const fuera = columnas.flatMap((c) => c.celdas).filter((c) => c.hecho && !c.abierto).length;
+  return { nv, poder: k?.poder ?? null, columnas, hechos: hechos.size, total: TOTAL_GRABADOS,
+    avisos: fuera ? [`${fuera === 1 ? 'Un grabado pide' : `${fuera} grabados piden`} más nivel del Recuerdo.`] : [] };
+}
+
+/**
+ * Marca o desmarca un grabado. Como el juego pide terminar el anterior de la misma columna, marcar uno
+ * marca los anteriores y desmarcar uno desmarca los siguientes.
+ */
+export function conGrabado(build, id, hecho) {
+  const b = structuredClone(build || buildVacia());
+  const k = { grabados: [], ...(b.keepsake || {}) };
+  const [col, i] = [id.slice(0, id.lastIndexOf('-')), Number(id.slice(id.lastIndexOf('-') + 1))];
+  const g = GRABADOS.find((x) => x.id === col);
+  if (!g || !(i >= 0 && i < g.niveles.length)) return b;
+  const set = new Set(k.grabados);
+  g.niveles.forEach((_, j) => {
+    const x = idGrabado(col, j);
+    if (hecho && j <= i) set.add(x);
+    if (!hecho && j >= i) set.delete(x);
+  });
+  k.grabados = [...GRABADO_NV.keys()].filter((x) => set.has(x));
+  b.keepsake = k;
+  if (k.nv === undefined && k.poder === undefined && !k.grabados.length) delete b.keepsake;
+  return b;
+}
+
+/** Cambia nivel o poder del Recuerdo (valor null o fuera de rango = sin dato). */
+export function conDatoKeepsake(build, campo, valor) {
+  const b = structuredClone(build || buildVacia());
+  const k = { grabados: [], ...(b.keepsake || {}) };
+  const n = campo === 'nv' ? entero(valor, 1, KEEPSAKE_NV_MAX) : entero(valor, 0, PODER_MAX);
+  if (n === null) delete k[campo]; else k[campo] = n;
+  b.keepsake = k;
+  if (k.nv === undefined && k.poder === undefined && !k.grabados.length) delete b.keepsake;
+  return b;
+}
+

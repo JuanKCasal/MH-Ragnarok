@@ -62,6 +62,8 @@ La estructura de carpetas, el modelo de datos y los endpoints se definen en `SPE
 | Squad | Brigada | Siempre 4 personajes por batalla: en solitario, tú + 3 adventurers tuyos (NPC); en el Guild Clash, 4 jugadores del clan con 1 adventurer cada uno |
 | Buddy | Camarada (GameWith es-MX, confirmar) | Palico, Trillan, Rutaco… con rareza (SSR…) |
 | Loadout | (por confirmar) | Configuración guardada con nombre |
+| Insight | Reflexión (GameWith es-MX, confirmar) | Pasivas por adventurer que cuestan 5/10/30 puntos de Reflexión |
+| Keepsake | Recuerdo (GameWith es-MX, confirmar) | Nivel 1–80; desde Nv 30 abre Grabados (Engravings) |
 | Adventurer Power | ¿Poder de caza? (GameWith es-MX, confirmar) | Poder total; métrica para balancear el Clash |
 
 | Assault / Disruptor / Support | Asalto / Alterador / Apoyo (GameWith es-MX, confirmar) | Tipos de adventurer |

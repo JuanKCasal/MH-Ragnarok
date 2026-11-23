@@ -1,7 +1,7 @@
 /**
  * Builder · hoja única con cajones (opción C). Ver docs/BUILDER.md (E2: adventurer, arma y armadura).
  * #/build/nueva[?adv=<id de mi adventurer>]  ·  #/build/:id
- * Cualquiera puede armar y mirar; guardar requiere sesión. E4: Rostros y Camarada (Keepsake y Reflexiones después).
+ * Cualquiera puede armar y mirar; guardar requiere sesión. E4: Rostros, Camarada, Reflexiones y Recuerdo (Keepsake).
  */
 import { leer, escribir, ErrorApi } from '../api.js';
 import { sesion, olvidarSesion, esSesionCaida, tieneRol } from '../auth.js';
@@ -12,7 +12,8 @@ import { toast } from '../ui/toast.js';
 import { ARMAS } from '../etiquetas.js';
 import { cargarCatalogo } from '../catalogo.js';
 import { calcular, limpiarBuild, buildVacia, conPieza, conRostro, conCamarada, conAdventurer, resumenParaGuardar, PARTES, NOMBRE_PARTE,
-  CALIDADES, COSTO_ROSTROS, CARTAS_ROSTROS, CAMARADA_NV_MAX, ESTRELLAS_MAX, PODER_MAX } from '../build-calc.js';
+  CALIDADES, COSTO_ROSTROS, CARTAS_ROSTROS, CAMARADA_NV_MAX, ESTRELLAS_MAX, PODER_MAX,
+  conReflexion, conCapReflexiones, REFLEXION_CAP_MAX, conGrabado, conDatoKeepsake, KEEPSAKE_NV_MAX } from '../build-calc.js';
 import { abrirSelector } from '../ui/selector-pieza.js';
 import { abrirSelectorRostro } from '../ui/selector-rostro.js';
 import { abrirSelectorCamarada } from '../ui/selector-camarada.js';
@@ -21,7 +22,6 @@ import { chipsHab, statsArma, nombreElemento, bilingue, bil, bilFicha, chipsSets
 import { leerBorrador, guardarBorrador, borrarBorrador } from '../borradores.js';
 
 const FILTROS_HAB = [['todas', 'Todas'], ['sobra', 'Sobran'], ['tope', 'Al tope'], ['falta', 'Les falta']];
-const PRONTO = [['Keepsake', 'Nivel y grabados'], ['Reflexiones', 'Puntos y nodos']];
 
 function nombreAdv(cat, id) {
   const a = cat.adventurers.get(id);
@@ -314,10 +314,99 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       <p class="nota bld-cajon__nota">Nivel, estrellas y poder: cópialos de la pantalla del camarada en el juego (no hay tablas públicas). El aumento de aventurero es el de Nv 80 (GameWith); con menos nivel es menor.</p>`);
   }
 
-  const cajonesPronto = () => html`
-    <ul class="bld-pronto">
-      ${PRONTO.map(([t, d]) => html`<li><span class="rotulo">${t}</span><span class="nota">${d} · próximamente</span></li>`)}
-    </ul>`;
+  /* ---------- Reflexiones (Insights) ---------- */
+
+  function cajonReflexiones(c) {
+    const r = c.reflexiones;
+    const numero_ = (n) => (n === null || n === undefined ? '' : n);
+    if (!r) {
+      return cajon('reflexiones', 'Reflexiones', 'Sin adventurer', html`
+        <p class="nota bld-cajon__nota">Elige primero el adventurer: cada uno tiene sus Reflexiones.</p>`);
+    }
+    const resumen = r.activas
+      ? `${r.usados}${r.cap !== null ? `/${r.cap}` : ''} pts · ${r.activas === 1 ? '1 activa' : `${r.activas} activas`}`
+      : (r.cap !== null ? `0/${r.cap} pts` : 'Sin reflexiones');
+    const fila = (n) => html`
+      <li class="bld-ref ${n.activa ? 'bld-ref--activa' : ''} ${!n.activa && (!n.cabe || n.bloqueada) ? 'bld-ref--no' : ''}">
+        <label class="bld-ref__marca">
+          <input type="checkbox" data-ref="${n.id}" data-foco="ref-${n.id}" ${n.activa ? 'checked' : ''}
+            ${!editable || (!n.activa && (!n.cabe || n.bloqueada)) ? 'disabled' : ''}>
+          <span class="bld-ref__texto">
+            <span class="bld-ref__nombre">${bil(n.es, n.en)}</span>
+            <span class="nota">${n.efecto}${!n.activa && n.bloqueada ? ' · Es de otra clase.' : !n.activa && !n.cabe ? ' · No te alcanzan los puntos.' : ''}</span>
+          </span>
+          <span class="bld-ref__pts" aria-label="${n.pts} puntos">${n.pts}</span>
+        </label>
+      </li>`;
+    const TIPO = { assault: 'Asalto', disruptor: 'Alterador', support: 'Apoyo' };
+    const grupos = [];
+    const de = (g) => r.nodos.filter((n) => n.grupo === g);
+    if (de('propia').length) grupos.push(['Propias', de('propia')]);
+    if (de('arma').length) grupos.push(['Del arma', de('arma')]);
+    for (const t of ['assault', 'disruptor', 'support']) {
+      const xs = de('clase').filter((n) => n.tipo === t);
+      if (!xs.length || (r.clase && r.clase !== t && !xs.some((n) => n.activa))) continue;
+      grupos.push([`De clase · ${TIPO[t]}`, xs]);
+    }
+    grupos.push(['Comunes', de('comun')]);
+    const esFated = de('clase').length > 0;
+    const cuerpo = html`
+      <div class="bld-ref-cabeza">
+        <label class="campo"><span class="campo__etiqueta">Puntos de Reflexión</span>
+          <input class="entrada" data-ref-cap data-foco="ref-cap" inputmode="numeric" maxlength="3" value="${numero_(r.cap)}" placeholder="65" ${editable ? '' : 'disabled'}></label>
+        <p class="bld-ref-cuenta"><strong>${r.usados}</strong>${r.cap !== null ? html` de ${r.cap}` : ''} usados
+          <span class="nota">· con todo: ${r.maximo}</span></p>
+      </div>
+      ${r.avisos.map((a) => html`<p class="alerta bld-alerta-cam">${a}</p>`)}
+      ${r.incompleto ? html`<p class="nota bld-cajon__nota">GameWith todavía no publica las Reflexiones propias de este adventurer: por ahora solo salen las comunes.</p>` : ''}
+      ${esFated ? html`<p class="nota bld-cajon__nota">${r.clase ? `Clase ${TIPO[r.clase]} (según tu camarada): solo se muestran las de esa clase.` : 'El Fated usa solo las Reflexiones de su clase. Elige el camarada y se muestran solo las de esa clase.'}</p>` : ''}
+      ${grupos.map(([t, xs]) => html`
+        <h3 class="rotulo bld-ref-grupo">${t}</h3>
+        <ul class="bld-refs">${xs.map(fila)}</ul>`)}`;
+    return cajon('reflexiones', 'Reflexiones', resumen, html`${cuerpo}
+      <p class="nota bld-cajon__nota">Escribe los puntos de Reflexión que tiene tu adventurer y marca las que tienes equipadas. Nombres y efectos según GameWith (resumidos, por confirmar).</p>`);
+  }
+
+  /* ---------- Recuerdo (Keepsake) y Grabados ---------- */
+
+  function cajonKeepsake(c) {
+    const k = c.keepsake;
+    const numero_ = (n) => (n === null || n === undefined ? '' : n);
+    const resumen = [k.nv ? `Nv ${k.nv}` : '', k.poder !== null ? `poder ${numero(k.poder)}` : '',
+      k.hechos ? `${k.hechos}/${k.total} grabados` : ''].filter(Boolean).join(' · ') || 'Sin datos';
+    const NIVELES = [30, 40, 50, 60, 70, 80];
+    const CORTO = { hab: 'Hab.', def: 'Def.', ele: 'Elem.', pas: 'Pasiva', atr: 'Atrib.' };
+    const celda = (x, nombre) => html`
+      <label class="bld-grab ${x.hecho ? 'bld-grab--hecho' : ''} ${x.abierto ? '' : 'bld-grab--cerrado'}" title="${nombre} · Nv ${x.nv}${x.abierto ? '' : ' (te falta nivel)'}">
+        <input type="checkbox" data-gra="${x.id}" data-foco="gra-${x.id}" ${x.hecho ? 'checked' : ''} ${!editable || (!x.abierto && !x.hecho) ? 'disabled' : ''}
+          aria-label="${nombre}, nivel ${x.nv}${x.abierto ? '' : ', te falta nivel'}">
+        <span aria-hidden="true">${x.hecho ? '✓' : x.abierto ? '' : '🔒'}</span>
+      </label>`;
+    const cuerpo = html`
+      <div class="bld-cam-datos bld-kee-datos">
+        <label class="campo"><span class="campo__etiqueta">Nivel del Recuerdo</span>
+          <input class="entrada" data-kee="nv" data-foco="kee-nv" inputmode="numeric" maxlength="2" value="${numero_(k.nv)}" placeholder="1–${KEEPSAKE_NV_MAX}" ${editable ? '' : 'disabled'}></label>
+        <label class="campo"><span class="campo__etiqueta">Poder</span>
+          <input class="entrada" data-kee="poder" data-foco="kee-po" inputmode="numeric" maxlength="6" value="${numero_(k.poder)}" placeholder="5798" ${editable ? '' : 'disabled'}></label>
+      </div>
+      <div class="bld-grabados">
+        <table class="bld-grab-tabla">
+          <caption class="oculto-visual">Grabados por nivel del Recuerdo</caption>
+          <thead><tr><th scope="col">Nv</th>${k.columnas.map((g) => html`<th scope="col" title="${g.es}">${CORTO[g.id]}</th>`)}</tr></thead>
+          <tbody>
+            ${NIVELES.map((nv) => html`<tr><th scope="row">${nv}</th>${k.columnas.map((g) => {
+              const xs = g.celdas.filter((x) => x.nv === nv);
+              return xs.length ? html`<td><span class="bld-grab-celda">${xs.map((x) => celda(x, g.es))}</span></td>` : html`<td class="bld-grab-vacia" aria-label="nada">·</td>`;
+            })}</tr>`)}
+          </tbody>
+        </table>
+      </div>
+      <p class="bld-ref-cuenta"><strong>${k.hechos}</strong> de ${k.total} grabados (${Math.round((k.hechos / k.total) * 100)} %)</p>
+      ${k.avisos.map((a) => html`<p class="alerta bld-alerta-cam">${a}</p>`)}
+      <p class="nota bld-cajon__nota">${k.columnas.map((g) => `${CORTO[g.id]} = ${g.es}`).join(' · ')}. Marcar uno marca los anteriores de su columna (el juego pide hacerlos en orden). Mejora de habilidades tiene dos de Nv 80.</p>`;
+    return cajon('keepsake', 'Recuerdo y grabados', resumen, html`${cuerpo}
+      <p class="nota bld-cajon__nota">Nivel y poder: cópialos de la pantalla del Recuerdo (Keepsake) en el juego. Lo que hace cada grabado cambia según el adventurer. Grabados según GameWith.</p>`);
+  }
 
   function vistaHoja(c) {
     return html`
@@ -325,7 +414,8 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       ${cajonArmadura(c)}
       ${cajonRostros(c)}
       ${cajonCamarada(c)}
-      ${cajonesPronto()}
+      ${cajonReflexiones(c)}
+      ${cajonKeepsake(c)}
       ${editable ? html`
         <label class="campo"><span class="campo__etiqueta">Notas <span class="campo__opcional">opcional</span></span>
           <textarea class="entrada" data-meta="notas" maxlength="500" rows="3" placeholder="Para qué monstruos la usas, qué cambiarías…">${meta.notas}</textarea></label>
@@ -593,6 +683,22 @@ export default async function vistaBuild(el, { params, query, recargar }) {
         if (valido && n !== null) datos[k] = n; else delete datos[k];
         b = conCamarada(b, b.camarada.id, datos);
       });
+    } else if (t.dataset.ref) {
+      cambiar(() => { b = conReflexion(b, t.dataset.ref, t.checked); });
+    } else if (t.matches('[data-ref-cap]')) {
+      const txt = String(t.value).trim();
+      const n = txt === '' ? null : Math.round(Number(txt));
+      if (n !== null && !(Number.isFinite(n) && n >= 0 && n <= REFLEXION_CAP_MAX)) toast(`Los puntos van de 0 a ${REFLEXION_CAP_MAX}.`, { error: true });
+      cambiar(() => { b = conCapReflexiones(b, n); });
+    } else if (t.dataset.gra) {
+      cambiar(() => { b = conGrabado(b, t.dataset.gra, t.checked); });
+    } else if (t.dataset.kee) {
+      const k = t.dataset.kee;
+      const txt = String(t.value).replace(/[.\s]/g, '');
+      const n = txt === '' ? null : Math.round(Number(txt));
+      const max = k === 'nv' ? KEEPSAKE_NV_MAX : PODER_MAX;
+      if (n !== null && !(Number.isFinite(n) && n >= (k === 'nv' ? 1 : 0) && n <= max)) toast(k === 'nv' ? `El nivel va de 1 a ${KEEPSAKE_NV_MAX}.` : 'Escribe solo números.', { error: true });
+      cambiar(() => { b = conDatoKeepsake(b, k, n); });
     } else if (t.matches('[data-maestria]')) {
       cambiar(() => { b = { ...b, rostros: { ...b.rostros, maestria: t.checked } }; });
     } else if (t.dataset.rareza) {
@@ -603,11 +709,13 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       cambiar(() => {
         const r = conAdventurer(cat, b, t.value);
         b = r.build;
-        const arma = r.quitados.includes('arma'), cam = r.quitados.includes('camarada');
         const tipo = TIPOS_CAMARADA[cat.adventurers.get(t.value)?.tipo]?.es || '';
-        if (arma && cam) toast(`Quitamos el arma y el camarada: ese adventurer usa otra arma y lleva camarada de tipo ${tipo}.`);
-        else if (arma) toast('Quitamos el arma: ese adventurer usa otra.');
-        else if (cam) toast(`Quitamos el camarada: ese adventurer lleva uno de tipo ${tipo}.`);
+        const partes = { arma: 'el arma', camarada: 'el camarada', reflexiones: 'las Reflexiones que no tiene' };
+        const q = r.quitados.map((x) => partes[x]);
+        if (q.length > 1) toast(`Quitamos ${q.slice(0, -1).join(', ')} y ${q[q.length - 1]}: no van con ese adventurer.`);
+        else if (r.quitados[0] === 'arma') toast('Quitamos el arma: ese adventurer usa otra.');
+        else if (r.quitados[0] === 'camarada') toast(`Quitamos el camarada: ese adventurer lleva uno de tipo ${tipo}.`);
+        else if (r.quitados[0] === 'reflexiones') toast('Quitamos las Reflexiones que ese adventurer no tiene.');
       });
     } else if (t.matches('[data-nivel]')) {
       const n = Math.round(Number(t.value));

@@ -1,6 +1,6 @@
 /**
  * Genera el catálogo del builder (site/data/catalogo/*.json) a partir de los datos descargados
- * de gacha.gg (datos/gacha-gg/mho-equipo.json), los Rostros y camaradas de GameWith (datos/gamewith/rostros.json, camaradas.json),
+ * de gacha.gg (datos/gacha-gg/mho-equipo.json), los Rostros, camaradas y Reflexiones de GameWith (datos/gamewith/rostros.json, camaradas.json, reflexiones.json),
  * los nombres en español de GameWith es-MX (datos/gamewith/nombres-es.json) y las tablas manuales de scripts/catalogo/.
  * Los JSON generados NO se editan a mano: se corrige la tabla y se vuelve a correr.
  *
@@ -201,7 +201,50 @@ export function armarCamaradas(fuente, avisos) {
   return lista;
 }
 
-export function construirCatalogo({ equipo, correcciones, monstruos, adventurers, rostros: fuenteRostros, camaradas: fuenteCamaradas, nombresEs = null }) {
+const TIPOS_REFLEXION = ['todos', 'assault', 'disruptor', 'support'];
+const PUNTOS_REFLEXION = [5, 10, 30];
+
+/**
+ * Reflexiones (Insights) por adventurer desde datos/gamewith/reflexiones.json. Una fila por adventurer:
+ * { adv, nodos: [{ id, en, es, pts, tipo, grupo, efecto }], incompleto? }. grupo: propia | arma | clase | comun.
+ * Fated: comunes + 4 del arma + 6 de clase (tipo = clase). Resto: comunes + 6 propias. Sin datos → solo comunes.
+ */
+export function armarReflexiones(fuente, adventurers, avisos) {
+  const nodo = (x, grupo, tipo = 'todos', pts = 30) => {
+    const n = { id: slug(x.en), en: x.en, es: x.es || x.en, pts: x.pts ?? pts, tipo: x.tipo || tipo, grupo, efecto: x.efecto };
+    if (!PUNTOS_REFLEXION.includes(n.pts)) throw new Error(`Reflexión ${x.en}: puntos raros (${n.pts})`);
+    if (!TIPOS_REFLEXION.includes(n.tipo)) throw new Error(`Reflexión ${x.en}: tipo desconocido "${n.tipo}"`);
+    if (!n.efecto) throw new Error(`Reflexión ${x.en}: sin efecto`);
+    return n;
+  };
+  const comunes = fuente.comunes.map((x) => nodo(x, 'comun'));
+  const clase = fuente.clase.map((x) => nodo(x, 'clase'));
+  const sinDatos = new Set(fuente.sin_datos || []);
+  const usadas = new Set();
+  const filas = adventurers.lista.map((a) => {
+    let propias;
+    if (!a.tipo) {
+      const arma = fuente.fated[a.arma];
+      if (!arma) throw new Error(`Reflexiones: falta el arma ${a.arma} del Fated Adventurer`);
+      propias = [...arma.map((x) => nodo(x, 'arma')), ...clase];
+      usadas.add(`fated:${a.arma}`);
+    } else if (fuente.propias[a.id]) {
+      propias = fuente.propias[a.id].map((x) => nodo(x, 'propia'));
+      usadas.add(a.id);
+    } else {
+      if (!sinDatos.has(a.id)) avisos.push(`Reflexiones: sin datos de ${a.id}`);
+      propias = [];
+    }
+    const nodos = [...propias, ...comunes];
+    const ids = new Set(nodos.map((n) => n.id));
+    if (ids.size !== nodos.length) throw new Error(`Reflexiones de ${a.id}: ids repetidos`);
+    return { adv: a.id, nodos, ...(propias.length ? {} : { incompleto: true }) };
+  });
+  for (const k of Object.keys(fuente.propias)) if (!usadas.has(k)) avisos.push(`Reflexiones de un adventurer que no está en el catálogo: ${k}`);
+  return filas;
+}
+
+export function construirCatalogo({ equipo, correcciones, monstruos, adventurers, rostros: fuenteRostros, camaradas: fuenteCamaradas, reflexiones: fuenteReflexiones = null, nombresEs = null }) {
   const avisos = [];
   const tr = crearTraductor(nombresEs);
   const sinEs = { armaduras: new Set(), armas: new Set() };
@@ -297,6 +340,7 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
 
   const visage = armarRostros(fuenteRostros, avisos, idPorNombre);
   const camaradas = fuenteCamaradas ? armarCamaradas(fuenteCamaradas, avisos) : [];
+  const reflexiones = fuenteReflexiones ? armarReflexiones(fuenteReflexiones, adventurers, avisos) : [];
 
   // ---- Monstruos: solo los que aparecen
   const usados = new Set([...armaduras, ...armas].map((x) => x.monstruo).filter(Boolean));
@@ -338,16 +382,18 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
       { nombre: adventurers.fuente, que: 'adventurers', fecha: adventurers.revisado },
       { nombre: fuenteRostros.source, que: 'rostros (Visage) y sus sets', fecha: fuenteRostros.fetched },
       ...(fuenteCamaradas ? [{ nombre: fuenteCamaradas.source, que: 'camaradas (Buddy)', fecha: fuenteCamaradas.fetched }] : []),
+      ...(fuenteReflexiones ? [{ nombre: fuenteReflexiones.source, que: 'reflexiones (Insights)', fecha: fuenteReflexiones.fetched }] : []),
       ...(nombresEs ? [{ nombre: nombresEs.source, que: 'nombres en español (por confirmar)', fecha: nombresEs.fetched }] : []),
     ],
     conteos: {
       armaduras: armaduras.length, armas: armas.length, sets: listaSets.length,
       habilidades: listaHab.length, monstruos: listaMonstruos.length, adventurers: listaAdv.length,
       rostros: visage.rostros.length, rostros_sets: visage.sets.length, camaradas: camaradas.length,
+      reflexiones: reflexiones.reduce((n, r) => n + r.nodos.length, 0),
       descartados,
     },
   };
-  return { meta, armaduras, armas, sets: listaSets, habilidades: listaHab, monstruos: listaMonstruos, adventurers: listaAdv, rostros: visage.rostros, 'rostros-sets': visage.sets, camaradas, avisos, faltanEs };
+  return { meta, armaduras, armas, sets: listaSets, habilidades: listaHab, monstruos: listaMonstruos, adventurers: listaAdv, rostros: visage.rostros, 'rostros-sets': visage.sets, camaradas, reflexiones, avisos, faltanEs };
 }
 
 /** JSON con un elemento por línea: diffs legibles en git y archivo compacto. */
@@ -356,7 +402,7 @@ export function aTexto(valor) {
   return `${JSON.stringify(valor, null, 2)}\n`;
 }
 
-export const ARCHIVOS = ['meta', 'armaduras', 'armas', 'sets', 'habilidades', 'monstruos', 'adventurers', 'rostros', 'rostros-sets', 'camaradas'];
+export const ARCHIVOS = ['meta', 'armaduras', 'armas', 'sets', 'habilidades', 'monstruos', 'adventurers', 'rostros', 'rostros-sets', 'camaradas', 'reflexiones'];
 
 export async function leerFuentes(raiz = RAIZ) {
   const leer = async (...p) => JSON.parse(await readFile(join(raiz, ...p), 'utf8'));
@@ -367,6 +413,7 @@ export async function leerFuentes(raiz = RAIZ) {
     adventurers: await leer('scripts', 'catalogo', 'adventurers.json'),
     rostros: await leer('datos', 'gamewith', 'rostros.json'),
     camaradas: await leer('datos', 'gamewith', 'camaradas.json'),
+    reflexiones: await leer('datos', 'gamewith', 'reflexiones.json'),
     nombresEs: await leer('datos', 'gamewith', 'nombres-es.json'),
   };
 }

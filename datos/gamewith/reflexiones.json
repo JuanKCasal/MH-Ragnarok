@@ -1,0 +1,169 @@
+{
+ "source": "GameWith",
+ "url": "https://gamewith.ai/monster-hunter-outlanders/en/adventurers/<id> (y /es-mx/adventurers/<id>), tabla Insights / Reflexiones",
+ "fetched": "2026-11-23",
+ "_nota": "Reflexiones (Insights) por adventurer, transcritas de GameWith EN y es-MX. Cada una cuesta 5, 10 o 30 puntos de Reflexión; la suma de las equipadas no puede pasar de los puntos que tiene el adventurer. 'efecto' es un resumen propio en español (no la cita de GameWith). Los Fated Adventurer tienen 4 comunes + 4 de su arma + 2 por clase (Asalto, Alterador, Apoyo); los demás, 4 comunes + 6 propias. GameWith no publica las de Haze (solo se cargan las comunes). Sin nombre ES en GameWith: Thrust Mania (lanza) y las 4 de la Hacha cargada del Fated.",
+ "comunes": [
+  { "en": "Power Charge", "es": "Almacenar carga", "pts": 10, "efecto": "Carga de la definitiva +5 %." },
+  { "en": "Hunting Spirit", "es": "Espíritu combativo", "pts": 10, "efecto": "Daño +5 %." },
+  { "en": "Protection", "es": "Guardaespaldas", "pts": 5, "efecto": "Daño físico recibido −8 %." },
+  { "en": "Harmony", "es": "Armonía", "pts": 5, "efecto": "Todas las resistencias elementales +8 %." }
+ ],
+ "clase": [
+  { "en": "Monsoon", "es": "Monzón", "tipo": "assault", "pts": 30, "efecto": "Al usar la definitiva: daño de habilidad y a partes +10 % durante 20 s." },
+  { "en": "Cyclone", "es": "Ciclón", "tipo": "assault", "pts": 30, "efecto": "Cada parte rota: daño de habilidad +5 % (hasta 5 veces)." },
+  { "en": "Rising Spirit", "es": "Espíritu Ascendente", "tipo": "support", "pts": 30, "efecto": "El humo curativo de la definitiva también da 10 de resistencia por segundo y afinidad +10 %." },
+  { "en": "Battle Sustenance", "es": "Viento renovador", "tipo": "support", "pts": 30, "efecto": "El humo curativo de la definitiva revive sin parar a los aventureros caídos." },
+  { "en": "Dust Storm", "es": "Tormenta de polvo", "tipo": "disruptor", "pts": 30, "efecto": "El mareo de la definitiva dura 50 % más; el monstruo mareado recibe 10 % más daño." },
+  { "en": "Soother", "es": "Viento en contra", "tipo": "disruptor", "pts": 30, "efecto": "Daño de habilidad +15 % con el monstruo enfurecido." }
+ ],
+ "fated": {
+  "great_sword": [
+   { "en": "Extreme Tackle", "es": "Embestida extrema", "efecto": "Reduce mucho el daño recibido al embestir; con ferocidad, la habilidad 2 da Tajo supremo al instante (+20 % daño)." },
+   { "en": "Focused Charge", "es": "Carga enfocada", "efecto": "Carga 20 % más rápida; daño de habilidad +5/10/20 % según nivel de carga." },
+   { "en": "Great Heft", "es": "Gran impulso", "efecto": "Tras guardia perfecta, Tajo cargado fuerte en el punto óptimo; ciertos tajos +20 % daño." },
+   { "en": "Inertial Propulsion", "es": "Propulsión inercial", "efecto": "Tajo horizontal con salto: +20 % distancia y daño; la siguiente habilidad +30 % velocidad y daño." }
+  ],
+  "long_sword": [
+   { "en": "Iai Technique: Humility", "es": "Técnica Iai: Humildad", "efecto": "Desenfunde de la habilidad 2 más rápido, recupera salud gris y tajos Iai +30 % daño." },
+   { "en": "Spirit Release", "es": "Liberación espiritual", "efecto": "El aumento de espíritu dura el doble; los tajos espirituales rompen más." },
+   { "en": "Fang Thrust", "es": "Estocada colmillo", "efecto": "Tajo de armadura espiritual +30 % daño; la habilidad 3 lo vuelve a lanzar gastando 1 nivel." },
+   { "en": "Lingering Spirit", "es": "Espíritu persistente", "efecto": "El espíritu no se vacía al subir de nivel; daño +10/20/40 % según el color de la barra." }
+  ],
+  "dual_blades": [
+   { "en": "Chaotic Dance", "es": "Danza caótica", "efecto": "Danza de cuchillas en Modo demoníaco +50 % daño, pero no llena el indicador y gasta más." },
+   { "en": "Enhanced Stamina", "es": "Resistencia mejorada", "efecto": "En Modo demoníaco: gasto de resistencia −50 % y daño de habilidad +15 %." },
+   { "en": "Demon Frenzy", "es": "Frenesí demoníaco", "efecto": "Tercer golpe de Danza de cuchillas en Modo demoníaco: daño de habilidad +15 % e Imperturbable." },
+   { "en": "Stamina Tuning", "es": "Ajuste de resistencia", "efecto": "Cada punto de indicador demoníaco gastado recupera 0,5 de resistencia." }
+  ],
+  "lance": [
+   { "en": "Counter Expert", "es": "Experto en contraataque", "efecto": "Ventana de guardia perfecta +50 %; contraataques +20 % daño." },
+   { "en": "Advancement IV", "es": "Avance IV", "efecto": "Ataque en carrera +30 % velocidad y −30 % resistencia; estocada final +20 % daño con Imperturbable." },
+   { "en": "Power Absorption", "es": "Absorción de poder", "efecto": "Al bloquear: −50 % resistencia perdida y +15 % alcance de guardia; Bloqueo poderoso acumula daño." },
+   { "en": "Thrust Mania", "es": null, "efecto": "Tras el tercer golpe de Estocada, Ataque básico repite ese golpe con daño de habilidad +30 %." }
+  ],
+  "hammer": [
+   { "en": "Strike Frenzy", "es": "Frenesí de golpes", "efecto": "Big Bang +30 % daño y un toque preciso menos; cada acierto +10 % daño y +5 % velocidad (máx. 4)." },
+   { "en": "Charge Master", "es": "Maestría de carga", "efecto": "Carga 20 % más rápida; ataques cargados +30 % daño." },
+   { "en": "Echo", "es": "Eco", "efecto": "Daño de habilidad +65 % contra monstruos aturdidos." },
+   { "en": "Continuum", "es": "Continuidad", "efecto": "La habilidad 1 tras ciertos ataques cargados retoma la carga desde nivel 2 o Carga poderosa." }
+  ],
+  "charge_blade": [
+   { "en": "Vial Combustion", "es": null, "efecto": "Explosión de viales +20 % daño." },
+   { "en": "Guard Release", "es": null, "efecto": "Descarga elemental súper y ultra amplificada (Hacha) +25 % daño; se puede seguir con Tajo transformador." },
+   { "en": "Guard Counter", "es": null, "efecto": "Guardia perfecta: +1 vial y el Ataque básico encadena Doble tajo cargado (Espada)." },
+   { "en": "Guard Charge", "es": null, "efecto": "Guardia exitosa: −50 % resistencia y daño de habilidad +30 % por 10 s; más energía con escudo rojo." }
+  ],
+  "heavy_bowgun": [
+   { "en": "Battlefield Crafting", "es": "Fabricación en el campo", "efecto": "Guardia perfecta: +25 % de la pólvora para la munición especial." },
+   { "en": "Internal Ammo", "es": "Munición interna", "efecto": "Munición inicial de Coraje wyvern y pólvora inicial al 100 %." },
+   { "en": "Veteran Gunner", "es": "Especialista en artillería", "efecto": "Coraje wyvern dispara 50 % más rápido; retroceso y recarga +1 nivel; munición especial +30 % daño." },
+   { "en": "Reinforced Rifling", "es": "Estriado reforzado", "efecto": "Mejora la munición normal, dispersa y perforante (alcance, velocidad y proyectiles)." }
+  ],
+  "bow": [
+   { "en": "Inner Unity", "es": "Unidad interior", "efecto": "Fuego rápido +30 % daño; cada flecha que acierta recupera 5 de resistencia." },
+   { "en": "Thousand Shots", "es": "Mil disparos", "efecto": "Recarga del vial de dragón +50 %; flechas perforantes de Avalancha: Lluvia +50 %." },
+   { "en": "Martial Harmony", "es": "Armonía marcial", "efecto": "Más alcance y menos consumo en Fuego rápido, Disparo potente, deslizante y parabólico." },
+   { "en": "Mighty Draw", "es": "Desenfunde poderoso", "efecto": "Disparo potente, parabólico y Avalancha: Lluvia +30 % daño; Disparo potente más concentrado." }
+  ]
+ },
+ "propias": {
+  "pyro": [
+   { "en": "Inferno: Battle Ready", "es": "Infierno: Listo para el combate", "efecto": "Daño de habilidad de la definitiva +60 %." },
+   { "en": "Inferno: Overload", "es": "Infierno: Sobrecarga", "efecto": "La definitiva suma un golpe de área; si acierta, daño de habilidad +25 % por 15 s." },
+   { "en": "Unyielding Roar", "es": "Rugido fortalecedor", "efecto": "Tras acertar la definitiva, el ataque básico cargado empieza con 1 nivel de carga por 20 s." },
+   { "en": "Rampage", "es": "Furia", "efecto": "Desvío (hab. 1) o ferocidad (hab. 3) curan: 0,5 % del daño se vuelve salud (hasta 40)." },
+   { "en": "Fleeting Strike", "es": "Golpe de impulso", "efecto": "Tras un tajo básico cargado óptimo, daño de draco +40 % por 15 s." },
+   { "en": "Fatal Blow", "es": "Golpe fatal", "efecto": "Tajo fortalecedor +30 % daño y Tajo fortalecedor real +60 %." }
+  ],
+  "midori": [
+   { "en": "Maple Season Melody", "es": "Melodía de Arce", "efecto": "Habilidad 2 o Tajo giratorio suman arce: +9 % daño (máx. 3, 30 s)." },
+   { "en": "Maple Season Echo", "es": "Ecos de Temporada de arce", "efecto": "Durante Temporada de arce, la habilidad 3 hace 34 % más daño." },
+   { "en": "Endless Tones", "es": "Tonos infinitos", "efecto": "Con la habilidad 3, dos toques precisos seguidos suben el espíritu a rojo." },
+   { "en": "Momentary Resonance", "es": "Resonancia Momentánea", "efecto": "Más invencibilidad al evadir y ventana de evasión perfecta más amplia." },
+   { "en": "Majestic Fireworks", "es": "Pirotecnia Majestuosa", "efecto": "Al usar la definitiva, daño de habilidad de fuego +18 % por 30 s." },
+   { "en": "Shadow Legion", "es": "Legión sombría", "efecto": "Al usar la definitiva, daño de habilidad +40 % y eficiencia de rotura +20 %." }
+  ],
+  "keres": [
+   { "en": "Bone Spikes: Extended", "es": "Espinas óseas: Extendidas", "efecto": "Las púas óseas duran 15 s más." },
+   { "en": "Bone Spikes: Vulnerability", "es": "Espinas óseas: Vulnerabilidad", "efecto": "Daño de draco +25 % contra púas óseas y +50 % cerca de ellas, para todo el grupo." },
+   { "en": "Feasting Frenzy", "es": "Frenesí voraz", "efecto": "Tras la definitiva, el indicador demoníaco no se gasta durante 10 s." },
+   { "en": "Rapid Pulse", "es": "Pulso rápido", "efecto": "Aullido de lobo II y III dan Imperturbable y +40 % daño de habilidad en Modo demoníaco." },
+   { "en": "Thrill of the Hunt", "es": "Emoción de la cacería", "efecto": "Daño de draco +40 % en Modo demoníaco." },
+   { "en": "Pursuit Combo", "es": "Combo de persecución", "efecto": "En Modo demoníaco, Perforahuesos +60 % daño de habilidad." }
+  ],
+  "arkaya": [
+   { "en": "Undying Resolve", "es": "Determinación eterna", "efecto": "Tras Remate de tierra hendida, toda la brigada sube su daño de habilidad." },
+   { "en": "Ultimate Protection", "es": "Protección definitiva", "efecto": "Al usar la definitiva, la brigada recibe 25 % menos daño por 30 s." },
+   { "en": "Assault Command", "es": "Orden de Asalto", "efecto": "Tras un ataque al desenvainar: +3 Espíritu de batalla y escudo más fuerte en el siguiente Remate." },
+   { "en": "Rapid Momentum", "es": "Impulso Rápido", "efecto": "En Estocada implacable sostenida, 33 % menos golpes para ganar Espíritu de batalla." },
+   { "en": "Dragon's Spirit", "es": "Resolución del Draco", "efecto": "Tras la definitiva, la siguiente habilidad hace 100 % más daño." },
+   { "en": "Surging Momentum", "es": "Impulso creciente", "efecto": "Remate de tierra hendida +80 % daño de habilidad." }
+  ],
+  "rhodes": [
+   { "en": "Ultra Hammer", "es": "Martillo ultra", "efecto": "Tras la definitiva, daño de habilidad +30 % (+30 % más contra monstruos mareados)." },
+   { "en": "Aftershock Resonance", "es": "Resonancia de la réplica", "efecto": "Tras la definitiva, daño de habilidad y de camarada de brigada +27 % por 20 s." },
+   { "en": "Efficient Pulley", "es": "Polea eficiente", "efecto": "Carga deslizante gasta 60 % menos resistencia." },
+   { "en": "Counter Wind-up", "es": "Alzada contraataque", "efecto": "Tras desvío en Postura de vapor, el siguiente Ataque deslizante da 50 % más energía sin gastar vapor." },
+   { "en": "Max Charge Bang", "es": "Estallido de carga máxima", "efecto": "Golpe celestial de vapor +50 % daño y +50 de energía de vapor al acertar." },
+   { "en": "Pressurized Wheel Strike", "es": "Golpe de rueda presurizado", "efecto": "Con más de 50 de energía de vapor, Carga deslizante +50 % daño y aturdimiento." }
+  ],
+  "pepper": [
+   { "en": "Echoing Chimes", "es": "Ecos de campanillas", "efecto": "Tras la Supresión de la definitiva, el monstruo recibe 36 % más daño de agua por 10 s." },
+   { "en": "Fluffy Fuzzy Fantasy", "es": "Fantasía suavecita", "efecto": "El control de la definitiva dura 2 s más." },
+   { "en": "Featherflow Guard", "es": "Guardia de plumaje", "efecto": "Gastar Concentración: daño de agua +20 % (hasta 3 veces, 5 s)." },
+   { "en": "Fluffy Spin", "es": "Giro esponjoso", "efecto": "Tras desviar con Explosión aérea, el siguiente Persecución de fuego hace el doble de daño." },
+   { "en": "Windborne Fluff", "es": "Pelusa eólica", "efecto": "Explosión aérea suma 1 golpe, con algo menos de retroceso." },
+   { "en": "Thousand Plumes", "es": "Mil plumas", "efecto": "Al usar la definitiva, +3 munición de Persecución de fuego por 10 s." }
+  ],
+  "luka": [
+   { "en": "Thunderous Pact", "es": "Pacto de Narukami", "efecto": "Durante la Tronada, afinidad +35 %." },
+   { "en": "Final Arrow", "es": "Perforador multicolor", "efecto": "Tras la definitiva, su daño de habilidad +60 %." },
+   { "en": "Lightning Swift", "es": "Velocidad relámpago", "efecto": "Con carga 4 habilita Giro atronador; la habilidad 1 gasta 5 menos de resistencia." },
+   { "en": "Lightning Epiphany", "es": "Rayo repentino", "efecto": "Tras la definitiva, recarga el vial de rayo y lleva la carga al nivel óptimo." },
+   { "en": "Meteor Lightning", "es": "Relámpago meteórico", "efecto": "Tras un toque preciso, daño de habilidad +30 % por 3 s." },
+   { "en": "Electrical Sparks", "es": "Explosión eléctrica", "efecto": "La habilidad 3 da Imperturbable y +15 % daño de habilidad." }
+  ],
+  "luxheart": [
+   { "en": "Triumphant Entrance", "es": "Gran entrada", "efecto": "Empiezas la cacería con 1 uso extra de la definitiva." },
+   { "en": "Dazzling Display", "es": "Espectáculo deslumbrante", "efecto": "Daño contra monstruos mareados +15 %." },
+   { "en": "Brilliant Spectacle", "es": "Espectáculo brillante", "efecto": "Gran actuación con 5/6 de calor devuelve 1/2 puntos de calor." },
+   { "en": "Bright Like a Star", "es": "Radiante como una estrella", "efecto": "Tras la definitiva, +3 puntos de calor." },
+   { "en": "The Climax", "es": "El Clímax", "efecto": "Gran actuación con 6 de calor: daño de rayo +50 % e Imperturbable." },
+   { "en": "Lightning Splendor", "es": "Esplendor relámpago", "efecto": "Gran actuación: daño de rayo +5 % por cada punto de calor gastado." }
+  ],
+  "ryunosuke": [
+   { "en": "Well-Fueled", "es": "Bien motivado", "efecto": "Con Gran festín, daño de fuego de todos los aliados +20 % extra." },
+   { "en": "Share the Meal", "es": "Compartir la comida", "efecto": "Con la definitiva, cada aliado con especialización en fuego suma +5 % de ataque y ataque elemental." },
+   { "en": "Tipsy Blade", "es": "Hoja embriagada", "efecto": "Bien alimentado dura 10 s más y da 60 % más espíritu de Festín." },
+   { "en": "Gourmand's Edge", "es": "Filo del gourmet", "efecto": "Embriagado: Torrente sube el espíritu 1 nivel al acertar." },
+   { "en": "Hearth Blade", "es": "Filo del hogar", "efecto": "Bien alimentado: habilidad 1 +20 % daño y gasta menos espíritu." },
+   { "en": "Drunken Tide", "es": "Marea ebria", "efecto": "Daño de ruptura de la habilidad 3 +40 %." }
+  ],
+  "raya": [
+   { "en": "Twirling Grace", "es": "Torbellino Corazón de Loto", "efecto": "Tras Danza giratoria ascendente, la habilidad 3 activa la Devastadora; 50 % de dar +20 de indicador demoníaco." },
+   { "en": "Windstride", "es": "Viento Veloz", "efecto": "Danza giratoria ascendente y devastadora +25 % daño." },
+   { "en": "Endless Rotation", "es": "Rotación Infinita", "efecto": "Ventana de desvío de la habilidad 2 más amplia e Imperturbable más largo." },
+   { "en": "Fiery Inhibitor", "es": "Inhibidor ígneo", "efecto": "Si la definitiva acierta, el monstruo recibe 36 % más daño de fuego por 15 s." },
+   { "en": "Graceful One", "es": "Hoja Sombría Alada", "efecto": "Carga de la definitiva +20 %." },
+   { "en": "Lingering Chain Dance", "es": "Danza en cadena persistente", "efecto": "Danza de tajo cruzado encadenada desde la habilidad 3 +30 % daño." }
+  ],
+  "ouyang-varen": [
+   { "en": "Desert Storm", "es": "Tormenta del Desierto", "efecto": "Habilidad 3 +20 % daño y 20 % menos tiempo de carga." },
+   { "en": "Indomitable", "es": "Leyenda del Nuevo Mundo", "efecto": "Cada acumulación de Ímpetu: daño de habilidades de agua +20 %." },
+   { "en": "Hoarfrost Lance", "es": "Lanza de escarcha", "efecto": "El tercer golpe de Estocada da 1 acumulación de Perforación aunque falle." },
+   { "en": "Unstoppable Momentum", "es": "Impulso Imparable", "efecto": "La definitiva hace daño extra de varios golpes y da 3 acumulaciones de Filo al acertar." },
+   { "en": "Ironclad Glory", "es": "Gloria Acorazada", "efecto": "Al usar la definitiva, rotura de partes de la brigada +30 % por 15 s." },
+   { "en": "Aquatic Surge", "es": "Aumento acuático", "efecto": "Tras desviar con la habilidad 2, la siguiente habilidad +48 % daño (30 s)." }
+  ],
+  "madelyn": [
+   { "en": "Precise Proportions", "es": "Proporciones precisas", "efecto": "Habilidades +2 % daño contra monstruos con esporas por cada nivel de esporas." },
+   { "en": "Potion Catalyst", "es": "Catalizador de poción", "efecto": "Tras Explosión de plumas violetas, la siguiente habilidad que gaste vial +100 % daño." },
+   { "en": "Probiotic Colony", "es": "Colonia probiótica", "efecto": "Con esporas en el monstruo, el bono de daño de la definitiva se duplica." },
+   { "en": "Potion Permeation", "es": "Permeación de poción", "efecto": "La definitiva cura más y su bono de daño dura 10 s más." },
+   { "en": "Potion Refinement", "es": "Refinamiento de pociones", "efecto": "Tras gastar 3 catalizadores, recupera 1." },
+   { "en": "Extreme Catalyst", "es": "Catalizador extremo", "efecto": "Cada nivel de Disparo cargado recarga 1 vial extra (hasta 3)." }
+  ]
+ },
+ "sin_datos": ["haze"]
+}

@@ -758,12 +758,6 @@ textarea.editor-cuerpo { min-height: 18lh; line-height: 1.6; field-sizing: conte
 .bld-cambiar:hover { border-color: var(--oro); background: rgba(230, 192, 104, 0.14); }
 .bld-cambiar:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
 
-.bld-pronto { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin: 0; padding: 0; list-style: none; }
-@media (min-width: 560px) { .bld-pronto { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.bld-pronto li {
-  display: flex; flex-direction: column; gap: 2px; padding: 12px 16px;
-  border: 1px dashed var(--filete-suave); border-radius: var(--filo);
-}
 .bld-ejemplo { align-self: flex-start; }
 
 /* Rostros (E4) */
@@ -950,3 +944,51 @@ body.bld-sin-scroll { overflow: hidden; }
 .nom-form__acciones { display: flex; flex-wrap: wrap; gap: 8px; }
 .nom-atajo { margin-top: 8px; }
 .nom-atajo summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-size: 0.875rem; font-weight: 700; color: var(--oro-claro); }
+
+/* Reflexiones (E4) */
+.bld-ref-cabeza { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); gap: 12px; align-items: end; padding: 12px 16px 0; }
+.bld-ref-cabeza .entrada { min-width: 0; }
+.bld-ref-cuenta { margin: 0; padding: 0 0 10px; font-variant-numeric: tabular-nums; color: var(--texto-suave); }
+.bld-ref-cuenta strong { color: var(--oro-claro); font-size: 1.125rem; }
+.bld-cajon__cuerpo > .bld-ref-cuenta { padding: 10px 16px 0; }
+.bld-ref-grupo { margin: 18px 16px 6px; }
+.bld-refs { display: flex; flex-direction: column; gap: 6px; margin: 0 12px; padding: 0; list-style: none; }
+.bld-ref__marca {
+  position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: start;
+  min-height: 44px; padding: 10px 12px; border: 1px solid var(--filete-suave); border-radius: var(--filo); cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+.bld-ref__marca input { width: 20px; height: 20px; margin: 2px 0 0; accent-color: var(--oro); }
+.bld-ref__marca:hover { border-color: var(--filete-fuerte); }
+.bld-ref__marca:has(input:focus-visible) { outline: 2px solid var(--oro); outline-offset: 2px; }
+.bld-ref--activa .bld-ref__marca { border-color: var(--oro); background: rgba(230, 192, 104, 0.08); }
+.bld-ref--no .bld-ref__marca { opacity: 0.55; cursor: not-allowed; }
+.bld-ref__texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bld-ref__nombre { font-weight: 700; color: var(--marfil); }
+.bld-ref__pts {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 24px; padding: 0 6px;
+  border: 1px solid var(--filete-fuerte); border-radius: var(--filo);
+  font-family: var(--f-display); font-size: 0.8125rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--oro-claro);
+}
+
+/* Recuerdo (Keepsake) y grabados (E4) */
+.bld-kee-datos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.bld-grabados { margin: 12px 12px 0; overflow-x: auto; }
+.bld-grab-tabla { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.bld-grab-tabla th, .bld-grab-tabla td { padding: 4px 2px; text-align: center; border-bottom: 1px solid var(--filete-suave); }
+.bld-grab-tabla thead th { font-size: 0.6875rem; font-weight: 800; color: var(--texto-tenue); border-bottom-color: var(--filete); }
+.bld-grab-tabla tbody th { font-size: 0.75rem; font-weight: 800; color: var(--texto-suave); width: 2.25rem; }
+.bld-grab-vacia { color: var(--texto-tenue); }
+.bld-grab-celda { display: inline-flex; gap: 4px; }
+.bld-grab {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+  border: 1px solid var(--filete-fuerte); border-radius: var(--filo); cursor: pointer; color: var(--oro-claro); font-weight: 800;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+.bld-grab input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: inherit; }
+.bld-grab:has(input:focus-visible) { outline: 2px solid var(--oro); outline-offset: 2px; }
+.bld-grab--hecho { border-color: var(--oro); background: rgba(230, 192, 104, 0.18); }
+.bld-grab--cerrado { border-style: dashed; border-color: var(--filete-suave); opacity: 0.6; cursor: not-allowed; font-size: 0.75rem; }
+.bld-grab--cerrado.bld-grab--hecho { opacity: 1; border-color: var(--error); }
+@media (max-width: 359px) { .bld-grab { width: 34px; height: 34px; } }
+@media (prefers-reduced-motion: reduce) { .bld-ref__marca, .bld-grab { transition: none; } }

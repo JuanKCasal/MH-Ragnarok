@@ -90,6 +90,25 @@ test('camarada (E4): id + nivel, estrellas y poder opcionales; valida rangos', (
   ok(E.post('build.eliminar', { id: b.id }, pepe));
 });
 
+test('reflexiones y recuerdo (E4): forma, rangos e ids de grabado', () => {
+  const datos = { v: 1, reflexiones: { cap: 65, activas: ['internal-ammo', 'monsoon', 'monsoon'], x: 1 },
+    keepsake: { nv: 80, poder: 5798, grabados: ['def-0', 'atr-0', 'hab-4', 'def-0'] } };
+  const b = ok(E.post('build.guardar', { nombre: 'Ref', datos }, pepe));
+  assert.deepEqual(b.datos.reflexiones, { activas: ['internal-ammo', 'monsoon'], cap: 65 });
+  assert.deepEqual(b.datos.keepsake, { grabados: ['def-0', 'atr-0', 'hab-4'], nv: 80, poder: 5798 });
+  const vacio = ok(E.post('build.guardar', { id: b.id, nombre: 'Ref', datos: { v: 1, reflexiones: { activas: [] }, keepsake: { grabados: [] } } }, pepe));
+  assert.equal(vacio.datos.reflexiones, undefined);
+  assert.equal(vacio.datos.keepsake, undefined);
+  const mal = (extra) => err(E.post('build.guardar', { nombre: 'X', datos: { v: 1, ...extra } }, pepe), 'DATO_INVALIDO');
+  mal({ reflexiones: { cap: 301 } });
+  mal({ reflexiones: { activas: ['Mal Id'] } });
+  mal({ reflexiones: { activas: Array.from({ length: 21 }, (_, i) => `r-${i}`) } });
+  mal({ keepsake: { nv: 81 } });
+  mal({ keepsake: { grabados: ['atr-1'] } });
+  mal({ keepsake: { grabados: ['hab-5'] } });
+  ok(E.post('build.eliminar', { id: b.id }, pepe));
+});
+
 test('adventurer_id debe ser del dueño; al borrar el adventurer la build queda suelta', () => {
   const ajeno = ok(E.post('adventurer.guardar', { adventurer: 'Midori', arma: 'long_sword', poder_total: 9000 }, ana)).id;
   err(E.post('build.guardar', { nombre: 'X', datos: DATOS, adventurer_id: ajeno }, pepe), 'DATO_INVALIDO');
