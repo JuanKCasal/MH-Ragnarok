@@ -6,24 +6,14 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 ## Punto de partida exacto para la sesión 8
 
 1. Leer `CLAUDE.md`, este archivo, `SPEC.md` y `DESIGN.md`.
-2. **Commit pendiente del panel de Admin** (ver "Commit pendiente" abajo; el editor ya se publicó en `a718a0f`). Después del push, Juan prueba en el celular el editor y Administración (Mi perfil → Herramientas de oficial).
+2. **Commit + push del editor (`a718a0f`) y del panel de Admin (`57090d0`) hechos.** Juan prueba en el celular el editor y Administración (Mi perfil → Herramientas de oficial).
 3. **Con el frontend v1 completo**, el siguiente paso grande es que Juan **monte el backend** con `docs/SETUP-backend.md` y pegue la URL `/exec` en `site/config.js` (con eso se apaga el modo demostración). Claude lo acompaña paso a paso. **Al montarlo, probar**:
    - una noticia cuyo texto empiece con `- ` o `=`: las celdas se escriben con `setValues`/`appendRow` sobre hojas con formato texto `@`; confirmar que Sheets no las toma como fórmula. Si fallara, anteponer `'` en `Db.gs` › `serializar_`.
    - el flujo de reset de PIN de punta a punta (oficial resetea → miembro entra con el temporal → `#/yo?pin=1` obliga a cambiarlo).
 4. Decisión pendiente de Juan: hoy un **oficial puede resetear el PIN de otro oficial** (el backend solo protege al admin). Quien resetea ve el PIN temporal, así que podría entrar como ese oficial. ¿Se limita a que solo el admin resetee PIN de oficiales? (cambio chico en `Auth.gs` › `resetPin_`, en `demo-data.js` y en `admin.js` › `permisos`).
 5. Pendientes menores: acciones de GitHub Pages a Node 24 (verificar versiones vigentes); glosario ES con capturas del juego en español.
 
-## Commit pendiente (panel de Admin, sesión 7)
-
-```powershell
-cd C:\dev\mh-ragnarok
-git add .
-git status
-git commit -m "Panel de administración: miembros, PIN temporal, roles, gremio, horarios y código del clan"
-git push
-```
-
-## Hecho en la sesión 7 (segunda parte: Admin)
+## Hecho en la sesión 7 (segunda parte: Admin, publicado en `57090d0`)
 
 - **`views/admin.js`** (`#/admin`, oficiales; `?ver=gremio` y `?ver=codigo` solo admin). Volver a Mi perfil; atajo "Administración" en Herramientas de oficial.
   - **Miembros**: buscador (nick o nombre en el juego, sin tildes), filtros Activos / Bloqueados o PIN temporal / Inactivos con contador, orden admin → oficiales → miembros → nick. Cada fila se despliega (`<details>`, recuerda cuáles están abiertas): país, insignias Inactivo / Bloqueado / PIN temporal con su explicación, "En el gremio desde…", Ver perfil.
