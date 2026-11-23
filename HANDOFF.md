@@ -1,4 +1,4 @@
-# HANDOFF — MH-Ragnarok (sesión 11: builder E2 · hoja con cajones)
+# HANDOFF — MH-Ragnarok (sesión 11: builder E2 publicada y verificada · siguiente: Rostros)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
@@ -7,14 +7,25 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 
 ### Punto de partida exacto para la sesión 12
 1. Leer `CLAUDE.md`, este bloque y **`docs/BUILDER.md` §8** (qué quedó hecho en E2) y §5 (plan E3–E7).
-2. **Publicación de la E2** (falta solo el punto 4, la prueba en el celular):
+2. **Publicación de la E2: completa.**
    1. ~~`npm test` en su PC~~ **HECHO:** 104 pasan en Windows.
    2. ~~Backend~~ **HECHO 2026-11-23 (Claude con el Chrome de Juan):** código pegado y verificado idéntico al paquete probado (SHA-256), `instalar()` ejecutado sin errores (hoja `Builds` creada) y **versión 3** publicada ("v3 (builder E2: hoja Builds)"); `builds?clase=ejemplo` responde `{ok:true,data:[]}`. Para la próxima vez: `npm run gs` → pegar `Claude outputs/MH-Ragnarok.gs` en el editor de Apps Script (ahora son 11 módulos, incluye `Builds.gs`), ejecutar **`instalar()`** (solo agrega la hoja `Builds`; no toca las demás) y publicar la **versión 3** del Web App (misma URL: Implementar → Gestionar implementaciones → editar → Versión nueva).
    3. ~~Commit + push~~ **HECHO:** commit `c8274cf`, publicado en Pages (`version.json` = c8274cf).
-   4. Probar en el celular: Mi perfil → **Mis builds** → Nueva build; elegir adventurer, arma y piezas; pestaña Habilidades; Guardar; volver a abrirla.
+   4. ~~Probar en el celular~~ **HECHO:** Juan creó su build y la comparó con el juego (ver "Verificación" abajo). Mi perfil → **Mis builds** → Nueva build; elegir adventurer, arma y piezas; pestaña Habilidades; Guardar; volver a abrirla.
    - Si se publica la web antes que el backend: el perfil funciona igual, pero guardar una build da "Acción desconocida".
-3. **Siguiente entrega: E3 · Tarjeta de build** (perfil público debajo de cada adventurer, `[[build:ID]]` en guías, Compartir, "Usar de base" ya existe en la vista). Confirmar con Juan antes de empezar. Alternativas que Juan puede preferir: E4 (Rostros, Camarada, Keepsake, Reflexiones) o E5 (Comparar).
-4. Siguen abiertos de antes: activador de `limpiarSesiones`, Node 24 en Pages, glosario ES; Critical Element y efecto despertado del arma por confirmar en el juego.
+3. **Arreglo rápido al empezar:** la barra fija muestra solo "Atq. 1.040"; con un arma elemental parece que el ataque bajó. Mostrar también el elemento (y estado) en la barra: "Atq. 1.040 · Fuego 520" (en `barra()` de `site/js/views/build.js`; `statsArma` ya lo arma para la fila).
+4. **Siguiente entrega (elegida por Juan, 2026-11-23): E4 · Rostros** (primero solo Rostros; Camarada, Keepsake y Reflexiones después). Ver `docs/BUILDER.md` §5 y "Fuentes encontradas" de la sesión 9 (GameWith: 56 cartas, 12 sets, núcleo + 4, costo máx. 12, sets por monstruos distintos, calidad Fine/Rare/Epic/Superior y nivel hasta 10). Pasos sugeridos: catálogo `rostros.json` (script + datos de GameWith EN y es-MX), cálculo (costo, sets 2/4, efecto núcleo), cajón en la hoja, `rostros` en la composición v1 (backend `composicionValida_` hoy lo descarta → ampliar con validación). Confirmar el alcance con Juan antes de programar.
+5. Siguen abiertos de antes: activador de `limpiarSesiones`, Node 24 en Pages, glosario ES; Critical Element y efecto despertado del arma por confirmar en el juego.
+
+### Decisiones de Juan tras la verificación (2026-11-23)
+- **Dejar la habilidad innata del arma en la matriz** de Habilidades (le gusta así).
+- **Dejar los sets con 1 pieza** en la lista.
+- Corrigió el arma de su build a Scintillant Bayard (Fire); pidió que se vea el daño de fuego (punto 3 de arriba).
+
+### Verificación con el juego (2026-11-23, capturas de Juan, build `0ga9zzcx1r` "Fire Heavy" de MyMarLa)
+- **Coinciden** las 5 piezas (nombre en rareza 13), la defensa por pieza (178/177/178/177/178) y total **888**, y los niveles de las 10 habilidades de armadura con su aporte por pieza (Fire Damage Up 7/7 = 2+3+2, etc.). Sets que muestra el juego: Pink Rathian's Acuity 2/3 y Paolumu's Presence 1/2 (igual que la web).
+- **Diferencias:** (1) Juan eligió **Scintillant Bayard** (sin elemento, ataque 1560) en vez de **Scintillant Bayard (Fire)** (1040 + fuego 520, la del juego): error de elección, no de datos; ojo con nombres casi iguales en el selector. (2) La web suma la habilidad innata del arma (Heavy Bowgun Mastery 1/1) a la matriz; el juego la muestra aparte → Juan prefiere dejarla. (3) La web lista también los sets con 1 pieza → Juan prefiere dejarlos.
+- **Datos para E7 (poder):** cada pieza de armadura **Superior 13/13 = 868** de poder; arma **Legendary 14/14 = 2888**; total de equipo **7228** (= 5×868 + 2888). Hay **calidad** por pieza (Superior / Legendary) que el catálogo no tiene. Iconos junto a la rareza: verde 1–2 / rojo 0 (significado por confirmar). El arma tiene efecto despertado "Third Power Shot".
 
 ### Hecho en la sesión 11
 - Arreglo de `npm test` en Windows: `tests/gas-mock.mjs` usa `fileURLToPath` (antes `new URL(...).pathname` daba `C:\\C:\\…`).
