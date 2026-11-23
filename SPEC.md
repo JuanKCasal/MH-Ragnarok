@@ -169,7 +169,7 @@ Registro de cada archivo subido por el backend. Sirve para validar que un ID de 
 | fecha | miembro_id | accion | entidad | entidad_id | detalle |
 
 ### 5.13 `Catalogo` (Fase 2, se crea vacía; con el builder guarda solo los nombres ES encima del catálogo estático, ver `docs/BUILDER.md`)
-| tipo (`adventurer`/`arma`/`pieza`/`habilidad`/`rostro`/`camarada`) | id | nombre_es | nombre_en | extra_json | validado | creado_por |
+| tipo (`arma`/`pieza`/`habilidad`/`set`/`monstruo`; más adelante `rostro`/`camarada`) | id | nombre_es | nombre_en | extra_json (`{fecha}`) | validado | creado_por |
 
 ## 6. API (Apps Script)
 
@@ -190,6 +190,7 @@ Registro de cada archivo subido por el backend. Sirve para validar que un ID de 
 | `clash_historial` | — | semanas cerradas con puesto y puntos (últimas 52) |
 | `builds` | `miembro` o `clase=ejemplo` | builds de perfil de un miembro activo, o las de ejemplo (con `datos` y `autor`). Ver `docs/BUILDER.md` §3 |
 | `build` | `id` | una build (las de perfil solo si el dueño sigue activo) |
+| `catalogo_nombres` | — | correcciones de nombres ES de los oficiales (hoja `Catalogo`): `[{tipo, id, es, en, validado, por, fecha}]`. Ver `docs/BUILDER.md` §12 |
 
 **Escrituras — `POST` con cuerpo `text/plain` que contiene JSON `{ accion, token?, datos }`:**
 
@@ -206,6 +207,7 @@ Registro de cada archivo subido por el backend. Sirve para validar que un ID de 
 | `adventurer.principal` | miembro | marca su principal |
 | `build.guardar` | miembro | crea/edita una propia (oficial: cualquiera). `clase: 'ejemplo'` solo oficiales. Máx. 10 de perfil por miembro. Composición v1: `adv`, `arma`, `piezas`, `rostros` (desde la E4, backend v4) y `poder` (docs/BUILDER.md §3) |
 | `build.eliminar` | miembro | propia (oficial: cualquiera) |
+| `catalogo.nombre` | oficial | `{tipo, id, en, es}`: guarda y confirma el nombre ES (`es` vacío = quitar la corrección). `tipo` = arma / pieza / habilidad / set / monstruo; en armas y piezas `id` = slug del nombre base EN |
 | `imagen.subir` | miembro | `{base64, mime, tipo}` → ID de Drive. Máx. 2 MB ya comprimida |
 | `clash.asistencia` | miembro | `{respuesta}` para la semana vigente |
 | `noticia.guardar` · `noticia.eliminar` | oficial | |

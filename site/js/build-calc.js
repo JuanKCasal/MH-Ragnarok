@@ -75,6 +75,13 @@ export function nombreEs(item, r) {
   return x?.[2] || '';
 }
 
+/** ¿El nombre ES de esa rareza lo confirmó un oficial (E6)? */
+export function nombreOk(item, r) {
+  if (!item) return false;
+  const x = porUmbral(item.nombres, rarezaDe(item, r)) || item.nombres?.[0];
+  return Boolean(x?.[3]);
+}
+
 /** Para ordenar y mostrar en una sola línea: el ES si existe, si no el EN. */
 export const nombreDe = (x) => x?.es || x?.en || '';
 const porNombre = (x, y) => nombreDe(x).localeCompare(nombreDe(y), 'es');
@@ -148,7 +155,7 @@ export function calcular(cat, build) {
       if (w.ele) ele = { tipo: w.ele.tipo, v: enRareza(w.ele.v, w, r) };
       if (w.estado) estado = { tipo: w.estado.tipo, v: enRareza(w.estado.v, w, r) };
       if (w.innato) sumar(w.innato.hab, 'arma', w.innato.nv);
-      arma = { item: w, r, nombre: nombreEn(w, r), nombreEs: nombreEs(w, r) };
+      arma = { item: w, r, nombre: nombreEn(w, r), nombreEs: nombreEs(w, r), esOk: nombreOk(w, r) };
     }
   }
 
@@ -167,7 +174,7 @@ export function calcular(cat, build) {
     def += d;
     habs.forEach(([h, nv]) => sumar(h, parte, nv));
     if (p.set) conteoSets.set(p.set, (conteoSets.get(p.set) || 0) + 1);
-    piezas[parte] = { item: p, r, nombre: nombreEn(p, r), nombreEs: nombreEs(p, r), def: d, habs };
+    piezas[parte] = { item: p, r, nombre: nombreEn(p, r), nombreEs: nombreEs(p, r), esOk: nombreOk(p, r), def: d, habs };
   }
 
   const rostros = calcularRostros(cat, b.rostros, avisos);
@@ -182,7 +189,7 @@ export function calcular(cat, build) {
     if (!bono) continue;
     const activo = puestas >= bono.piezas;
     if (activo) sumar(bono.hab, 'set', bono.nv);
-    sets.push({ id, en: s.en, es: s.es, monstruo: s.monstruo, puestas, necesarias: bono.piezas, activo,
+    sets.push({ id, en: s.en, es: s.es, esOk: s.esOk, monstruo: s.monstruo, puestas, necesarias: bono.piezas, activo,
       faltan: Math.max(0, bono.piezas - puestas), hab: bono.hab, nv: bono.nv, texto: bono.texto });
   }
   sets.sort((x, y) => Number(y.activo) - Number(x.activo) || x.faltan - y.faltan || porNombre(x, y));
@@ -190,7 +197,7 @@ export function calcular(cat, build) {
   const habilidades = [...aportes].map(([id, a]) => {
     const h = cat.habilidades.get(id);
     const suma = Object.values(a).reduce((s, n) => s + n, 0);
-    return { id, en: h.en, es: h.es, max: h.max, suma, nivel: Math.min(suma, h.max), sobra: Math.max(0, suma - h.max),
+    return { id, en: h.en, es: h.es, esOk: h.esOk, max: h.max, suma, nivel: Math.min(suma, h.max), sobra: Math.max(0, suma - h.max),
       estado: estadoHab(suma, h.max), aportes: a, ...(h.porConfirmar ? { porConfirmar: true } : {}) };
   }).sort((x, y) => y.nivel - x.nivel || y.suma - x.suma || porNombre(x, y));
 

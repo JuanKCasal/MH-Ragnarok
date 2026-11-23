@@ -4,11 +4,15 @@
  * La capa y el "atrás" del celular: ui/capa.js.
  */
 import { html, pintar, numero } from './dom.js';
-import { calcular, diferencia, conPieza, buscarPiezas, rarezaDe, nombreEn, nombreEs, nombreDe, habilidadesDePieza, NOMBRE_PARTE,
+import { calcular, diferencia, conPieza, buscarPiezas, rarezaDe, nombreEn, nombreEs, nombreOk, nombreDe, habilidadesDePieza, NOMBRE_PARTE,
   ELEMENTOS_FILTRO, RAREZA_MAX } from '../build-calc.js';
 import { ARMAS, ELEMENTOS } from '../etiquetas.js';
 import { chipsHab, statsArma, siLaCambias, bil } from './build-textos.js';
 import { abrirCapa } from './capa.js';
+import { escribir, ErrorApi } from '../api.js';
+import { sesion, tieneRol } from '../auth.js';
+import { toast } from './toast.js';
+import { partirNombre, claveNombre, baseEs, aplicarNombres } from '../nombres.js';
 
 const POR_PAGINA = 30;
 
@@ -16,9 +20,10 @@ const POR_PAGINA = 30;
  * @param {object} cat catálogo indexado
  * @param {object} build composición actual
  * @param {string} parte 'arma' o una de PARTES
- * @param {{armaTipo?: string, alElegir: (id: string, r: number) => void}} op
+ * @param {{armaTipo?: string, alElegir: (id: string, r: number) => void, alCambiarNombre?: () => void}} op
  */
-export function abrirSelector(cat, build, parte, { armaTipo = '', alElegir }) {
+export function abrirSelector(cat, build, parte, { armaTipo = '', alElegir, alCambiarNombre }) {
+  const corrige = tieneRol('oficial'); // E6: los oficiales corrigen el nombre ES desde aquí
   const esArma = parte === 'arma';
   const actual = esArma ? build.arma : build.piezas?.[parte];
   const itemActual = actual?.id ? (esArma ? cat.armas.get(actual.id) : cat.armaduras.get(actual.id)) : null;
@@ -95,14 +100,33 @@ export function abrirSelector(cat, build, parte, { armaTipo = '', alElegir }) {
     return html`
       <li class="bld-candidata ${puesta ? 'bld-candidata--puesta' : ''}">
         <div class="bld-candidata__cabeza">
-          <h3 class="bld-candidata__nombre">${bil(nombreEs(x, r), nombreEn(x, r))}</h3>
+          <h3 class="bld-candidata__nombre">${bil(nombreEs(x, r), nombreEn(x, r), { ok: nombreOk(x, r) })}</h3>
           ${puesta ? html`<span class="insignia insignia--curso">Puesta</span>` : ''}
         </div>
         ${fuera ? html`<p class="nota">Esta pieza va de ${x.rmin} a ${x.rmax}: se muestra en ${r}.</p>` : ''}
         ${cuerpo}
+        ${corrige ? atajoNombre(x, r) : ''}
         ${dif}
         ${puesta ? '' : html`<button type="button" class="boton boton--ancho" data-usar="${x.id}" data-r="${r}">Usar esta</button>`}
       </li>`;
+  }
+
+  /** E6: "Corregir nombre" (oficiales). Vale para todas las rarezas de ese nombre base. */
+  function atajoNombre(x, r) {
+    const en = nombreEn(x, r);
+    const { base } = partirNombre(en, esArma);
+    const id = claveNombre(base);
+    return html`
+      <details class="nom-atajo">
+        <summary>Corregir nombre en español</summary>
+        <form class="nom-form" data-nombre="${id}" data-en="${base}">
+          <label class="oculto-visual" for="atajo-${x.id}">Nombre en español de ${base}</label>
+          <input id="atajo-${x.id}" class="entrada" name="es" value="${baseEs(nombreEs(x, r))}" maxlength="80"
+            placeholder="Como sale en el juego, sin el número" spellcheck="false" autocomplete="off">
+          <p class="nota">Sin el número (I, II…) ni el elemento: se agregan solos. Vale para todas sus rarezas.</p>
+          <div class="nom-form__acciones"><button type="submit" class="boton boton--chico">Guardar y confirmar</button></div>
+        </form>
+      </details>`;
   }
 
   function pintarLista() {
@@ -127,6 +151,26 @@ export function abrirSelector(cat, build, parte, { armaTipo = '', alElegir }) {
     mostrar = POR_PAGINA;
     clearTimeout(espera);
     espera = setTimeout(pintarLista, k === 'texto' ? 160 : 0);
+  });
+
+  capa.addEventListener('submit', async (ev) => {
+    const form = ev.target.closest('[data-nombre]');
+    if (!form) return;
+    ev.preventDefault();
+    const es = form.elements.es.value.trim().replace(/\s+/g, ' ');
+    if (!es) { form.elements.es.focus(); return; }
+    const boton = form.querySelector('[type="submit"]');
+    boton.disabled = true;
+    try {
+      const r = await escribir('catalogo.nombre', { tipo: esArma ? 'arma' : 'pieza', id: form.dataset.nombre, en: form.dataset.en, es }, sesion()?.token);
+      aplicarNombres(cat, [...(cat.nombresAplicados || []).filter((y) => !(y.tipo === r.tipo && y.id === r.id)), r]);
+      toast(`${r.es}: confirmado.`);
+      pintarLista();
+      alCambiarNombre?.();
+    } catch (e) {
+      boton.disabled = false;
+      toast(e instanceof ErrorApi ? e.message : 'No se pudo guardar. Inténtalo de nuevo.', { error: true });
+    }
   });
 
   capa.addEventListener('click', (ev) => {

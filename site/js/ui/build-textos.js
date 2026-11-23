@@ -20,12 +20,13 @@ export const signo = (n) => (n > 0 ? `+${numero(n)}` : n < 0 ? `−${numero(-n)}
  * Los ES son de GameWith es-MX (por confirmar). Sin ES, solo el inglés.
  * num: lo que va pegado al ES (nivel de la habilidad); numEn: lo que va pegado al EN (por defecto, nada).
  */
-export function bil(es, en, { num = '', numEn = '' } = {}) {
-  if (!es || es === en) return html`<span class="bld-bil">${en}${num}</span>`;
-  return html`<span class="bld-bil">${es}${num}<span class="bld-en" lang="en"><span class="bld-sep"> · </span>${en}${numEn}</span></span>`;
+export function bil(es, en, { num = '', numEn = '', ok = false } = {}) {
+  const marca = ok ? html`<span class="bld-ok" title="Confirmado en el juego por un oficial"><span aria-hidden="true">✓</span><span class="oculto-visual"> (confirmado)</span></span>` : '';
+  if (!es || es === en) return html`<span class="bld-bil">${es || en}${num}${marca}</span>`;
+  return html`<span class="bld-bil">${es}${num}${marca}<span class="bld-en" lang="en"><span class="bld-sep"> · </span>${en}${numEn}</span></span>`;
 }
 /** bil() para una ficha del catálogo con {es, en} (habilidad, set, monstruo). */
-export const bilFicha = (x, op) => (x ? bil(x.es, x.en, op) : '');
+export const bilFicha = (x, op) => (x ? bil(x.es, x.en, { ok: x.esOk, ...op }) : '');
 
 /** Chips de habilidades de una pieza: [[id, nivel]] → "Mejora de daño de fuego 2 · Fire Damage Up". */
 export function chipsHab(cat, habs, { resaltar } = {}) {

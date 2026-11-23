@@ -1,19 +1,28 @@
-# HANDOFF — MH-Ragnarok (sesión 13: nombres en español del equipo · falta commit)
+# HANDOFF — MH-Ragnarok (sesión 13: equipo en español publicado · E6 nombres editables hecha, sin commit)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
 
-## Sesión 13 — Equipo en español (sin commit todavía)
+## Sesión 13 — Equipo en español (publicado, `d1e513c`) + E6 · nombres editables (sin commit)
 
 ### Punto de partida exacto para la sesión 14
-1. Leer `CLAUDE.md`, este bloque y **`docs/BUILDER.md` §11** (de dónde salen los nombres ES, reglas y lo que queda en inglés).
-2. **Publicar**: solo web (no cambia el backend ni las hojas).
-   1. `npm test` en su PC → deben pasar **115** (Claude ya las corrió en su PC el 2026-11-23: 115 pasan).
-   2. Commit + push (comandos abajo). Pages publica solo.
-   3. Probar en el celular: abrir "Fire Heavy" → Armadura: cada pieza en español con el inglés debajo; pestaña Habilidades: matriz y sets en español; "Cambiar" una pieza → buscar "yelmo de rathalos" y también "rathalos helm".
-3. **Pendientes de la sesión 12 que siguen abiertos**: probar Rostros en el celular (punto 2.4 de abajo) y confirmar con Juan cuáles son sus 4 cartas.
-4. **Por confirmar con el juego en español** (no bloquea): ver la lista de "rarezas en la fuente" en `docs/BUILDER.md` §11 (corazón de Rath, Yelmo/Casco de cazador, Rompedor ×2, Intimidación ×2).
-5. **Siguiente entrega (a decidir con Juan)**: resto de la E4 (Camarada, Keepsake, Reflexiones), E3 (tarjeta de build) o E6 (que los oficiales corrijan/agreguen nombres ES desde la web: sirve para lo que quedó en inglés, como Scintillant Bayard). Confirmar alcance antes de programar.
+1. Leer `CLAUDE.md`, este bloque y **`docs/BUILDER.md` §11** (nombres ES de GameWith) y **§12** (E6).
+2. **Publicar la E6 (en este orden)**:
+   1. `npm test` en su PC → **119** (Claude ya las corrió en su PC el 2026-11-23: 119 pasan).
+   2. **Backend versión 5**: pegar `Claude outputs/MH-Ragnarok.gs` (12 módulos, nuevo `Catalogo.gs`; SHA-256 empieza `cfd68ec67c4c`) en el editor de Apps Script, guardar y publicar **versión 5** (misma URL: Implementar → Gestionar implementaciones → editar → Versión nueva). **Sin `instalar()`**: la hoja `Catalogo` ya existe. Comprobar `?accion=catalogo_nombres` → `{ok:true,data:[]}`.
+   3. Commit + push (comandos abajo).
+   4. Probar: entrar como oficial → pie del builder "Nombres del juego" → Armas · En inglés → escribir el nombre de Scintillant Bayard como sale en el juego en español → Guardar → ✓; abrir "Fire Heavy": el arma sale en español con ✓. En el selector de pieza, "Corregir nombre en español".
+3. Equipo en español (`d1e513c`): publicado (el primer despliegue falló por GitHub; con "Re-run failed jobs" salió bien). Falta probarlo en el celular (ver abajo).
+4. Siguen abiertos: probar Rostros en el celular y confirmar con Juan sus 4 cartas (sesión 12); rarezas de GameWith por revisar (`docs/BUILDER.md` §11); Pages a Node 24; activador de `limpiarSesiones`.
+5. **Siguiente entrega (a decidir con Juan)**: resto de la E4 (Camarada, Keepsake, Reflexiones) o E3 (tarjeta de build).
+
+### E6 (sesión 13, segunda parte)
+- Decisiones de Juan: página "Nombres del juego" + atajo en el selector; armas y armaduras por nombre base; lo que escribe un oficial queda confirmado (✓).
+- Hecho: `apps-script/Catalogo.gs` + rutas en `Code.gs`; `site/js/nombres.js`; `site/js/views/nombres.js` (ruta `#/nombres` en `app.js`); `catalogo.js` aplica las correcciones; `nombreOk` en `build-calc.js`; ✓ en `bil()`; atajo en `ui/selector-pieza.js`; enlace al pie del builder; modo demo (`catalogo_nombres`, `catalogo.nombre`); estilos `.nom-*`, `.bld-ok`; `SPEC.md` §5.13 y §6; pruebas nuevas `tests/nombres.test.mjs` (backend y navegador), `empaquetar-gs` espera 12 archivos.
+- Git E6: modificados `HANDOFF.md`, `SPEC.md`, `docs/BUILDER.md`, `apps-script/Code.gs`, `site/js/{app,build-calc,catalogo,demo-data}.js`, `site/js/ui/{build-textos,selector-pieza}.js`, `site/js/views/build.js`, `site/assets/css/views.css`, `tests/empaquetar-gs.test.mjs`. Nuevos: `apps-script/Catalogo.gs`, `site/js/nombres.js`, `site/js/views/nombres.js`, `tests/nombres.test.mjs`. Mensaje sugerido: `Sesión 13: E6 nombres ES editables por oficiales (hoja Catalogo, backend v5)`.
+
+### Equipo en español (sesión 13, primera parte) — publicado en `d1e513c`
+1. Probar en el celular: abrir "Fire Heavy" → Armadura: cada pieza en español con el inglés debajo; pestaña Habilidades: matriz y sets en español; "Cambiar" una pieza → buscar "yelmo de rathalos" y también "rathalos helm".
 
 ### Decisiones de Juan (sesión 13, 2026-11-23)
 - Traducir **todo el equipo**: armas, armaduras, sets y habilidades.
@@ -27,7 +36,7 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 - Pruebas: 115 (2 nuevas en `tests/catalogo.test.mjs`). Revisado en navegador (modo demo, 390 px), sin errores ni scroll horizontal.
 - Queda en inglés lo que GameWith no trae (lista en `docs/BUILDER.md` §11), entre ellas **Scintillant Bayard**, el arma de Juan.
 
-### Git (sesión 13)
+### Git (sesión 13 subida en `d1e513c`)
 Modificados: `HANDOFF.md`, `docs/BUILDER.md`, `scripts/catalogo.mjs`, `site/data/catalogo/{armaduras,armas,habilidades,meta,monstruos,sets}.json`, `site/js/build-calc.js`, `site/js/ui/{build-textos,selector-pieza}.js`, `site/js/views/build.js`, `site/assets/css/views.css`, `tests/catalogo.test.mjs`. Nuevo: `datos/gamewith/nombres-es.json`.
 Mensaje sugerido: `Sesión 13: nombres en español del equipo (GameWith es-MX)`.
 

@@ -737,6 +737,7 @@ textarea.editor-cuerpo { min-height: 18lh; line-height: 1.6; field-sizing: conte
 /* Nombre EN debajo del ES (los ES de GameWith están por confirmar). El " · " solo se ve al copiar el texto. */
 .bld-en { display: block; font-family: var(--f-texto); font-weight: 400; font-size: 0.8125rem; letter-spacing: 0; line-height: 1.3; color: var(--texto-apagado); }
 .bld-sep { display: none; }
+.bld-ok { margin-left: 4px; font-size: 0.8em; color: var(--acierto); }
 .bld-chip .bld-en { font-size: 0.6875rem; }
 .bld-resumen-chips .bld-chip--listo, .bld-chip--listo { border-color: rgba(159, 224, 176, 0.55); color: var(--acierto); }
 
@@ -920,3 +921,18 @@ body.bld-sin-scroll { overflow: hidden; }
 .bld-mis a:hover { border-color: var(--oro); }
 .bld-mis__nombre { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; color: var(--marfil-claro); }
 @media (prefers-reduced-motion: reduce) { .bld-mis a { transition: none; } }
+
+/* ---------- Nombres del juego (E6) ---------- */
+.nom-tipos { margin-bottom: 12px; flex-wrap: wrap; }
+.nom-lista { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.nom-fila { padding: 12px 14px; border: 1px solid var(--filete-suave); border-radius: var(--filo); background: rgba(0, 0, 0, 0.18); }
+.nom-fila__cabeza { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.nom-fila__en { margin: 0; font-weight: 800; color: var(--marfil-claro); overflow-wrap: anywhere; }
+.nom-fila__es { margin: 6px 0 0; color: var(--texto-suave); }
+.nom-estado { flex: none; font-size: 0.75rem; font-weight: 700; color: var(--texto-apagado); }
+.nom-estado--ok { color: var(--acierto); }
+.nom-estado--en { color: var(--oro-claro); }
+.nom-form { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.nom-form__acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.nom-atajo { margin-top: 8px; }
+.nom-atajo summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-size: 0.875rem; font-weight: 700; color: var(--oro-claro); }

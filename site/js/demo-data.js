@@ -154,6 +154,10 @@ let buildsDemo = [
       rostros: { nucleo: { id: 'kushala-daora', cal: 'superior', nv: 10 },
         cartas: ['barnos', 'kestodon', 'rathian', 'radiant-rathian'].map((id) => ({ id, cal: 'superior', nv: 10 })), maestria: true } } },
 ];
+// Nombres ES corregidos por oficiales (E6): uno de ejemplo para ver el ✓ en el modo demo.
+let nombresDemo = [
+  { tipo: 'pieza', id: 'rathalos-mail', es: 'Cota de Rathalos', en: 'Rathalos Mail', validado: true, por: 'Midori', fecha: hace(1) },
+];
 const PARTES_B = ['head', 'chest', 'arms', 'waist', 'legs'];
 const ID_CAT = /^[a-z0-9][a-z0-9-]{0,79}$/;
 const conAutor = (b) => ({ ...b, datos: structuredClone(b.datos), autor: { id: b.miembro_id, nick: b.miembro_id === 'demo-yo' ? YO.nick : 'Oficial' } });
@@ -345,6 +349,8 @@ export async function leerDemo(accion, params = {}) {
         const { adventurers, ...p } = perfilDemo(m);
         return { ...p, principal: adventurers.find((a) => a.id === p.adventurer_principal_id) ?? null };
       }).sort((a, b) => (b.principal?.poder_total ?? 0) - (a.principal?.poder_total ?? 0));
+    case 'catalogo_nombres':
+      return nombresDemo.map((x) => ({ ...x }));
     case 'builds':
       if (params.clase === 'ejemplo') return buildsDemo.filter((b) => b.clase === 'ejemplo').map(conAutor);
       if (!params.miembro) falla('DATO_INVALIDO', 'Indica el miembro o clase=ejemplo.');
@@ -460,6 +466,17 @@ export async function escribirDemo(accion, datos = {}) {
       if (b) Object.assign(b, nuevo);
       else buildsDemo.push(b = { id: `demo-build-n${++idDemo}`, miembro_id: 'demo-yo', creado: ahora, ...nuevo });
       return conAutor(b);
+    }
+    case 'catalogo.nombre': {
+      if (!['oficial', 'admin'].includes(YO.rol)) falla('SIN_PERMISO', 'No tienes permiso para esta acción.');
+      if (!['arma', 'pieza', 'habilidad', 'set', 'monstruo'].includes(datos.tipo)) falla('DATO_INVALIDO', 'Valor no válido para tipo');
+      if (!ID_CAT.test(String(datos.id || ''))) falla('DATO_INVALIDO', 'Identificador no válido en id');
+      const es = recortar(datos.es, 80).replace(/\s+/g, ' ');
+      nombresDemo = nombresDemo.filter((x) => !(x.tipo === datos.tipo && x.id === datos.id));
+      if (!es) return { tipo: datos.tipo, id: datos.id, quitado: true };
+      const fila = { tipo: datos.tipo, id: datos.id, es, en: recortar(datos.en, 80), validado: true, por: YO.nick, fecha: new Date().toISOString() };
+      nombresDemo.push(fila);
+      return { ...fila };
     }
     case 'build.eliminar':
       if (!buildsDemo.some((x) => x.id === datos.id)) falla('NO_EXISTE', 'Build no encontrada.');

@@ -130,7 +130,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     return html`<li class="bld-pieza">
       <span class="bld-pieza__parte" title="${n.es}">${n.corto}</span>
       <div class="bld-pieza__texto">
-        <p class="bld-pieza__nombre">${bil(p.nombreEs, p.nombre)}</p>
+        <p class="bld-pieza__nombre">${bil(p.nombreEs, p.nombre, { ok: p.esOk })}</p>
         ${chipsHab(cat, p.habs)}
       </div>
       ${selectRareza(parte, p.item, p.r)}
@@ -183,7 +183,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
           ? html`<div class="bld-pieza">
               <span class="bld-pieza__parte">Arm</span>
               <div class="bld-pieza__texto">
-                <p class="bld-pieza__nombre">${bil(arma.nombreEs, arma.nombre)}</p>
+                <p class="bld-pieza__nombre">${bil(arma.nombreEs, arma.nombre, { ok: arma.esOk })}</p>
                 <p class="nota">${statsArma(c)}</p>
                 ${arma.item.innato ? chipsHab(cat, [[arma.item.innato.hab, arma.item.innato.nv]]) : ''}
               </div>
@@ -309,7 +309,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
               <tbody>
                 ${lista.map((h) => html`
                   <tr class="bld-matriz__fila" data-hab="${h.id}" tabindex="0" aria-expanded="false">
-                    <th scope="row">${bil(h.es, h.en)}${h.porConfirmar ? html` <span class="nota">(por confirmar)</span>` : ''}</th>
+                    <th scope="row">${bil(h.es, h.en, { ok: h.esOk })}${h.porConfirmar ? html` <span class="nota">(por confirmar)</span>` : ''}</th>
                     ${cols.map(([k]) => celda(h, k))}
                     <td class="bld-matriz__total bld-matriz__total--${h.estado}">${h.nivel}/${h.max}${h.sobra ? html`<small>+${h.sobra}</small>` : ''}</td>
                   </tr>`)}
@@ -324,7 +324,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
           <h2 class="titulo titulo--menor">Sets</h2>
           <ul>
             ${c.sets.map((st) => html`<li>
-              <div><p class="bld-pieza__nombre">${bil(st.es, st.en)}</p>
+              <div><p class="bld-pieza__nombre">${bil(st.es, st.en, { ok: st.esOk })}</p>
                 <p class="nota">${st.necesarias}: ${bilFicha(cat.habilidades.get(st.hab), { num: ` +${st.nv}` }) || `${st.hab} +${st.nv}`}</p></div>
               <span class="bld-cuenta-set ${st.activo ? 'bld-cuenta-set--listo' : ''}">${Math.min(st.puestas, st.necesarias)}/${st.necesarias}</span>
             </li>`)}
@@ -395,7 +395,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       </div>
       <div class="bld-cuerpo">${vista === 'hoja' ? vistaHoja(c) : vistaHabilidades(c)}</div>
       ${editable && guardada ? html`<button type="button" class="boton boton--ancho boton--peligro" data-eliminar>Eliminar build</button>` : ''}
-      <p class="nota bld-fuente">Datos del juego: gacha.gg y GameWith (catálogo ${cat.meta.version || ''}). Nombres en español de GameWith es-MX, por confirmar con el juego; al lado, el inglés. Lo que GameWith no trae sigue en inglés.</p>
+      <p class="nota bld-fuente">Datos del juego: gacha.gg y GameWith (catálogo ${cat.meta.version || ''}). Nombres en español de GameWith es-MX, por confirmar con el juego; al lado, el inglés. Lo que GameWith no trae sigue en inglés. <a href="#/nombres">Nombres del juego</a>${tieneRol('oficial') ? ' (corregir)' : ''}.</p>
       ${barra(c)}`);
     if (expandida) {
       const fila = raiz.querySelector(`[data-hab="${expandida}"]`);
@@ -487,6 +487,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       selector = abrirSelector(cat, b, parte, {
         armaTipo: armaTipo(),
         alElegir: (id, r) => cambiar(() => { b = conPieza(b, parte, id, r); }),
+        alCambiarNombre: () => pintarTodo(),
       });
       return;
     }

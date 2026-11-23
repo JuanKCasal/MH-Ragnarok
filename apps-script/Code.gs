@@ -16,7 +16,8 @@ var LECTURAS = {
   clash: function (p) { return verClash_(p); },
   clash_historial: function () { return historialClash_(); },
   builds: function (p) { return listarBuilds_(p); },
-  build: function (p) { return verBuild_(p.id); }
+  build: function (p) { return verBuild_(p.id); },
+  catalogo_nombres: function () { return listarNombres_(); }
 };
 
 // Acciones que no escriben (no necesitan LockService).
@@ -34,6 +35,7 @@ var ESCRITURAS = {
   'adventurer.principal': function (t, d) { return marcarPrincipal_(t, d); },
   'build.guardar': function (t, d) { return guardarBuild_(t, d); },
   'build.eliminar': function (t, d) { return eliminarBuild_(t, d); },
+  'catalogo.nombre': function (t, d) { return guardarNombre_(t, d); },
   'imagen.subir': function (t, d) { return subirImagen_(t, d); },
   'clash.asistencia': function (t, d) { return asistenciaClash_(t, d); },
   'clash.guardarEquipos': function (t, d) { return guardarEquiposClash_(t, d); },

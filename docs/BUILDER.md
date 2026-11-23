@@ -109,7 +109,7 @@ Todo bloque es opcional (una build puede ser solo equipo). Los números de `pode
 | **E3** | Tarjeta de build | En el perfil (debajo de cada adventurer) y en guías con `[[build:ID]]` en el Markdown; Compartir y "Usar de base" | E2 |
 | **E4** | Resto de cajones | Rostros (catálogo de GameWith: 56 cartas, 12 sets, núcleo, calidad y nivel), Camarada (42 de gacha.gg; nivel/estrellas/poder los escribe el miembro), Keepsake (nivel + grabados), Reflexiones (nodos por adventurer) | E2 |
 | **E5** | Comparar | Modo "cambiar una pieza" y dos builds lado a lado | E2 |
-| **E6** | Nombres ES | Un oficial escribe el nombre ES desde el selector o la tarjeta; queda "por confirmar" hasta validar (hoja `Catalogo`) | E2 |
+| **E6** | Nombres ES | **Hecha (sesión 13, §12)**: los oficiales corrigen o confirman el nombre ES (página "Nombres del juego" y atajo en el selector); hoja `Catalogo` | E2 |
 | **E7** | Poder estimado | Ajuste de la fórmula con los poderes reales que carguen los miembros; se muestra como "≈ estimado" | E2 + datos reales |
 
 Cada entrega se publica y se prueba en el celular antes de la siguiente (el clan ya usa la web).
@@ -192,3 +192,13 @@ Pedido de Juan: "todo el equipo" (armas, armaduras, sets y habilidades) en espa�
 **Pantallas**: `bil(es, en)` en `ui/build-textos.js` (ES y, debajo, el EN más chico; el " · " solo aparece al copiar). Se usa en piezas, arma, chips de habilidades, chips y lista de sets, matriz de Habilidades y selector (título de la candidata). "Si la cambias…", el resumen del cajón y los filtros (monstruo, habilidad) van en una línea con el ES. Orden alfabético por el ES. El buscador del selector encuentra por nombre ES o EN de pieza, set, monstruo y habilidad. Las descripciones de habilidades siguen en inglés.
 
 Pruebas: **115** (nuevas en `tests/catalogo.test.mjs`: traductor y catálogo con ES). Revisado en navegador (modo demo, 390 px): hoja, matriz, sets, selector con búsqueda ES y EN, sin scroll horizontal ni errores de consola. Catálogo: 357 KB sin comprimir (antes 274).
+
+## 12. E6 · Nombres ES editables — hecho (2026-11-23, sesión 13)
+
+Decisiones de Juan: **página + atajo**; armas y armaduras se corrigen por **nombre base** (vale para todas las rarezas; la radiante sale sola si no tiene nombre propio); lo que escribe un **oficial queda confirmado** (✓), los de GameWith siguen "por confirmar".
+
+- **Hoja `Catalogo`** (ya existía, vacía; no hace falta `instalar()`): una fila por corrección. `tipo` = arma / pieza / habilidad / set / monstruo; `id` = id del catálogo (habilidad, set, monstruo) o slug del nombre base EN (armas y piezas: "Rathalos Helm" → `rathalos-helm`, "Flammenzahn+" → `flammenzahn-plus`); `nombre_es`, `nombre_en` (base EN, para leer la hoja), `extra_json` = `{fecha}`, `validado` = TRUE, `creado_por`.
+- **Backend** `apps-script/Catalogo.gs`: `catalogo_nombres` (lectura pública, cacheada) y `catalogo.nombre` (oficial; `es` vacío = quitar). Pruebas en `tests/nombres.test.mjs`. **Requiere publicar la versión 5 del Web App** (12 módulos). Si la web sale antes, todo funciona con los nombres de GameWith y guardar da "Acción desconocida".
+- **Navegador** `site/js/nombres.js` (puro): `aplicarNombres` (al cargar el catálogo, encima de lo de GameWith; arma por base + número + elemento; habilidades también a sus variantes `-s0`…), `entradasNombres` (lista para la página, estado `en` / `gw` / `ok`), `claveNombre`, `partirNombre`, `baseEs`. `catalogo.js` lo aplica tras indexar (si falla la lectura, sigue sin correcciones). Las tuplas quedan `[r, en, es?, confirmado?]`; `nombreOk(item, r)` en `build-calc.js`.
+- **Pantallas**: página `#/nombres` (pestañas Armas / Armaduras / Habilidades / Sets / Monstruos; filtros En inglés / Por confirmar / Confirmados / Todos; buscador ES+EN; los oficiales editan, "Confirmar" y "Volver al de GameWith"; los demás solo leen). En el selector de pieza, "Corregir nombre en español" (solo oficiales). Enlace "Nombres del juego" al pie del builder. ✓ verde junto al nombre confirmado (piezas, arma, matriz, sets). Modo demo con una corrección de ejemplo (Cota de Rathalos).
+- Pruebas: **119**. Revisado en navegador (modo demo, 390 px): página (guardar → ✓, volver al de GameWith), atajo en el selector, sin scroll horizontal ni errores de consola.
