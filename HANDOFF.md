@@ -1,13 +1,31 @@
-# HANDOFF — MH-Ragnarok (sesión 9 en curso: builder interactivo)
+# HANDOFF — MH-Ragnarok (fin de sesión 9: builder interactivo, elegida la opción C)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
 
 ## Sesión 9 — Builder interactivo de builds (fase de preguntas cerrada; nada programado aún)
 
-### Punto de partida exacto
+### Punto de partida exacto para la sesión 10
 1. Leer `CLAUDE.md`, este bloque, `SPEC.md` (§5.4, §5.13, §11) y `DESIGN.md`.
-2. **Siguiente paso:** buscar fuentes para lo que falta (Rostros/Visage carta por carta, Weapon Insight, Charm; nivel/poder de Camaradas): GameWith (gamewith.ai/monster-hunter-outlanders), Game8, otras. Lo que no aparezca → lo cargan oficiales desde capturas.
+2. **Opciones de diseño del builder ya hechas** (2026-11-23) en Claude Design: https://claude.ai/artifact/726WTLRBiYufWioKdsk5Qa (privado de Juan). Copia en `docs/mockups/builder/` (`canvas.json` + 9 `.dc.html`; `Main.dc.html` = editor de la opción A). Datos de ejemplo reales del catálogo (Fated Adventurer, ballesta pesada de fuego, piezas de Rathalos/Anjanath en 13/13).
+   - **A · Muñeco con ranuras** (`Main`, `A-Habilidades`): figura con 5 piezas + arma alrededor, como en el juego; debajo 4 fichas (Rostros, Camarada, Keepsake, Reflexiones); las habilidades salen en una hoja inferior con barras por nivel, "sobran/faltan" y sets.
+   - **B · Asistente paso a paso** (`B-Paso`, `B-Resumen`): 7 pasos (Adventurer, Arma, Armadura, Rostros, Camarada, Keepsake, Reflexiones) con barra de progreso y una línea fija con lo que suma; resumen final agrupado (sobran / al tope / les falta) con "Editar" por bloque.
+   - **C · Hoja única con cajones** (`C-Hoja`, `C-Habilidades`): todo en una pantalla, un cajón abierto a la vez, barra fija con poder y estado de habilidades; vista "Habilidades" como matriz habilidad × pieza (de dónde sale cada nivel).
+   - **Comunes**: `Selector-Pieza` (buscador + filtros + "si la cambias…" con lo que gana y pierde), `Tarjeta-Build` (en el perfil y embebida en una guía, con Compartir / Usar de base), `Comparar` (modo "cambiar una pieza": solo lo que cambia + poder estimado).
+3. **Juan eligió la opción C · Hoja única con cajones** (2026-11-23), con las pantallas comunes (selector de pieza, tarjeta de build, comparar). **Siguiente paso (sesión 10)**, antes de programar: modelo de datos del builder (hojas nuevas sin romper `Adventurers`; catálogo JSON en `site/data/`), limpieza del catálogo (ver "Problemas del catálogo") y plan por entregas.
+4. Sesión 8 cerrada: Juan confirmó (2026-11-23) que ya puso el **código del clan**, cambió el PIN de MyMarLa y pegó el enlace de WhatsApp. **El clan ya está usando la web.** Siguen abiertos de esa lista solo los puntos 4–6 de la versión anterior (pruebas con el backend real, publicar versión 3 en el próximo cambio de backend, activador de `limpiarSesiones`, Node 24 en Pages, glosario ES).
+5. Como hay usuarios reales: no romper datos existentes (hojas, columnas, sesiones) al agregar lo del builder; cambios de backend con migración compatible.
+6. Git: al cierre quedan sin commit `HANDOFF.md` y `docs/mockups/builder/`.
+
+### Problemas del catálogo detectados (sesión 9)
+- `beads` de algunas habilidades viene mal (p. ej. Health Boost lista casi todas las joyas con nivel 1): no fiarse de ese campo sin revisar.
+- Habilidades con el mismo nombre y distinto efecto: "Critical Element" ×2 (daño elemental / daño a monstruos controlados), "Affinity Bonus" ×2. Hay que darles id propio.
+- En armaduras `series` y `monster` vienen vacíos: el monstruo hay que sacarlo del nombre o del set.
+- El ataque de afinidad de las armas parece venir ×100 (−300 = −3 %): confirmar.
+
+### (Sesión 9, primera parte) Punto de partida que se usó
+1. Leer `CLAUDE.md`, este bloque, `SPEC.md` (§5.4, §5.13, §11) y `DESIGN.md`.
+2. ~~Buscar fuentes para lo que falta~~ **[HECHO 2026-11-23]**: ver "Fuentes encontradas" abajo. Juan confirmó (2026-11-23): el "Charm" de su captura es el **Keepsake** del adventurer (nivel x/80 + 5 Engravings).
 3. Luego, **antes de programar**, hacer **opciones de diseño en Claude Design** (tipo "Design" del Artifact tool), celular 390 px, **misma estética B** (tokens de `DESIGN.md`); las opciones varían solo la **interacción** (ideas: A = muñeco con ranuras como en el juego, B = asistente paso a paso, C = hoja única con cajones). Pantallas pedidas:
    - Editor de build (adventurer, arma, 5 piezas con rareza, joyas, Rostros, camarada, Weapon Insight).
    - Selector de pieza (buscador + filtros por monstruo, elemento, habilidad).
@@ -25,6 +43,26 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 - Nombres: **EN ahora, ES después** (un oficial agrega el nombre ES desde la web, marcado "por confirmar" hasta validarlo).
 - Catálogo: **JSON estático en la web** (`site/data/…`), actualizado re-descargando de gacha.gg y haciendo commit.
 - Cálculo: sumar stats y skills **y además intentar estimar el Adventurer Power** (fórmula aproximada ajustada con los poderes reales que carguen los miembros; mostrar como "estimado"). El poder que usa el Clash sigue siendo el que escribe el miembro.
+
+### Fuentes encontradas (sesión 9, 2026-11-23) — para el catálogo del builder
+
+Ninguna publica licencia de datos (todas "© 2026 … all rights reserved", fan sites). Igual que con gacha.gg: catálogo propio en JSON, citando la fuente en la web; no copiar textos largos ni imágenes.
+
+- **Rostros / Visage — completo** en GameWith: https://gamewith.ai/monster-hunter-outlanders/en/visages (también `/es-mx/visages`, con nombres en español).
+  - **56 Rostros** (costo 1, 3 o 4; 1 o 2 sets cada uno) y **12 sets**: 11 "Ink of …" + "Kushala Daora's Tempest" (1 carta, bonos de 1 y 2 piezas, "Season 0 only"). Bonos de 2 y 4 piezas por set.
+  - Cada Rostro tiene **efecto núcleo** propio (p. ej. Great Girros: "Paralysis Resistance +3"), en su página `/visages/<slug>` y en las de set `/visages/set/<slug>`.
+  - Reglas: costo total máx. 12; 1 núcleo + 4; **para los sets cuentan monstruos distintos** (dos copias del mismo monstruo = 1 pieza) (Fextralife).
+  - **Calidad y nivel** (mhohub.com/visages/<slug>, p. ej. `/apceros/`): calidades Fine / Rare / Epic / Superior; Fine nivel 1, las demás hasta **nivel 10**. Al obtenerla trae **1 atributo inicial** al azar (rango por calidad) y tiene **5 ranuras de "resketch"** que se abren en Lv 2/4/6/8/10 (cada una un efecto al azar con rango por calidad). Sin "poder" publicado.
+  - Nombres ES (GameWith es-MX): sets "Tinta de llamas / combate / guía / protección / poder / resonancia / draco / agua / gracia / escarcha / rayo", "Tempestad de Kushala Daora"; cartas "Rostro: Rathian radiante"… Etiquetas: Costo, Efectos del set, Efectos potenciales.
+- **Weapon Insight → en realidad "Insights" por adventurer** (GameWith: página de cada adventurer, p. ej. `/en/adventurers/fated-adventurer-heavy-bowgun`, tabla "Insights": nombre, tipo, puntos, efecto; Game8 en sus guías de build; planificador en mhoutlanders.net/tools/insight-planner).
+  - Cada adventurer tiene **~10 nodos**: 6 propios de 30 puntos + 4 comunes baratos (Power Charge 10, Hunting Spirit 10, Protection 5, Harmony 5). Suma 210; Game8 dice que el máximo por adventurer es **185**. Los puntos salen de duplicados (30 por copia, según mhoutlanders.net). El **Fated Adventurer** tiene una lista por tipo de arma. La captura de Juan (65/65) encaja: capacidad que crece.
+  - Fextralife habla de "hasta 3 habilidades ranuradas dentro de la capacidad de puntos": **por confirmar** con capturas.
+  - ES (GameWith es-MX): Insight = "**Reflexión**" (confirmar con el juego en español).
+- **Charm**: ninguna fuente usa "Monster Spirit Charm". Lo más probable es el **Keepsake** del adventurer (GameWith engravings-guide): se sube de nivel con Dew + Zenny, ascensión cada 10 niveles (tope inicial 20; según Ecological Rank), y desde Keepsake **Lv 30** se abren **Engravings** cada 10 niveles hasta 80: Skill Boost, Ultimate, Elemental Specialization, Core Passive (Lv 50) y Core Attribute. **Confirmado por Juan.**
+- **Camaradas / Buddy**: GameWith tiene buddy tier list (también es-MX: Camarada, "Aumento de aventurero" = Adventurer Boost, "Pasiva principal" = Core Passive, "Definitiva" = Ultimate). Se suben de nivel (Dewberry) y tienen ascensión (acorns), que mejora su Ultimate y su Adventurer Boost. **No hay tablas públicas de stats/poder por nivel** → el miembro escribe nivel, estrellas y poder desde su captura.
+- **Adventurer Power**: ninguna fuente da fórmula ("sube con nivel y equipo"; las comidas no cuentan). Se mantiene la idea de estimarlo con los datos reales del clan.
+- **Otras referencias útiles**: mhohub.com tiene *Armor Builder*, *Adventurer Compare*, base de armas/armaduras/skills (referencia de UX, no copiar). GameWith `/en/weapons` lista armas con ataque/afinidad/elemento/filo a rareza máx. (sirve para contrastar gacha.gg).
+- **Glosario ES de GameWith es-MX** (para `CLAUDE.md`, "confirmar"): Aventurero, Camarada, Rostro, Reflexión, Asalto / Alterador / Apoyo, Definitiva, Pasiva principal, Aumento de aventurero.
 
 ### Datos recibidos (`datos/gacha-gg/`, fuente gacha.gg, descargados 2026-11-23)
 - `mho-equipo.json`: `{source, fetched, items[563], skills[205]}`.

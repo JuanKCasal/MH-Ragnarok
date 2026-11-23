@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Selector de pieza (común a las 3)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&amp;family=Mulish:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#e6c068}a:hover{color:#f0d48a}
+.r{font-family:'Mulish',sans-serif;color:#efe4cc;background:radial-gradient(ellipse 120% 40% at 50% 0%,#3a1a1f 0%,#1a1214 50%,#0f0c0d 100%);box-sizing:border-box;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:18px}
+.r *{box-sizing:border-box}
+.hd{display:flex;align-items:center;gap:6px;padding:10px 12px;border-bottom:1px solid rgba(230,192,104,.35)}
+.back{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;color:#e6c068;flex:none}
+.t{margin:0;font-family:'Cinzel',serif;font-weight:700;font-size:22px;line-height:1.15;color:#f0d48a}
+.t2{margin:0;font-family:'Cinzel',serif;font-weight:700;font-size:18px;line-height:1.2;color:#f0d48a}
+.sub{margin:0;font-size:13px;color:#b8a888}
+.rot{margin:0;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#b8a888}
+.p{margin:0 16px;padding:14px;border:1px solid rgba(230,192,104,.28);background:rgba(255,255,255,.03)}
+.pp{margin:0 16px;padding:16px;border:1px solid rgba(230,192,104,.55);outline:1px solid rgba(230,192,104,.2);outline-offset:4px;background:linear-gradient(160deg,#241a1c,#171113)}
+.cifra{font-family:'Cinzel',serif;font-weight:700;font-size:34px;line-height:1;color:#fbf1d8;font-variant-numeric:tabular-nums}
+.btn{min-height:50px;border:0;border-radius:2px;background:linear-gradient(#e9c46e,#b98a32);color:#1a1214;font:800 15px 'Mulish',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:0 18px;cursor:pointer}
+.btn2{min-height:46px;border:1px solid rgba(230,192,104,.5);border-radius:2px;background:transparent;color:#efe4cc;font:800 14px 'Mulish',sans-serif;letter-spacing:.08em;text-transform:uppercase;padding:0 14px;cursor:pointer}
+.lnk{background:none;border:0;color:#e6c068;font:800 13px 'Mulish',sans-serif;letter-spacing:.06em;text-transform:uppercase;min-height:44px;padding:0 4px;cursor:pointer}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border:1px solid rgba(230,192,104,.35);border-radius:2px;font:700 14px 'Mulish',sans-serif;color:#efe4cc;background:transparent;white-space:nowrap}
+.chip.on{border-color:#e6c068;background:rgba(230,192,104,.14);color:#fbf1d8}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border:1px solid rgba(230,192,104,.3);border-radius:2px;font-size:12px;font-weight:700;color:#d8c9a8;white-space:nowrap}
+.tag.ok{border-color:rgba(159,224,176,.5);color:#9fe0b0}
+.tag.warn{border-color:rgba(240,212,138,.6);color:#f0d48a}
+.tag.err{border-color:rgba(241,154,143,.55);color:#f19a8f}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:12px 16px 22px;background:rgba(15,12,13,.97);border-top:1px solid rgba(230,192,104,.45);display:flex;gap:10px;align-items:center}
+.pips{display:flex;gap:2px;width:100%}
+.pip{height:6px;flex:1;background:rgba(230,192,104,.16)}
+.pip.on{background:#e6c068}
+.pip.over{background:#f19a8f}
+.ok{color:#9fe0b0}.warn{color:#f0d48a}.err{color:#f19a8f}.muted{color:#9a8d76}.soft{color:#d8c9a8}
+.cell{background:#161012;padding:10px 12px}
+.row{display:flex;align-items:center;gap:10px}
+.col{display:flex;flex-direction:column;gap:4px}
+.hr{height:1px;background:rgba(230,192,104,.22);border:0;margin:0}
+.num{font-variant-numeric:tabular-nums}
+.seg{display:flex;border:1px solid rgba(230,192,104,.45)}
+.seg button{flex:1;min-height:44px;background:transparent;border:0;border-right:1px solid rgba(230,192,104,.3);color:#d8c9a8;font:800 12px 'Mulish',sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:rgba(230,192,104,.16);color:#f0d48a}
+</style>
+</helmet>
+<div class="r" style="width: 390px; height: 1300px">
+
+<header class="hd"><a href="#" class="back" aria-label="Volver"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a><div style="flex:1"><h1 class="t">Elegir piernas</h1><p class="sub">Legs · 49 piezas en el catálogo</p></div></header>
+
+<div style="margin:0 16px;display:flex;flex-direction:column;gap:10px">
+  <label class="col" style="gap:6px"><span class="rot">Buscar</span>
+    <span class="row" style="gap:8px;height:48px;padding:0 12px;background:#161012;border:1px solid rgba(230,192,104,.55)"><span style="color:#b8a888"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></span><input type="search" value="fire" aria-label="Buscar pieza, monstruo o habilidad" style="flex:1;min-width:0;background:transparent;border:0;color:#efe4cc;font:400 16px 'Mulish',sans-serif;outline:none"></span>
+    <span style="font-size:12px;color:#9a8d76">Nombre de la pieza, monstruo o habilidad</span>
+  </label>
+  <div class="row" style="gap:6px;overflow:hidden">
+    <button type="button" class="chip on">Fire Damage Up <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button type="button" class="chip"><span class="dot" style="background:#e8693f"></span>Elemento</button>
+    <button type="button" class="chip">Monstruo</button>
+    <button type="button" class="chip"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg></button>
+  </div>
+  <div class="row" style="justify-content:space-between"><span class="sub">2 piezas con Fire Damage Up</span><button type="button" class="lnk">Rareza 13 ▾</button></div>
+</div>
+
+<section style="margin:0 16px;display:flex;flex-direction:column;gap:10px">
+  <article style="border:1px solid #e6c068;background:linear-gradient(160deg,#241a1c,#171113);padding:12px;display:flex;flex-direction:column;gap:8px">
+  <div class="row" style="justify-content:space-between;align-items:flex-start"><span class="col" style="gap:2px"><span style="font-size:15px;font-weight:800">Radiant Rathalos Greaves VI</span><span style="font-size:12px;color:#b8a888">Rathalos's Fervor · Def. 180 en 13</span></span><span class="tag ok">Puesta</span></div>
+  <div class="row" style="gap:6px;flex-wrap:wrap"><span class="tag" style="border-color:#e6c068;color:#fbf1d8">Fire Damage Up 2</span><span class="tag" style="">Adversity 1</span><span class="tag" style="">Critical Element 1</span></div>
+  
+  
+</article>
+  <article style="border:1px solid rgba(230,192,104,.4);background:linear-gradient(160deg,#241a1c,#171113);padding:12px;display:flex;flex-direction:column;gap:8px">
+  <div class="row" style="justify-content:space-between;align-items:flex-start"><span class="col" style="gap:2px"><span style="font-size:15px;font-weight:800">Anja Greaves VI</span><span style="font-size:12px;color:#b8a888">Anjanath Ember · Def. 177 en 13</span></span></div>
+  <div class="row" style="gap:6px;flex-wrap:wrap"><span class="tag" style="border-color:#e6c068;color:#fbf1d8">Fire Damage Up 1</span><span class="tag" style="">Health Cycle 1</span><span class="tag" style="">Adversity 1</span></div>
+  <div style="border-top:1px solid rgba(230,192,104,.18);padding-top:6px"><p class="rot" style="font-size:10px;margin-bottom:2px">Si la cambias</p><ul style="margin:0;padding:0"><li style="list-style:none;font-size:13px;padding:2px 0" class="ok">Health Cycle 2 → 3 · al tope</li><li style="list-style:none;font-size:13px;padding:2px 0" class="ok">Anjanath Ember 1 → 2/3</li><li style="list-style:none;font-size:13px;padding:2px 0" class="warn">Fire Damage Up 12 → 11 · sigue al tope</li><li style="list-style:none;font-size:13px;padding:2px 0" class="err">Critical Element 1 → 0</li><li style="list-style:none;font-size:13px;padding:2px 0" class="err">Rathalos's Fervor 2 → 1/3</li><li style="list-style:none;font-size:13px;padding:2px 0" class="soft">Defensa −3</li></ul></div>
+  <button type="button" class="btn2" style="width:100%;margin-top:4px">Usar esta</button>
+</article>
+</section>
+
+<div style="margin:0 16px" class="row"><span class="hr" style="flex:1"></span><span class="rot" style="font-size:10px">Sin Fire Damage Up · 47</span><span class="hr" style="flex:1"></span></div>
+
+<section style="margin:0 16px;display:flex;flex-direction:column;gap:10px">
+  <article style="border:1px solid rgba(230,192,104,.4);background:linear-gradient(160deg,#241a1c,#171113);padding:12px;display:flex;flex-direction:column;gap:8px">
+  <div class="row" style="justify-content:space-between;align-items:flex-start"><span class="col" style="gap:2px"><span style="font-size:15px;font-weight:800">Radiant Rathian Greaves VI</span><span style="font-size:12px;color:#b8a888">Rathian's Instinct · Def. 190 en 13</span></span></div>
+  <div class="row" style="gap:6px;flex-wrap:wrap"><span class="tag" style="">Flash Draw 2</span><span class="tag" style="">Hunting Instinct 1</span><span class="tag" style="">Botanical Expert 1</span></div>
+  <div style="border-top:1px solid rgba(230,192,104,.18);padding-top:6px"><p class="rot" style="font-size:10px;margin-bottom:2px">Si la cambias</p><ul style="margin:0;padding:0"><li style="list-style:none;font-size:13px;padding:2px 0" class="ok">Flash Draw 0 → 2</li><li style="list-style:none;font-size:13px;padding:2px 0" class="ok">Hunting Instinct 1 → 2</li><li style="list-style:none;font-size:13px;padding:2px 0" class="err">Fire Damage Up 12 → 10</li><li style="list-style:none;font-size:13px;padding:2px 0" class="err">Critical Element 1 → 0 · Adversity 1 → 0</li></ul></div>
+  <button type="button" class="btn2" style="width:100%;margin-top:4px">Usar esta</button>
+</article>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
