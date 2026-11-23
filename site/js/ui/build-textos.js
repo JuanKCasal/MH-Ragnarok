@@ -15,11 +15,25 @@ export function afinidad(v) {
 
 export const signo = (n) => (n > 0 ? `+${numero(n)}` : n < 0 ? `−${numero(-n)}` : '0');
 
-/** Chips de habilidades de una pieza: [[id, nivel]] → "Fire Damage Up 2". */
+/**
+ * Nombre del juego en español con el inglés debajo, más chico: "Yelmo de Rathalos V" / "Rathalos Helm V".
+ * Los ES son de GameWith es-MX (por confirmar). Sin ES, solo el inglés.
+ * num: lo que va pegado al ES (nivel de la habilidad); numEn: lo que va pegado al EN (por defecto, nada).
+ */
+export function bil(es, en, { num = '', numEn = '' } = {}) {
+  if (!es || es === en) return html`<span class="bld-bil">${en}${num}</span>`;
+  return html`<span class="bld-bil">${es}${num}<span class="bld-en" lang="en"><span class="bld-sep"> · </span>${en}${numEn}</span></span>`;
+}
+/** bil() para una ficha del catálogo con {es, en} (habilidad, set, monstruo). */
+export const bilFicha = (x, op) => (x ? bil(x.es, x.en, op) : '');
+
+/** Chips de habilidades de una pieza: [[id, nivel]] → "Mejora de daño de fuego 2 · Fire Damage Up". */
 export function chipsHab(cat, habs, { resaltar } = {}) {
   if (!habs.length) return html`<span class="nota">Sin habilidades en esta rareza</span>`;
-  return html`<ul class="bld-chips">${habs.map(([h, nv]) => html`
-    <li class="bld-chip ${h === resaltar ? 'bld-chip--resalta' : ''}">${cat.habilidades.get(h)?.en || h} ${nv}</li>`)}</ul>`;
+  return html`<ul class="bld-chips">${habs.map(([h, nv]) => {
+    const f = cat.habilidades.get(h);
+    return html`<li class="bld-chip ${h === resaltar ? 'bld-chip--resalta' : ''}">${f ? bil(f.es, f.en, { num: ` ${nv}` }) : `${h} ${nv}`}</li>`;
+  })}</ul>`;
 }
 
 /** Línea de stats de un arma en su rareza. */
@@ -37,13 +51,13 @@ export function siLaCambias(d) {
   const lineas = [];
   for (const h of d.habilidades) {
     const tope = h.alTope ? (h.efecto === 'gana' ? ' · al tope' : ' · sigue al tope') : '';
-    lineas.push(html`<li class="bld-dif bld-dif--${h.efecto}">${h.en} ${h.antes} → ${h.despues}${h.efecto !== 'pierde' ? tope : ''}</li>`);
+    lineas.push(html`<li class="bld-dif bld-dif--${h.efecto}">${h.es || h.en} ${h.antes} → ${h.despues}${h.efecto !== 'pierde' ? tope : ''}</li>`);
   }
   for (const s of d.sets) {
     const a = Math.min(s.antes, s.necesarias);
     const b = Math.min(s.despues, s.necesarias);
     if (a === b) continue; // sigue completo: no cambia nada que importe
-    lineas.push(html`<li class="bld-dif bld-dif--${b > a ? 'gana' : 'pierde'}">${s.en} ${a}/${s.necesarias} → ${b}/${s.necesarias}${s.efecto === 'gana' ? ' · listo' : ''}</li>`);
+    lineas.push(html`<li class="bld-dif bld-dif--${b > a ? 'gana' : 'pierde'}">${s.es || s.en} ${a}/${s.necesarias} → ${b}/${s.necesarias}${s.efecto === 'gana' ? ' · listo' : ''}</li>`);
   }
   if (d.def) lineas.push(html`<li class="bld-dif">Defensa ${signo(d.def)}</li>`);
   if (d.atk) lineas.push(html`<li class="bld-dif">Ataque ${signo(d.atk)}</li>`);

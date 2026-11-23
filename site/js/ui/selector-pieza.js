@@ -4,10 +4,10 @@
  * La capa y el "atrás" del celular: ui/capa.js.
  */
 import { html, pintar, numero } from './dom.js';
-import { calcular, diferencia, conPieza, buscarPiezas, rarezaDe, nombreEn, habilidadesDePieza, NOMBRE_PARTE,
+import { calcular, diferencia, conPieza, buscarPiezas, rarezaDe, nombreEn, nombreEs, nombreDe, habilidadesDePieza, NOMBRE_PARTE,
   ELEMENTOS_FILTRO, RAREZA_MAX } from '../build-calc.js';
 import { ARMAS, ELEMENTOS } from '../etiquetas.js';
-import { chipsHab, statsArma, siLaCambias } from './build-textos.js';
+import { chipsHab, statsArma, siLaCambias, bil } from './build-textos.js';
 import { abrirCapa } from './capa.js';
 
 const POR_PAGINA = 30;
@@ -32,7 +32,7 @@ export function abrirSelector(cat, build, parte, { armaTipo = '', alElegir }) {
   const monstruos = cat.lista.monstruos.filter((m) => universo.some((x) => x.monstruo === m.id));
   const habIds = new Set();
   universo.forEach((x) => (esArma ? (x.innato ? [[x.innato.hab]] : []) : x.hab.flatMap((u) => u[1])).forEach(([h]) => habIds.add(h)));
-  const habs = [...habIds].map((h) => cat.habilidades.get(h)).filter(Boolean).sort((a, b) => a.en.localeCompare(b.en));
+  const habs = [...habIds].map((h) => cat.habilidades.get(h)).filter(Boolean).sort((a, b) => nombreDe(a).localeCompare(nombreDe(b), 'es'));
   const elementos = esArma ? [...Object.keys(ELEMENTOS)] : ELEMENTOS_FILTRO;
 
   const { capa, cerrar } = abrirCapa(titulo);
@@ -55,12 +55,12 @@ export function abrirSelector(cat, build, parte, { armaTipo = '', alElegir }) {
       <div class="bld-capa__filtros">
         <label class="campo">
           <span class="campo__etiqueta">Buscar</span>
-          <input class="entrada buscador__entrada" type="search" data-f="texto" placeholder="Pieza, monstruo o habilidad" autocomplete="off" spellcheck="false" enterkeyhint="search">
+          <input class="entrada buscador__entrada" type="search" data-f="texto" placeholder="Pieza, monstruo o habilidad (español o inglés)" autocomplete="off" spellcheck="false" enterkeyhint="search">
         </label>
         <div class="bld-filtros">
-          ${select('monstruo', 'Monstruo', [['', 'Todos'], ...monstruos.map((m) => [m.id, m.en]), ['otros', 'Sin monstruo']], '')}
+          ${select('monstruo', 'Monstruo', [['', 'Todos'], ...monstruos.map((m) => [m.id, nombreDe(m)]), ['otros', 'Sin monstruo']], '')}
           ${select('elemento', 'Elemento', [['', 'Todos'], ...elementos.map((e) => [e, ELEMENTOS[e]])], '')}
-          ${habs.length ? select('hab', 'Habilidad', [['', 'Todas'], ...habs.map((h) => [h.id, h.en])], '') : ''}
+          ${habs.length ? select('hab', 'Habilidad', [['', 'Todas'], ...habs.map((h) => [h.id, h.es && h.es !== h.en ? `${h.es} · ${h.en}` : h.en])], '') : ''}
           ${select('r', 'Rareza', Array.from({ length: RAREZA_MAX }, (_, i) => [RAREZA_MAX - i, `${RAREZA_MAX - i}`]), f.r)}
         </div>
       </div>
@@ -78,13 +78,13 @@ export function abrirSelector(cat, build, parte, { armaTipo = '', alElegir }) {
     if (esArma) {
       const c = calcular(cat, { v: 1, arma: { id: x.id, r }, piezas: {} });
       cuerpo = html`
-        <p class="nota">${[cat.monstruos.get(x.monstruo)?.en, ARMAS[x.arma]?.es].filter(Boolean).join(' · ')}</p>
+        <p class="nota">${[nombreDe(cat.monstruos.get(x.monstruo)), ARMAS[x.arma]?.es].filter(Boolean).join(' · ')}</p>
         <p class="bld-candidata__stats">${statsArma(c)}</p>
         ${x.innato ? chipsHab(cat, [[x.innato.hab, x.innato.nv]], { resaltar: f.hab }) : ''}`;
     } else {
       const set = cat.sets.get(x.set);
       cuerpo = html`
-        <p class="nota">${[set?.en, `Def. ${numero(x.def[r - x.rmin])} en ${r}`].filter(Boolean).join(' · ')}</p>
+        <p class="nota">${[nombreDe(set), `Def. ${numero(x.def[r - x.rmin])} en ${r}`].filter(Boolean).join(' · ')}</p>
         ${chipsHab(cat, habilidadesDePieza(x, r), { resaltar: f.hab })}`;
     }
     const dif = puesta ? '' : html`
@@ -95,7 +95,7 @@ export function abrirSelector(cat, build, parte, { armaTipo = '', alElegir }) {
     return html`
       <li class="bld-candidata ${puesta ? 'bld-candidata--puesta' : ''}">
         <div class="bld-candidata__cabeza">
-          <h3 class="bld-candidata__nombre">${nombreEn(x, r)}</h3>
+          <h3 class="bld-candidata__nombre">${bil(nombreEs(x, r), nombreEn(x, r))}</h3>
           ${puesta ? html`<span class="insignia insignia--curso">Puesta</span>` : ''}
         </div>
         ${fuera ? html`<p class="nota">Esta pieza va de ${x.rmin} a ${x.rmax}: se muestra en ${r}.</p>` : ''}

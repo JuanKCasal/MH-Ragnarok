@@ -1,4 +1,39 @@
-# HANDOFF — MH-Ragnarok (sesión 12: E4 · Rostros programada · backend v4 publicado · falta commit + push)
+# HANDOFF — MH-Ragnarok (sesión 13: nombres en español del equipo · falta commit)
+
+Fecha: 2026-11-23
+Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
+
+## Sesión 13 — Equipo en español (sin commit todavía)
+
+### Punto de partida exacto para la sesión 14
+1. Leer `CLAUDE.md`, este bloque y **`docs/BUILDER.md` §11** (de dónde salen los nombres ES, reglas y lo que queda en inglés).
+2. **Publicar**: solo web (no cambia el backend ni las hojas).
+   1. `npm test` en su PC → deben pasar **115** (Claude ya las corrió en su PC el 2026-11-23: 115 pasan).
+   2. Commit + push (comandos abajo). Pages publica solo.
+   3. Probar en el celular: abrir "Fire Heavy" → Armadura: cada pieza en español con el inglés debajo; pestaña Habilidades: matriz y sets en español; "Cambiar" una pieza → buscar "yelmo de rathalos" y también "rathalos helm".
+3. **Pendientes de la sesión 12 que siguen abiertos**: probar Rostros en el celular (punto 2.4 de abajo) y confirmar con Juan cuáles son sus 4 cartas.
+4. **Por confirmar con el juego en español** (no bloquea): ver la lista de "rarezas en la fuente" en `docs/BUILDER.md` §11 (corazón de Rath, Yelmo/Casco de cazador, Rompedor ×2, Intimidación ×2).
+5. **Siguiente entrega (a decidir con Juan)**: resto de la E4 (Camarada, Keepsake, Reflexiones), E3 (tarjeta de build) o E6 (que los oficiales corrijan/agreguen nombres ES desde la web: sirve para lo que quedó en inglés, como Scintillant Bayard). Confirmar alcance antes de programar.
+
+### Decisiones de Juan (sesión 13, 2026-11-23)
+- Traducir **todo el equipo**: armas, armaduras, sets y habilidades.
+- Mostrar **ES · EN como Rostros** (en la hoja: ES y el EN debajo, más chico), buscador en los dos idiomas.
+- Fuente: GameWith es-MX (él mandó el enlace de armaduras).
+
+### Hecho en la sesión 13
+- `datos/gamewith/nombres-es.json` (nuevo): 87 habilidades, 46 sets, monstruos, 150 nombres base de armadura y 283 de arma.
+- `scripts/catalogo.mjs`: `crearTraductor` + `es` en el catálogo (`nombres` = `[r, en, es]`), lista aparte "Quedan en inglés". Catálogo regenerado (357 KB).
+- Web: `bil()` en `ui/build-textos.js`; `nombreEs`/`nombreDe` en `build-calc.js` (búsqueda ES+EN, orden por ES); hoja, matriz, sets y selector en español; estilos `.bld-bil`, `.bld-en`, `.bld-sep`; nota de fuentes al pie del builder.
+- Pruebas: 115 (2 nuevas en `tests/catalogo.test.mjs`). Revisado en navegador (modo demo, 390 px), sin errores ni scroll horizontal.
+- Queda en inglés lo que GameWith no trae (lista en `docs/BUILDER.md` §11), entre ellas **Scintillant Bayard**, el arma de Juan.
+
+### Git (sesión 13)
+Modificados: `HANDOFF.md`, `docs/BUILDER.md`, `scripts/catalogo.mjs`, `site/data/catalogo/{armaduras,armas,habilidades,meta,monstruos,sets}.json`, `site/js/build-calc.js`, `site/js/ui/{build-textos,selector-pieza}.js`, `site/js/views/build.js`, `site/assets/css/views.css`, `tests/catalogo.test.mjs`. Nuevo: `datos/gamewith/nombres-es.json`.
+Mensaje sugerido: `Sesión 13: nombres en español del equipo (GameWith es-MX)`.
+
+---
+
+# (Sesión 12) HANDOFF — MH-Ragnarok (sesión 12: E4 · Rostros publicada · falta probar en el celular)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
@@ -8,9 +43,9 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 ### Punto de partida exacto para la sesión 13
 1. Leer `CLAUDE.md`, este bloque y **`docs/BUILDER.md` §9** (E4 Rostros: reglas confirmadas con capturas y qué se hizo) y §10 (notas del Keepsake).
 2. **Publicar la E4 (en este orden)**:
-   1. `npm test` en su PC (deben pasar **113**).
+   1. ~~`npm test` en su PC~~ **HECHO:** 113 pasan en Windows.
    2. ~~Backend versión 4~~ **HECHO 2026-11-23 (Claude con el Chrome de Juan):** código aplicado en el editor y verificado idéntico a `Claude outputs/MH-Ragnarok.gs` (SHA-256 `9d990f7e…`), guardado y publicada la **versión 4** ("v4 (builder E4: Rostros)", misma URL); `builds?clase=ejemplo` responde `{ok:true,data:[]}`. Sin `instalar()` (no cambian hojas).
-   3. Commit + push (mensaje sugerido: `Sesión 12: builder E4 · Rostros (catálogo GameWith, cajón, selector y backend v4)`).
+   3. ~~Commit + push~~ **HECHO:** commit `da5bfa5`, pusheado por Juan.
    4. Probar en el celular: abrir su build "Fire Heavy" → cajón Rostros → poner Kushala Daora de núcleo + Barnos, Kestodon, Rathian y Rathian radiante (lo que sale en sus capturas; **confirmar con Juan cuáles son las 4 cartas**, las identifiqué por el dibujo) → debe dar 12/12, Tinta de llamas 4/4 y Tempestad de Kushala Daora 2/2.
 3. **Por confirmar en el juego** (no bloquea): normal y radiante ¿cuentan como monstruos distintos? · Proof of Mastery: ¿cómo se desbloquea? ¿suma +1 a los dos sets si el núcleo tiene dos? · nombres ES de calidades (Fine/Rare/Epic/Superior).
 4. **Siguiente entrega (a decidir con Juan)**: resto de la E4 (Camarada, **Keepsake** —Juan ya mandó capturas, ver `docs/BUILDER.md` §10—, Reflexiones) o E3 (tarjeta de build). Confirmar alcance antes de programar.
@@ -26,7 +61,7 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 - E4 · Rostros completa: datos `datos/gamewith/rostros.json`, catálogo `rostros.json` + `rostros-sets.json`, cálculo en `build-calc.js`, cajón y selector (`ui/selector-rostro.js`, `ui/capa.js`), backend `rostrosValidos_` en `Builds.gs`, modo demo, estilos `.bld-rostro*`/`.bld-rset*`. Detalle en `docs/BUILDER.md` §9.
 - Revisado en navegador (modo demo, 390 px): cajón, selector con "si la cambias…", duplicado → 3/4, Fine bloquea el nivel en 1, núcleo Kulu-Ya-Ku → Instinct en la matriz (columna Ros), sin scroll horizontal, sin errores de consola.
 
-### Git (sin commit)
+### Git (sesión 12 subida en `da5bfa5`; después solo cambió `HANDOFF.md`)
 Modificados: `HANDOFF.md`, `SPEC.md`, `docs/BUILDER.md`, `apps-script/Builds.gs`, `scripts/catalogo.mjs`, `site/data/catalogo/meta.json`, `site/js/{build-calc,catalogo,demo-data}.js`, `site/js/views/build.js`, `site/js/ui/{selector-pieza,build-textos}.js`, `site/assets/css/views.css`, `tests/{catalogo,build-calc,builds}.test.mjs`. Nuevos: `datos/gamewith/rostros.json`, `site/data/catalogo/{rostros,rostros-sets}.json`, `site/js/ui/{selector-rostro,capa}.js`.
 (En `Claude outputs/` quedaron `site-revision.tgz` y `views-rev.css`, copias de revisión: se pueden borrar.)
 

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { construirCatalogo, leerFuentes, aTexto, ARCHIVOS, SALIDA, ORDEN_PARTES, slug } from '../scripts/catalogo.mjs';
+import { construirCatalogo, leerFuentes, aTexto, ARCHIVOS, SALIDA, ORDEN_PARTES, slug, crearTraductor } from '../scripts/catalogo.mjs';
 
 const fuentes = await leerFuentes();
 const cat = construirCatalogo(fuentes);
@@ -131,4 +131,28 @@ test('rostros: 56 cartas y 12 sets de GameWith, con nombre ES y efecto núcleo e
   const conHab = cat.rostros.filter((r) => r.nucleo?.hab).map((r) => `${r.id}:${r.nucleo.hab.join('+')}`);
   assert.deepEqual(conHab.sort(), ['great-girros:paralysis-resistance+3', 'great-jagras:quick-bite+3', 'kulu-ya-ku:instinct+1',
     'odogaron:bleeding-resistance+3', 'radobaan:sleep-resistance+3']);
+});
+
+test('nombres ES (GameWith es-MX): número romano, elemento y radiante se arman desde el EN', () => {
+  const tr = crearTraductor({ armaduras: { 'Rathalos Helm': 'Yelmo de Rathalos' },
+    armas: { 'Guild Crimson Crest Great Sword': 'Gran espada de cresta carmesí de gremio', 'Radiant Flammenzahn+': 'Flammenzahn radiante+' } });
+  assert.equal(tr.armadura('Rathalos Helm II'), 'Yelmo de Rathalos II');
+  assert.equal(tr.armadura('Radiant Rathalos Helm V'), 'Yelmo de Rathalos radiante V');
+  assert.equal(tr.armadura('Odogaron Helm'), null);
+  assert.equal(tr.arma('Guild Crimson Crest Great Sword (Fire) III'), 'Gran espada de cresta carmesí de gremio (fuego) III');
+  assert.equal(tr.arma('Radiant Flammenzahn+ IV'), 'Flammenzahn radiante+ IV');
+});
+
+test('catálogo con nombres ES: piezas [r, en, es], habilidades/sets/monstruos con es', () => {
+  const arm = porId(cat.armaduras);
+  const casco = arm.get('rathalos-helm-ii');
+  assert.ok(casco.nombres.every((n) => n.length === 3 && /^Yelmo de Rathalos [IVX]+$/.test(n[2])), JSON.stringify(casco.nombres));
+  assert.equal(porId(cat.habilidades).get('fire-damage-up').es, 'Mejora de daño de fuego');
+  assert.equal(porId(cat.sets).get('rathalos-weakness').es, 'Debilidad de Rathalos');
+  assert.equal(porId(cat.monstruos).get('pink-rathian').es, 'Rathian Rosa');
+  // Lo que GameWith no trae queda en inglés y se informa aparte, sin romper nada.
+  const bayard = porId(cat.armas).get('scintillant-bayard');
+  assert.ok(bayard.nombres.every((n) => n.length === 2));
+  assert.ok(cat.faltanEs.some((t) => t.includes('Scintillant Bayard')));
+  for (const x of [...cat.armaduras, ...cat.armas]) for (const n of x.nombres) assert.ok(n.length === 2 || (typeof n[2] === 'string' && n[2]), x.id);
 });

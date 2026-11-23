@@ -68,6 +68,17 @@ export function nombreEn(item, r) {
   return x ? x[1] : item.nombres?.[0]?.[1] ?? item.id;
 }
 
+/** Nombre ES de GameWith es-MX (por confirmar) o '' si no hay: nombres = [[r, en, es?], …]. */
+export function nombreEs(item, r) {
+  if (!item) return '';
+  const x = porUmbral(item.nombres, rarezaDe(item, r)) || item.nombres?.[0];
+  return x?.[2] || '';
+}
+
+/** Para ordenar y mostrar en una sola línea: el ES si existe, si no el EN. */
+export const nombreDe = (x) => x?.es || x?.en || '';
+const porNombre = (x, y) => nombreDe(x).localeCompare(nombreDe(y), 'es');
+
 /** Habilidades de una pieza de armadura en la rareza dada: [[hab, nivel], …]. */
 export function habilidadesDePieza(pieza, r) {
   if (!pieza) return [];
@@ -100,8 +111,8 @@ export function estadoHab(suma, max) {
  * @returns {{
  *   adv: object|null, arma: object|null, piezas: Record<string, object>,
  *   def: number, atk: number, afi: number, ele: {tipo:string,v:number}|null, estado: {tipo:string,v:number}|null,
- *   habilidades: Array<{id,en,max,suma,nivel,sobra,estado,aportes:Record<string,number>,porConfirmar?:boolean}>,
- *   sets: Array<{id,en,monstruo,puestas,necesarias,activo,faltan,hab,nv}>,
+ *   habilidades: Array<{id,en,es?,max,suma,nivel,sobra,estado,aportes:Record<string,number>,porConfirmar?:boolean}>,
+ *   sets: Array<{id,en,es?,monstruo,puestas,necesarias,activo,faltan,hab,nv}>,
  *   resumen: {habilidades:number, sobran:number, setsListos:number, setsAUna:number},
  *   avisos: string[]
  * }}
@@ -137,7 +148,7 @@ export function calcular(cat, build) {
       if (w.ele) ele = { tipo: w.ele.tipo, v: enRareza(w.ele.v, w, r) };
       if (w.estado) estado = { tipo: w.estado.tipo, v: enRareza(w.estado.v, w, r) };
       if (w.innato) sumar(w.innato.hab, 'arma', w.innato.nv);
-      arma = { item: w, r, nombre: nombreEn(w, r) };
+      arma = { item: w, r, nombre: nombreEn(w, r), nombreEs: nombreEs(w, r) };
     }
   }
 
@@ -156,7 +167,7 @@ export function calcular(cat, build) {
     def += d;
     habs.forEach(([h, nv]) => sumar(h, parte, nv));
     if (p.set) conteoSets.set(p.set, (conteoSets.get(p.set) || 0) + 1);
-    piezas[parte] = { item: p, r, nombre: nombreEn(p, r), def: d, habs };
+    piezas[parte] = { item: p, r, nombre: nombreEn(p, r), nombreEs: nombreEs(p, r), def: d, habs };
   }
 
   const rostros = calcularRostros(cat, b.rostros, avisos);
@@ -171,17 +182,17 @@ export function calcular(cat, build) {
     if (!bono) continue;
     const activo = puestas >= bono.piezas;
     if (activo) sumar(bono.hab, 'set', bono.nv);
-    sets.push({ id, en: s.en, monstruo: s.monstruo, puestas, necesarias: bono.piezas, activo,
+    sets.push({ id, en: s.en, es: s.es, monstruo: s.monstruo, puestas, necesarias: bono.piezas, activo,
       faltan: Math.max(0, bono.piezas - puestas), hab: bono.hab, nv: bono.nv, texto: bono.texto });
   }
-  sets.sort((x, y) => Number(y.activo) - Number(x.activo) || x.faltan - y.faltan || x.en.localeCompare(y.en));
+  sets.sort((x, y) => Number(y.activo) - Number(x.activo) || x.faltan - y.faltan || porNombre(x, y));
 
   const habilidades = [...aportes].map(([id, a]) => {
     const h = cat.habilidades.get(id);
     const suma = Object.values(a).reduce((s, n) => s + n, 0);
-    return { id, en: h.en, max: h.max, suma, nivel: Math.min(suma, h.max), sobra: Math.max(0, suma - h.max),
+    return { id, en: h.en, es: h.es, max: h.max, suma, nivel: Math.min(suma, h.max), sobra: Math.max(0, suma - h.max),
       estado: estadoHab(suma, h.max), aportes: a, ...(h.porConfirmar ? { porConfirmar: true } : {}) };
-  }).sort((x, y) => y.nivel - x.nivel || y.suma - x.suma || x.en.localeCompare(y.en));
+  }).sort((x, y) => y.nivel - x.nivel || y.suma - x.suma || porNombre(x, y));
 
   return {
     adv, arma, piezas, def, atk, afi, ele, estado, habilidades, sets, rostros,
@@ -213,7 +224,7 @@ export function diferencia(antes, despues) {
     const max = (a || d).max;
     const ea = Math.min(sa, max);
     const ed = Math.min(sd, max);
-    habilidades.push({ id, en: (a || d).en, max, antes: sa, despues: sd,
+    habilidades.push({ id, en: (a || d).en, es: (a || d).es, max, antes: sa, despues: sd,
       efecto: ed > ea ? 'gana' : ed < ea ? 'pierde' : 'igual', alTope: sd >= max });
   }
   const orden = { gana: 0, igual: 1, pierde: 2 };
@@ -227,7 +238,7 @@ export function diferencia(antes, despues) {
     const d = sd.get(id);
     if ((a?.puestas || 0) === (d?.puestas || 0)) continue;
     const ref = a || d;
-    sets.push({ id, en: ref.en, necesarias: ref.necesarias, antes: a?.puestas || 0, despues: d?.puestas || 0,
+    sets.push({ id, en: ref.en, es: ref.es, necesarias: ref.necesarias, antes: a?.puestas || 0, despues: d?.puestas || 0,
       efecto: (d?.activo && !a?.activo) ? 'gana' : (a?.activo && !d?.activo) ? 'pierde' : 'igual' });
   }
   const redondeo = (n) => Math.round(n * 100) / 100;
@@ -265,9 +276,11 @@ export function buscarPiezas(cat, f) {
   const q = normal(f.texto).trim();
   if (q) {
     lista = lista.filter((x) => {
-      const textos = [...(x.nombres || []).map((n) => n[1]), x.id,
-        cat.monstruos.get(x.monstruo)?.en, cat.sets.get(x.set)?.en,
-        ...habsDe(x).map(([h]) => cat.habilidades.get(h)?.en)];
+      // Se busca en inglés y en español (Juan juega en inglés; la mayoría del clan, en español).
+      const ficha = (m, id) => [m.get(id)?.en, m.get(id)?.es];
+      const textos = [...(x.nombres || []).flatMap((n) => [n[1], n[2]]), x.id,
+        ...ficha(cat.monstruos, x.monstruo), ...ficha(cat.sets, x.set),
+        ...habsDe(x).flatMap(([h]) => ficha(cat.habilidades, h))];
       return textos.some((t) => normal(t).includes(q));
     });
   }

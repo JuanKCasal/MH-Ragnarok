@@ -53,7 +53,7 @@ Formato compacto (ejemplo de armadura):
 
 - **Ids estables** = el `id` de gacha.gg (ya es un slug). Las builds guardadas apuntan a estos ids: si gacha.gg cambia un id, el script lleva una tabla de alias para no romper builds viejas.
 - Peso real: 274 KB sin comprimir (GitHub Pages lo sirve comprimido, ~40 KB). Se carga solo al abrir el builder o una tarjeta de build, con el `?v=` del versionado como el resto.
-- **Nombres ES**: no van en estos archivos. Viven en la hoja `Catalogo` (ya existe, vacía) como capa encima: `tipo, id, nombre_es, validado`. La web muestra "Nombre ES · Nombre EN" si hay ES, y la marca "por confirmar" si `validado = FALSE`.
+- **Nombres ES** (desde la sesión 13): van en estos archivos, sacados de GameWith es-MX (`datos/gamewith/nombres-es.json`, ver §11), todos "por confirmar". La hoja `Catalogo` (vacía) queda para la E6: correcciones de oficiales encima de estos nombres.
 - Fuente citada en la web: "Datos del juego: gacha.gg y GameWith" (como en el mockup de la tarjeta).
 
 ## 3. Backend: hoja nueva `Builds` (sin tocar las existentes)
@@ -168,3 +168,27 @@ Alcance elegido por Juan: cartas + **calidad y nivel** (sin efectos potenciales 
 - **Upgrade**: hitos en Lv 60, 70 y 80; cada hito da nodos tipo "Physical Attack Up" / "Element Attack Up". El detalle de un nodo muestra Adventurer Power 112, Physical Attack 200, Fire Attack 80, Defense 490.
 - **Engrave**: matriz de columnas **Skill Boost · Ultimate · Elemental Specialization · Core Passive · Core Attribute** × filas de nivel (60, 70, 80, 80). Core Passive muestra "+15.03 %". Skill Boost tiene 3 puntos (marcadores) y Core Attribute 4 (vacíos en la captura).
 - Ejemplo de grabado: "All Elemental Specialization Bonus VII" (Elemental Specialization, +160 de poder): con arma de fuego/agua/trueno/hielo/dragón da **35 % más de daño total**; con arma sin elemento o solo de estado no se activa.
+
+## 11. Nombres en español del equipo — hecho (2026-11-23, sesión 13)
+
+Pedido de Juan: "todo el equipo" (armas, armaduras, sets y habilidades) en español, mostrado **ES con el EN debajo** (como Rostros), buscador en los dos idiomas.
+
+**Fuente**: GameWith es-MX (lista de armaduras y página de cada serie, lista de armas y fichas sueltas, lista de habilidades y habilidades de set). Desde el PC de Juan gamewith.ai no carga (conexión reiniciada) y desde la nube solo con el lector web, que corta las listas largas: por eso se transcribió a mano, como los Rostros.
+
+**Datos**: `datos/gamewith/nombres-es.json` (lo lee `npm run catalogo`):
+- `habilidades`, `sets`, `monstruos`: id → ES. Las variantes de habilidad (`-s0`, `-control`, `-2`) toman el nombre de la base.
+- `armaduras` y `armas`: nombre EN **sin número romano** (ni elemento en armas) → ES. El script (`crearTraductor` en `scripts/catalogo.mjs`) añade el número del EN ("Yelmo de Rathalos" + " II"), el elemento ("(Fire)" → "(fuego)") y, si la radiante no tiene entrada propia, "<ES> radiante".
+- Series Rathalos, Rathian, Hornetaur, Kadachi, Baan, Diablos, Odogaron y Legiana: patrón Yelmo/Cota/Brazales/Faja/Grebas de <monstruo> (confirmado con Rathalos y la lista general). Las demás, de la página de su serie.
+- `armas_derivadas`: base sacada de quitar "radiante" a la ficha radiante (GameWith solo tenía la radiante en lo que se pudo leer).
+
+**Catálogo**: `nombres` de armas y armaduras pasa a `[rareza, en, es]` (el tercero solo si hay ES); habilidades, sets y monstruos llevan `es`. Lo que queda en inglés se lista al correr `npm run catalogo` ("Quedan en inglés…"), aparte de los avisos.
+
+**Quedan en inglés** (GameWith no las tiene o no se pudieron leer): 15 habilidades (las 8 "<Arma> Mastery", Desperation, Muck Resistance, Radiant Frenzy, Radiant Power Surge, Sturdy Guard, Unflinching Carver, Unshaken Resolve), los 3 sets de Black Diablos / Pink Rathian's Rampage, las 10 piezas Diablos Nero y 67 nombres de arma (las series de gacha Scintillant Bayard, Luminous Durandal, Gleaming Curtana, Lucent Hauteclaire, Dawnlit Joyeuse, Brilliant Hippogriff, Resplendent Montauban, Sonorous Olifant con sus elementos, y Diablos Clubs/Shatterer/Tyrannis, Cera Coilbender, Griffon Blazooka, Huracan Hammer, Radobaan Slab, Red Bludgeon, Twin Flames, Wyvern Blade "Holly" y sus radiantes).
+
+**Rarezas de GameWith**: van hasta 12 y en otros cortes que gacha.gg (que llega a 14); por eso solo se usa el nombre base y el número romano sale del EN.
+
+**Rarezas en la fuente que conviene revisar con el juego en español**: "Yelmo de corazón de wyvern rathalos" (las otras piezas del set dicen "de corazón de Rath"), "Casco de cazador III" (las otras rarezas dicen "Yelmo de cazador"; se usó Yelmo), "Defensa de Tzitzi" (cabeza), Breaker y Wrecker salen las dos como "Rompedor", Deterrence e Intimidation como "Intimidación". GameWith escribe a veces el monstruo en minúscula ("Yelmo de rathalos II"): se usó mayúscula siempre.
+
+**Pantallas**: `bil(es, en)` en `ui/build-textos.js` (ES y, debajo, el EN más chico; el " · " solo aparece al copiar). Se usa en piezas, arma, chips de habilidades, chips y lista de sets, matriz de Habilidades y selector (título de la candidata). "Si la cambias…", el resumen del cajón y los filtros (monstruo, habilidad) van en una línea con el ES. Orden alfabético por el ES. El buscador del selector encuentra por nombre ES o EN de pieza, set, monstruo y habilidad. Las descripciones de habilidades siguen en inglés.
+
+Pruebas: **115** (nuevas en `tests/catalogo.test.mjs`: traductor y catálogo con ES). Revisado en navegador (modo demo, 390 px): hoja, matriz, sets, selector con búsqueda ES y EN, sin scroll horizontal ni errores de consola. Catálogo: 357 KB sin comprimir (antes 274).

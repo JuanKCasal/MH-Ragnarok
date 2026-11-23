@@ -1,7 +1,7 @@
 /**
  * Genera el catálogo del builder (site/data/catalogo/*.json) a partir de los datos descargados
- * de gacha.gg (datos/gacha-gg/mho-equipo.json), los Rostros de GameWith (datos/gamewith/rostros.json)
- * y las tablas manuales de scripts/catalogo/.
+ * de gacha.gg (datos/gacha-gg/mho-equipo.json), los Rostros de GameWith (datos/gamewith/rostros.json),
+ * los nombres en español de GameWith es-MX (datos/gamewith/nombres-es.json) y las tablas manuales de scripts/catalogo/.
  * Los JSON generados NO se editan a mano: se corrige la tabla y se vuelve a correr.
  *
  * Uso: node scripts/catalogo.mjs   (npm run catalogo)
@@ -101,6 +101,46 @@ function pasos(item, avisos) {
 }
 
 const nombres = (st) => st.filter((s) => s.n).map((s) => [s.r, s.n.trim()]);
+
+const ELEMENTO_ES = { Fire: 'fuego', Water: 'agua', Ice: 'hielo', Thunder: 'rayo', Dragon: 'draco' };
+const RE_NUMERO = /(\s+(?:I|II|III|IV|V|VI|VII|VIII|IX|X))$/;
+
+/**
+ * Traduce nombres EN de armas y armaduras con datos/gamewith/nombres-es.json (ver su _nota):
+ * la tabla trae el nombre sin número romano (ni elemento); aquí se añaden, y "Radiant X" sin
+ * entrada propia pasa a "<ES de X> radiante". Devuelve null si no hay traducción.
+ */
+export function crearTraductor(fuente) {
+  const buscar = (tabla, b) => {
+    if (tabla[b]) return tabla[b];
+    const m = /^Radiant (.+)$/.exec(b);
+    return m && tabla[m[1]] ? `${tabla[m[1]]} radiante` : null;
+  };
+  const partir = (n) => {
+    const num = RE_NUMERO.exec(n);
+    return { base: num ? n.slice(0, num.index) : n, num: num ? num[1] : '' };
+  };
+  return {
+    armadura(n) {
+      const { base, num } = partir(n);
+      const es = buscar(fuente?.armaduras || {}, base);
+      return es ? es + num : null;
+    },
+    arma(n) {
+      const { base, num } = partir(n);
+      const el = /\s*\((Fire|Water|Ice|Thunder|Dragon)\)$/.exec(base);
+      const es = buscar(fuente?.armas || {}, el ? base.slice(0, el.index) : base);
+      return es ? `${es}${el ? ` (${ELEMENTO_ES[el[1]]})` : ''}${num}` : null;
+    },
+  };
+}
+
+/** [[r, en]] → [[r, en, es]] cuando hay traducción (el tercer elemento solo si existe). */
+const conEs = (lista, traducir, sinEs) => lista.map(([r, en]) => {
+  const es = traducir(en);
+  if (!es) { sinEs.add(en.replace(RE_NUMERO, '')); return [r, en]; }
+  return [r, en, es];
+});
 const redondear = (v, d = 2) => Math.round(v * 10 ** d) / 10 ** d;
 
 /**
@@ -140,8 +180,10 @@ export function armarRostros(fuente, avisos, idPorNombre = new Map()) {
   return { rostros, sets };
 }
 
-export function construirCatalogo({ equipo, correcciones, monstruos, adventurers, rostros: fuenteRostros }) {
+export function construirCatalogo({ equipo, correcciones, monstruos, adventurers, rostros: fuenteRostros, nombresEs = null }) {
   const avisos = [];
+  const tr = crearTraductor(nombresEs);
+  const sinEs = { armaduras: new Set(), armas: new Set() };
   const corr = correcciones;
   const descartar = new Set(corr.descartar || []);
   const descartarCat = new Set(corr.descartar_categorias || []);
@@ -173,7 +215,7 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
     armaduras.push({
       id: i.id, parte, set: setId, monstruo, radiante,
       rmin: st[0].r, rmax: st[st.length - 1].r,
-      nombres: n,
+      nombres: nombresEs ? conEs(n, tr.armadura, sinEs.armaduras) : n,
       def: st.map((s) => s.s.Defense ?? 0),
       hab: (i.skills || []).map(({ r, k }) => [r, k.map(([nom, nv]) => [hab(nom, i.id), nv])]),
     });
@@ -195,7 +237,9 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
   const listaSets = [...sets.values()].map(({ _firma, piezas, ...s }) => {
     const faltan = ORDEN_PARTES.filter((p) => !piezas[p]);
     if (faltan.length) avisos.push(`Set ${s.en}: faltan piezas (${faltan.join(', ')})`);
-    return { ...s, piezas: ORDEN_PARTES.map((p) => piezas[p] || null) };
+    const es = nombresEs?.sets?.[s.id];
+    return { id: s.id, en: s.en, ...(es ? { es } : {}), ...Object.fromEntries(Object.entries(s).filter(([k]) => k !== 'id' && k !== 'en')),
+      piezas: ORDEN_PARTES.map((p) => piezas[p] || null) };
   });
 
   // ---- Armas
@@ -213,7 +257,7 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
     const a = {
       id: i.id, arma, monstruo, radiante,
       rmin: st[0].r, rmax: st[st.length - 1].r,
-      nombres: n,
+      nombres: nombresEs ? conEs(n, tr.arma, sinEs.armas) : n,
       atk: st.map((s) => s.s['Physical Attack'] ?? 0),
     };
     if (claves.has('Affinity')) a.afi = st.map((s) => redondear((s.s.Affinity ?? 0) / 100)); // viene ×100 (270 = 2,7 %)
@@ -235,7 +279,10 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
   // ---- Monstruos: solo los que aparecen
   const usados = new Set([...armaduras, ...armas].map((x) => x.monstruo).filter(Boolean));
   for (const m of usados) if (!monstruos.lista.some((x) => x.id === m)) avisos.push(`Monstruo sin ficha: ${m}`);
-  const listaMonstruos = monstruos.lista.filter((m) => usados.has(m.id)).map(({ id, en, es }) => (es ? { id, en, es } : { id, en }));
+  const listaMonstruos = monstruos.lista.filter((m) => usados.has(m.id)).map(({ id, en, es }) => {
+    const esFinal = es || nombresEs?.monstruos?.[id] || (nombresEs ? en : null); // la mayoría se llama igual en español
+    return esFinal ? { id, en, es: esFinal } : { id, en };
+  });
 
   // Solo las habilidades que usa algo del catálogo (las demás son de joyas, que no existen en el juego).
   const habUsadas = new Set();
@@ -243,7 +290,23 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
   listaSets.forEach((s) => s.bonos.forEach((b) => habUsadas.add(b.hab)));
   armas.forEach((x) => x.innato && habUsadas.add(x.innato.hab));
   visage.rostros.forEach((x) => x.nucleo?.hab && habUsadas.add(x.nucleo.hab[0]));
-  const listaHab = habilidades.filter((h) => habUsadas.has(h.id));
+  // Nombre ES por id; las variantes (-s0, -control…) toman el de su habilidad base.
+  const habEs = (id) => nombresEs?.habilidades?.[id] || nombresEs?.habilidades?.[id.replace(/-(s0(-\d+)?|\d+|control)$/, '')] || null;
+  const listaHab = habilidades.filter((h) => habUsadas.has(h.id)).map((h) => {
+    const es = habEs(h.id);
+    return es ? { id: h.id, en: h.en, es, ...Object.fromEntries(Object.entries(h).filter(([k]) => k !== 'id' && k !== 'en')) } : h;
+  });
+  // Lo que queda en inglés por falta de datos en GameWith: se informa aparte (no es un error del catálogo).
+  const faltanEs = [];
+  if (nombresEs) {
+    const faltanHab = listaHab.filter((h) => !h.es).map((h) => h.en);
+    const faltanSets = listaSets.filter((s) => !s.es).map((s) => s.en);
+    if (faltanHab.length) faltanEs.push(`Habilidades sin nombre ES (${faltanHab.length}): ${faltanHab.join(', ')}`);
+    if (faltanSets.length) faltanEs.push(`Sets sin nombre ES (${faltanSets.length}): ${faltanSets.join(', ')}`);
+    for (const k of ['armaduras', 'armas']) {
+      if (sinEs[k].size) faltanEs.push(`${k === 'armas' ? 'Armas' : 'Armaduras'} sin nombre ES (${sinEs[k].size}): ${[...sinEs[k]].sort().join(', ')}`);
+    }
+  }
 
   const listaAdv = adventurers.lista.map((x) => ({ ...x }));
   const meta = {
@@ -252,6 +315,7 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
       { nombre: equipo.source, que: 'armas, armaduras, habilidades y sets', fecha: equipo.fetched },
       { nombre: adventurers.fuente, que: 'adventurers', fecha: adventurers.revisado },
       { nombre: fuenteRostros.source, que: 'rostros (Visage) y sus sets', fecha: fuenteRostros.fetched },
+      ...(nombresEs ? [{ nombre: nombresEs.source, que: 'nombres en español (por confirmar)', fecha: nombresEs.fetched }] : []),
     ],
     conteos: {
       armaduras: armaduras.length, armas: armas.length, sets: listaSets.length,
@@ -260,7 +324,7 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
       descartados,
     },
   };
-  return { meta, armaduras, armas, sets: listaSets, habilidades: listaHab, monstruos: listaMonstruos, adventurers: listaAdv, rostros: visage.rostros, 'rostros-sets': visage.sets, avisos };
+  return { meta, armaduras, armas, sets: listaSets, habilidades: listaHab, monstruos: listaMonstruos, adventurers: listaAdv, rostros: visage.rostros, 'rostros-sets': visage.sets, avisos, faltanEs };
 }
 
 /** JSON con un elemento por línea: diffs legibles en git y archivo compacto. */
@@ -279,6 +343,7 @@ export async function leerFuentes(raiz = RAIZ) {
     monstruos: await leer('scripts', 'catalogo', 'monstruos.json'),
     adventurers: await leer('scripts', 'catalogo', 'adventurers.json'),
     rostros: await leer('datos', 'gamewith', 'rostros.json'),
+    nombresEs: await leer('datos', 'gamewith', 'nombres-es.json'),
   };
 }
 
@@ -292,5 +357,6 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     await writeFile(join(SALIDA, `${nombre}.json`), texto);
   }
   console.log('Catálogo generado en site/data/catalogo/:', JSON.stringify(cat.meta.conteos), `${Math.round(total / 1024)} KB`);
+  if (cat.faltanEs.length) console.log(`Quedan en inglés (sin dato en GameWith es-MX):\n- ${cat.faltanEs.join('\n- ')}`);
   if (cat.avisos.length) console.log(`Avisos (${cat.avisos.length}):\n- ${cat.avisos.join('\n- ')}`);
 }
