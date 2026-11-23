@@ -63,6 +63,7 @@ function eliminarAdventurer_(token, d) {
   if (a.miembro_id !== yo.id && NIVEL_ROL[yo.rol] < NIVEL_ROL.oficial) fallar_('SIN_PERMISO', 'Solo puedes borrar tus adventurers.');
   String(a.capturas || '').split(',').filter(String).forEach(enviarAPapelera_);
   borrarFilas_('Adventurers', [a]);
+  desvincularBuilds_(a.id);
   var dueno = buscar_('Miembros', function (x) { return x.id === a.miembro_id; });
   if (dueno && dueno.adventurer_principal_id === a.id) {
     var otro = filtrar_('Adventurers', function (x) { return x.miembro_id === dueno.id; })

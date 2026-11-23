@@ -188,6 +188,8 @@ Registro de cada archivo subido por el backend. Sirve para validar que un ID de 
 | `miembro` | `id` | perfil + todos sus adventurers |
 | `clash` | `semana?` | semana (por defecto la vigente) + asistencia + equipos |
 | `clash_historial` | — | semanas cerradas con puesto y puntos (últimas 52) |
+| `builds` | `miembro` o `clase=ejemplo` | builds de perfil de un miembro activo, o las de ejemplo (con `datos` y `autor`). Ver `docs/BUILDER.md` §3 |
+| `build` | `id` | una build (las de perfil solo si el dueño sigue activo) |
 
 **Escrituras — `POST` con cuerpo `text/plain` que contiene JSON `{ accion, token?, datos }`:**
 
@@ -202,6 +204,8 @@ Registro de cada archivo subido por el backend. Sirve para validar que un ID de 
 | `adventurer.guardar` | miembro | crea/edita uno propio (oficial: cualquiera) |
 | `adventurer.eliminar` | miembro | propio |
 | `adventurer.principal` | miembro | marca su principal |
+| `build.guardar` | miembro | crea/edita una propia (oficial: cualquiera). `clase: 'ejemplo'` solo oficiales. Máx. 10 de perfil por miembro |
+| `build.eliminar` | miembro | propia (oficial: cualquiera) |
 | `imagen.subir` | miembro | `{base64, mime, tipo}` → ID de Drive. Máx. 2 MB ya comprimida |
 | `clash.asistencia` | miembro | `{respuesta}` para la semana vigente |
 | `noticia.guardar` · `noticia.eliminar` | oficial | |

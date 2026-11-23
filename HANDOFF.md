@@ -1,4 +1,34 @@
-# HANDOFF — MH-Ragnarok (sesión 10: modelo de datos del builder y catálogo limpio · E1 hecha)
+# HANDOFF — MH-Ragnarok (sesión 11: builder E2 · hoja con cajones)
+
+Fecha: 2026-11-23
+Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
+
+## Sesión 11 — E2 hecha (sin commit todavía)
+
+### Punto de partida exacto para la sesión 12
+1. Leer `CLAUDE.md`, este bloque y **`docs/BUILDER.md` §8** (qué quedó hecho en E2) y §5 (plan E3–E7).
+2. **Antes de seguir, Juan tiene que publicar la E2** (orden importa: el backend primero):
+   1. ~~`npm test` en su PC~~ **HECHO:** 104 pasan en Windows.
+   2. ~~Backend~~ **HECHO 2026-11-23 (Claude con el Chrome de Juan):** código pegado y verificado idéntico al paquete probado (SHA-256), `instalar()` ejecutado sin errores (hoja `Builds` creada) y **versión 3** publicada ("v3 (builder E2: hoja Builds)"); `builds?clase=ejemplo` responde `{ok:true,data:[]}`. Para la próxima vez: `npm run gs` → pegar `Claude outputs/MH-Ragnarok.gs` en el editor de Apps Script (ahora son 11 módulos, incluye `Builds.gs`), ejecutar **`instalar()`** (solo agrega la hoja `Builds`; no toca las demás) y publicar la **versión 3** del Web App (misma URL: Implementar → Gestionar implementaciones → editar → Versión nueva).
+   3. Commit + push (lo que está sin commit, abajo). GitHub Pages publica la web.
+   4. Probar en el celular: Mi perfil → **Mis builds** → Nueva build; elegir adventurer, arma y piezas; pestaña Habilidades; Guardar; volver a abrirla.
+   - Si se publica la web antes que el backend: el perfil funciona igual, pero guardar una build da "Acción desconocida".
+3. **Siguiente entrega: E3 · Tarjeta de build** (perfil público debajo de cada adventurer, `[[build:ID]]` en guías, Compartir, "Usar de base" ya existe en la vista). Confirmar con Juan antes de empezar. Alternativas que Juan puede preferir: E4 (Rostros, Camarada, Keepsake, Reflexiones) o E5 (Comparar).
+4. Siguen abiertos de antes: activador de `limpiarSesiones`, Node 24 en Pages, glosario ES; Critical Element y efecto despertado del arma por confirmar en el juego.
+
+### Hecho en la sesión 11
+- Arreglo de `npm test` en Windows: `tests/gas-mock.mjs` usa `fileURLToPath` (antes `new URL(...).pathname` daba `C:\\C:\\…`).
+- **E2 completa** (detalle en `docs/BUILDER.md` §8): `site/js/build-calc.js`, `site/js/catalogo.js`, `site/js/views/build.js`, `site/js/ui/selector-pieza.js`, `site/js/ui/build-textos.js`, rutas en `app.js`, sección "Mis builds" en `views/yo.js`, estilos `.bld-*` en `views.css`, modo demo (`demo-data.js`), backend `apps-script/Builds.gs` + `Builds` en `ESQUEMA` (Db.gs) + rutas en `Code.gs` + desvincular builds al borrar un adventurer (`Adventurers.gs`). `SPEC.md` §6 con las acciones nuevas.
+- Pruebas: **104** (nuevas `tests/build-calc.test.mjs` y `tests/builds.test.mjs`; `empaquetar-gs` ahora espera 11 archivos).
+- Revisado en navegador (modo demo, 390 px y 1280 px): hoja, selector con "si la cambias…", selector de arma, matriz de habilidades, sets, guardar/crear, "atrás" cierra el selector, sin errores de consola.
+
+### Git (sin commit al cierre de la sesión 11)
+Modificados: `HANDOFF.md`, `SPEC.md`, `docs/BUILDER.md`, `apps-script/{Db,Code,Adventurers}.gs`, `scripts/empaquetar-gs.mjs`, `site/js/{app,demo-data}.js`, `site/js/views/yo.js`, `site/assets/css/views.css`, `tests/gas-mock.mjs`, `tests/empaquetar-gs.test.mjs`. Nuevos: `apps-script/Builds.gs`, `site/js/{build-calc,catalogo}.js`, `site/js/views/build.js`, `site/js/ui/{selector-pieza,build-textos}.js`, `tests/{build-calc,builds}.test.mjs`.
+Mensaje sugerido: `Sesión 11: builder E2 (hoja con cajones, selector de pieza, habilidades y hoja Builds)`.
+
+---
+
+# (Sesión 10) HANDOFF — MH-Ragnarok (sesión 10: modelo de datos del builder y catálogo limpio · E1 hecha)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
@@ -12,7 +42,8 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
    - Carga del catálogo desde `site/data/catalogo/*.json` con `?v=<VERSION>` (el versionado solo reescribe CSS/JS: los `fetch` de JSON tienen que añadir la versión a mano).
    - Rutas `#/build/nueva` y `#/build/:id`: adventurer, arma y 5 piezas con rareza; selector de pieza (buscador, filtros monstruo/elemento/habilidad, "si la cambias…"); barra fija; vista Habilidades (matriz habilidad × pieza, **sin columna de joyas**).
    - Backend: hoja `Builds` en `ESQUEMA` (columnas en `docs/BUILDER.md` §3), `builds`/`build` (lectura), `build.guardar`/`build.eliminar`; modo demo. **No tocar ni reordenar columnas existentes** (`Db.gs` lee por posición). Tras el cambio: correr `instalar()` y publicar la **versión 3** del Web App.
-3. Git: quedan sin commit `docs/BUILDER.md`, `scripts/catalogo.mjs`, `scripts/catalogo/`, `site/data/catalogo/`, `tests/catalogo.test.mjs`, `package.json`, `SPEC.md` y este archivo (comandos abajo).
+3. Git: la sesión 10 quedó subida (commit `53fafdb`, pusheado por Juan el 2026-11-23). Sin commit solo este cambio de `HANDOFF.md`.
+   - **Arreglo rápido al empezar (antes de E2):** en Windows `npm test` falla en las 20 pruebas de `tests/apps-script.test.mjs` con `ENOENT ... 'C:\\C:\\dev\\mh-ragnarok\\apps-script'`. Viene de antes (en Linux y en GitHub Actions pasan, así que la publicación no se ve afectada). Causa: `tests/gas-mock.mjs` línea 146 usa `new URL(import.meta.url).pathname`, que en Windows da `/C:/dev/...`. Arreglo: `path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../apps-script')` con `import { fileURLToPath } from 'node:url'`. Pedirle a Juan que corra `npm test` en su PC para confirmar las 87.
 4. Siguen abiertos de antes: pruebas con el backend real, activador de `limpiarSesiones`, Node 24 en Pages, glosario ES.
 
 ### Decisiones de Juan (sesión 10, 2026-11-23)
@@ -33,14 +64,8 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 - **Critical Element**: mirar la descripción en una pieza que lo tenga (Girros Mask o Radiant Rathalos Greaves) para saber si es "crítico elemental" o "daño a monstruos derribados". Hoy queda marcado "por confirmar".
 - **Efecto despertado del arma** (p. ej. Third Power Shot): ¿se elige o viene con el arma? No está en los datos.
 
-### Git (Juan, por consola)
-```powershell
-cd C:\dev\mh-ragnarok
-npm test
-git add docs/BUILDER.md scripts/catalogo.mjs scripts/catalogo site/data tests/catalogo.test.mjs package.json SPEC.md HANDOFF.md
-git commit -m "Sesión 10: modelo de datos del builder y catálogo limpio (E1)"
-git push
-```
+### Git
+Hecho por Juan: commit `53fafdb` "Sesión 10: modelo de datos del builder y catálogo limpio (E1)", pusheado.
 
 ---
 

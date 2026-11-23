@@ -1,0 +1,491 @@
+/**
+ * Builder · hoja única con cajones (opción C). Ver docs/BUILDER.md (E2: adventurer, arma y armadura).
+ * #/build/nueva[?adv=<id de mi adventurer>]  ·  #/build/:id
+ * Cualquiera puede armar y mirar; guardar requiere sesión. Rostros, Camarada, Keepsake y Reflexiones: E4.
+ */
+import { leer, escribir, ErrorApi } from '../api.js';
+import { sesion, olvidarSesion, esSesionCaida, tieneRol } from '../auth.js';
+import { ir } from '../router.js';
+import { html, pintar, numero } from '../ui/dom.js';
+import { avisoDemo, cargando, fallo } from '../ui/comun.js';
+import { toast } from '../ui/toast.js';
+import { ARMAS } from '../etiquetas.js';
+import { cargarCatalogo } from '../catalogo.js';
+import { calcular, limpiarBuild, buildVacia, conPieza, rarezaDe, resumenParaGuardar, PARTES, NOMBRE_PARTE } from '../build-calc.js';
+import { abrirSelector } from '../ui/selector-pieza.js';
+import { chipsHab, statsArma } from '../ui/build-textos.js';
+import { leerBorrador, guardarBorrador, borrarBorrador } from '../borradores.js';
+
+const FILTROS_HAB = [['todas', 'Todas'], ['sobra', 'Sobran'], ['tope', 'Al tope'], ['falta', 'Les falta']];
+const PRONTO = [['Rostros', 'Cartas, núcleo y sets'], ['Camarada', 'Nivel, estrellas y poder'], ['Keepsake', 'Nivel y grabados'], ['Reflexiones', 'Puntos y nodos']];
+
+function nombreAdv(cat, id) {
+  const a = cat.adventurers.get(id);
+  if (!a) return '';
+  return a.en === 'Fated Adventurer' ? `${a.en} · ${ARMAS[a.arma]?.es}` : a.en;
+}
+
+/** Adventurer del catálogo que corresponde a uno del perfil (mismo nombre o el Fated de esa arma). */
+function advDelPerfil(cat, a) {
+  if (!a) return null;
+  const n = String(a.adventurer || '').trim().toLowerCase();
+  return cat.lista.adventurers.find((x) => x.en.toLowerCase() === n && x.arma === a.arma)
+    || cat.lista.adventurers.find((x) => x.id === `fated-adventurer-${String(a.arma).replace(/_/g, '-')}`) || null;
+}
+
+export default async function vistaBuild(el, { params, query, recargar }) {
+  const s = sesion();
+  pintar(el, cargando());
+  let cat;
+  let guardada = null;
+  let misAdvs = [];
+  try {
+    const [c, g, perfil] = await Promise.all([
+      cargarCatalogo(),
+      params.id ? leer('build', { id: params.id }) : null,
+      s ? leer('miembro', { id: s.miembro.id }).catch(() => null) : null,
+    ]);
+    cat = c;
+    guardada = g;
+    misAdvs = perfil?.adventurers || [];
+  } catch (e) {
+    fallo(el, e, recargar);
+    return { titulo: 'Build' };
+  }
+
+  const esMia = !guardada || (s && guardada.miembro_id === s.miembro.id);
+  const editable = !guardada || (s && (esMia || tieneRol('oficial')));
+  const volverA = guardada && !esMia ? (guardada.autor ? `#/miembros/${guardada.autor.id}` : '#/') : s ? '#/yo' : '#/';
+  // El borrador local solo cubre builds nuevas (una por dispositivo); las guardadas viven en el servidor.
+  const claveBorrador = '';
+
+  // Estado
+  let b;
+  let meta;
+  let recuperado = false;
+  if (guardada) {
+    b = limpiarBuild(cat, guardada.datos);
+    meta = { nombre: guardada.nombre, clase: guardada.clase, adventurer_id: guardada.adventurer_id || '', notas: guardada.notas || '' };
+  } else {
+    const borr = leerBorrador('build', '');
+    if (borr?.datos?.b) {
+      b = limpiarBuild(cat, borr.datos.b);
+      meta = { nombre: '', clase: 'perfil', adventurer_id: '', notas: '', ...borr.datos.meta };
+      recuperado = true;
+    } else {
+      b = buildVacia();
+      meta = { nombre: '', clase: 'perfil', adventurer_id: '', notas: '' };
+    }
+    const delPerfil = query.adv ? misAdvs.find((a) => a.id === query.adv) : null;
+    if (delPerfil) {
+      meta.adventurer_id = delPerfil.id;
+      const c = advDelPerfil(cat, delPerfil);
+      if (c) b.adv = { id: c.id, ...(delPerfil.nivel ? { nivel: delPerfil.nivel } : {}) };
+      if (!meta.nombre) meta.nombre = delPerfil.loadout || '';
+    }
+  }
+  let vista = 'hoja';
+  let filtroHab = 'todas';
+  let abierto = b.adv ? 'armadura' : 'adv';
+  let sucio = false;
+  let selector = null;
+
+  const advCat = () => (b.adv?.id ? cat.adventurers.get(b.adv.id) : null);
+  const armaTipo = () => advCat()?.arma || (b.arma?.id ? cat.armas.get(b.arma.id)?.arma : '') || '';
+
+  function cambiar(fn) {
+    fn();
+    sucio = true;
+    if (!guardada) guardarBorrador('build', '', { b, meta });
+    pintarTodo();
+  }
+
+  /* ---------- Piezas de la hoja ---------- */
+
+  const selectRareza = (parte, item, r) => html`
+    <label class="bld-rareza">
+      <span class="oculto-visual">Rareza de ${parte === 'arma' ? 'arma' : NOMBRE_PARTE[parte].es.toLowerCase()}</span>
+      <select data-rareza="${parte}" data-foco="r-${parte}" ${editable ? '' : 'disabled'}>
+        ${Array.from({ length: item.rmax - item.rmin + 1 }, (_, i) => item.rmin + i).reverse()
+          .map((n) => html`<option value="${n}" ${n === r ? 'selected' : ''}>${n}/${item.rmax}</option>`)}
+      </select>
+    </label>`;
+
+  const botonCambiar = (parte, etiqueta) => (editable
+    ? html`<button type="button" class="bld-cambiar" data-elegir="${parte}" data-foco="e-${parte}" aria-label="${etiqueta}"><span aria-hidden="true">⇄</span></button>`
+    : '');
+
+  function filaPieza(c, parte) {
+    const p = c.piezas[parte];
+    const n = NOMBRE_PARTE[parte];
+    if (!p) {
+      return html`<li class="bld-pieza bld-pieza--vacia">
+        <span class="bld-pieza__parte">${n.corto}</span>
+        <div class="bld-pieza__texto"><p class="bld-pieza__nombre">${n.es}</p><p class="nota">Sin pieza</p></div>
+        ${editable ? html`<button type="button" class="boton boton--chico" data-elegir="${parte}" data-foco="e-${parte}">Elegir</button>` : ''}
+      </li>`;
+    }
+    return html`<li class="bld-pieza">
+      <span class="bld-pieza__parte" title="${n.es}">${n.corto}</span>
+      <div class="bld-pieza__texto">
+        <p class="bld-pieza__nombre">${p.nombre}</p>
+        ${chipsHab(cat, p.habs)}
+      </div>
+      ${selectRareza(parte, p.item, p.r)}
+      ${botonCambiar(parte, `Cambiar ${n.es.toLowerCase()}`)}
+    </li>`;
+  }
+
+  function cajon(id, rotulo, resumen, cuerpo) {
+    const open = abierto === id;
+    return html`
+      <section class="bld-cajon ${open ? 'bld-cajon--abierto' : ''}">
+        <h2 class="bld-cajon__titulo">
+          <button type="button" class="bld-cajon__boton" data-cajon="${id}" aria-expanded="${open}" aria-controls="cajon-${id}" data-foco="c-${id}">
+            <span class="rotulo">${rotulo}</span>
+            <span class="bld-cajon__resumen">${resumen}</span>
+          </button>
+        </h2>
+        <div class="bld-cajon__cuerpo" id="cajon-${id}" ${open ? '' : 'hidden'}>${cuerpo}</div>
+      </section>`;
+  }
+
+  function cajonAdv(c) {
+    const adv = c.adv;
+    const opcionesAdv = [['', 'Elige el adventurer'], ...cat.lista.adventurers.map((a) => [a.id, nombreAdv(cat, a.id)])];
+    const arma = c.arma;
+    const cuerpo = html`
+      <div class="bld-datos">
+        <label class="campo"><span class="campo__etiqueta">Nombre de la build</span>
+          <input class="entrada" data-meta="nombre" value="${meta.nombre}" maxlength="40" placeholder="Por ejemplo: Fire Heavy" spellcheck="false" ${editable ? '' : 'disabled'}></label>
+        <div class="campos-dos">
+          <label class="campo"><span class="campo__etiqueta">Adventurer</span>
+            <select class="entrada" data-adv data-foco="adv" ${editable ? '' : 'disabled'}>
+              ${opcionesAdv.map(([v, t]) => html`<option value="${v}" ${v === (b.adv?.id || '') ? 'selected' : ''}>${t}</option>`)}
+            </select></label>
+          <label class="campo"><span class="campo__etiqueta">Nivel <span class="campo__opcional">opcional</span></span>
+            <input class="entrada" data-nivel inputmode="numeric" maxlength="2" value="${b.adv?.nivel ?? ''}" ${editable && b.adv ? '' : 'disabled'}></label>
+        </div>
+        ${misAdvs.length && meta.clase === 'perfil' && esMia
+          ? html`<label class="campo"><span class="campo__etiqueta">De mi perfil <span class="campo__opcional">opcional</span></span>
+              <select class="entrada" data-meta="adventurer_id" ${editable ? '' : 'disabled'}>
+                <option value="">No la uno a ninguno</option>
+                ${misAdvs.map((a) => html`<option value="${a.id}" ${a.id === meta.adventurer_id ? 'selected' : ''}>${a.adventurer}${a.loadout ? ` · ${a.loadout}` : ''}</option>`)}
+              </select>
+              <span class="campo__ayuda">La build se mostrará junto a ese adventurer en tu perfil.</span></label>`
+          : ''}
+      </div>
+      <div class="bld-arma">
+        <p class="rotulo">Arma${adv ? ` · ${ARMAS[adv.arma]?.es}` : ''}</p>
+        ${arma
+          ? html`<div class="bld-pieza">
+              <span class="bld-pieza__parte">Arm</span>
+              <div class="bld-pieza__texto">
+                <p class="bld-pieza__nombre">${arma.nombre}</p>
+                <p class="nota">${statsArma(c)}</p>
+                ${arma.item.innato ? chipsHab(cat, [[arma.item.innato.hab, arma.item.innato.nv]]) : ''}
+              </div>
+              ${selectRareza('arma', arma.item, arma.r)}
+              ${botonCambiar('arma', 'Cambiar arma')}
+            </div>`
+          : html`<div class="bld-pieza bld-pieza--vacia">
+              <span class="bld-pieza__parte">Arm</span>
+              <div class="bld-pieza__texto"><p class="nota">${adv ? 'Sin arma' : 'Elige primero el adventurer.'}</p></div>
+              ${editable && adv ? html`<button type="button" class="boton boton--chico" data-elegir="arma" data-foco="e-arma">Elegir</button>` : ''}
+            </div>`}
+      </div>`;
+    const resumen = adv
+      ? [b.adv.nivel ? `Nv ${b.adv.nivel}` : '', nombreAdv(cat, adv.id), arma ? `${arma.nombre} ${arma.r}/${arma.item.rmax}` : 'sin arma'].filter(Boolean).join(' · ')
+      : 'Sin elegir';
+    return cajon('adv', 'Adventurer y arma', resumen, cuerpo);
+  }
+
+  function cajonArmadura(c) {
+    const puestas = PARTES.filter((p) => c.piezas[p]);
+    const rarezas = [...new Set(puestas.map((p) => c.piezas[p].r))];
+    const resumen = !puestas.length ? 'Sin piezas'
+      : rarezas.length === 1 && puestas.length === 5 ? `Todo en ${rarezas[0]}` : `${puestas.length} de 5 piezas`;
+    const cuerpo = html`
+      <ul class="bld-piezas">${PARTES.map((p) => filaPieza(c, p))}</ul>
+      <ul class="bld-resumen-chips">
+        <li class="bld-chip">Def. ${numero(c.def)}</li>
+        ${c.sets.map((st) => html`<li class="bld-chip ${st.activo ? 'bld-chip--listo' : ''}">${st.en} ${Math.min(st.puestas, st.necesarias)}/${st.necesarias}${st.activo ? '' : ` · falta ${st.faltan}`}</li>`)}
+      </ul>`;
+    return cajon('armadura', `Armadura · ${puestas.length} de 5`, resumen, cuerpo);
+  }
+
+  const cajonesPronto = () => html`
+    <ul class="bld-pronto">
+      ${PRONTO.map(([t, d]) => html`<li><span class="rotulo">${t}</span><span class="nota">${d} · próximamente</span></li>`)}
+    </ul>`;
+
+  function vistaHoja(c) {
+    return html`
+      ${cajonAdv(c)}
+      ${cajonArmadura(c)}
+      ${cajonesPronto()}
+      ${editable ? html`
+        <label class="campo"><span class="campo__etiqueta">Notas <span class="campo__opcional">opcional</span></span>
+          <textarea class="entrada" data-meta="notas" maxlength="500" rows="3" placeholder="Para qué monstruos la usas, qué cambiarías…">${meta.notas}</textarea></label>
+        ${tieneRol('oficial') && esMia ? html`
+          <label class="opcion bld-ejemplo"><input type="checkbox" data-ejemplo ${meta.clase === 'ejemplo' ? 'checked' : ''}>
+            <span>Build de ejemplo (para guías; no cuenta en tu perfil)</span></label>` : ''}`
+        : meta.notas ? html`<p class="perfil-bio">${meta.notas}</p>` : ''}`;
+  }
+
+  /* ---------- Habilidades (matriz habilidad × pieza) ---------- */
+
+  function vistaHabilidades(c) {
+    const lista = c.habilidades.filter((h) => filtroHab === 'todas' || h.estado === filtroHab);
+    const cols = [['arma', 'Arm'], ...PARTES.map((p) => [p, NOMBRE_PARTE[p].corto]), ['set', 'Set']];
+    const celda = (h, k) => (h.aportes[k] ? html`<td class="bld-matriz__n">${h.aportes[k]}</td>` : html`<td class="bld-matriz__vacia" aria-label="nada">·</td>`);
+    return html`
+      <div class="segmentos" role="group" aria-label="Filtrar habilidades">
+        ${FILTROS_HAB.map(([k, t]) => html`<button type="button" data-filtro-hab="${k}" aria-pressed="${filtroHab === k}">${t}</button>`)}
+      </div>
+      ${c.habilidades.length
+        ? html`<div class="bld-matriz-marco">
+            <table class="bld-matriz">
+              <caption class="rotulo">Nivel aportado por pieza</caption>
+              <thead><tr><th scope="col">Habilidad</th>${cols.map(([, t]) => html`<th scope="col">${t}</th>`)}<th scope="col">Total</th></tr></thead>
+              <tbody>
+                ${lista.map((h) => html`
+                  <tr class="bld-matriz__fila" data-hab="${h.id}" tabindex="0" aria-expanded="false">
+                    <th scope="row">${h.en}${h.porConfirmar ? html` <span class="nota">(por confirmar)</span>` : ''}</th>
+                    ${cols.map(([k]) => celda(h, k))}
+                    <td class="bld-matriz__total bld-matriz__total--${h.estado}">${h.nivel}/${h.max}${h.sobra ? html`<small>+${h.sobra}</small>` : ''}</td>
+                  </tr>`)}
+                ${!lista.length ? html`<tr><td colspan="${cols.length + 2}" class="nota">Ninguna habilidad en este filtro.</td></tr>` : ''}
+              </tbody>
+            </table>
+          </div>
+          <p class="nota">Toca una habilidad para ver qué hace en el nivel que tienes.</p>`
+        : html`<div class="vacio"><p>Elige arma y armadura para ver de dónde sale cada habilidad.</p></div>`}
+      ${c.sets.length ? html`
+        <section class="bld-sets">
+          <h2 class="titulo titulo--menor">Sets</h2>
+          <ul>
+            ${c.sets.map((st) => html`<li>
+              <div><p class="bld-pieza__nombre">${st.en}</p>
+                <p class="nota">${st.necesarias}: ${cat.habilidades.get(st.hab)?.en || st.hab} +${st.nv}</p></div>
+              <span class="bld-cuenta-set ${st.activo ? 'bld-cuenta-set--listo' : ''}">${Math.min(st.puestas, st.necesarias)}/${st.necesarias}</span>
+            </li>`)}
+          </ul>
+        </section>` : ''}`;
+  }
+
+  function detalleHab(c, id) {
+    const h = c.habilidades.find((x) => x.id === id);
+    const ficha = cat.habilidades.get(id);
+    if (!h || !ficha) return '';
+    const texto = ficha.niveles?.[h.nivel - 1] || ficha.texto;
+    return html`<tr class="bld-matriz__detalle"><td colspan="99">
+      <p>${ficha.texto}</p>
+      <p class="nota">Nivel ${h.nivel}: ${texto}</p>
+      ${h.nivel < h.max ? html`<p class="nota">Nivel ${h.max} (máximo): ${ficha.niveles?.[h.max - 1] || ''}</p>` : ''}
+    </td></tr>`;
+  }
+
+  /* ---------- Barra fija ---------- */
+
+  function barra(c) {
+    const r = c.resumen;
+    const hab = r.habilidades === 1 ? '1 habilidad' : `${r.habilidades} habilidades`;
+    return html`
+      <div class="bld-barra" role="region" aria-label="Resumen de la build">
+        <div class="bld-barra__datos">
+          <p><strong>Def. ${numero(c.def)}</strong>${c.atk ? html` · Atq. ${numero(c.atk)}` : ''}</p>
+          <p class="nota">${hab}${r.sobran ? html` · <span class="bld-sobra">${r.sobran} sobra${r.sobran > 1 ? 'n' : ''}</span>` : ''}${r.setsListos ? html` · <span class="bld-listo">${r.setsListos} set${r.setsListos > 1 ? 's' : ''} listo${r.setsListos > 1 ? 's' : ''}</span>` : ''}${r.setsAUna ? ` · ${r.setsAUna} a una pieza` : ''}</p>
+        </div>
+        ${editable
+          ? (s ? html`<button type="button" class="boton boton--oro" data-guardar>${guardada ? 'Guardar' : 'Guardar build'}</button>`
+            : html`<a class="boton boton--oro" href="#/entrar?volver=${encodeURIComponent(guardada ? `build/${guardada.id}` : 'build/nueva')}">Entrar para guardar</a>`)
+          : html`<button type="button" class="boton" data-base>Usar de base</button>`}
+      </div>`;
+  }
+
+  /* ---------- Pintado ---------- */
+
+  // El contenedor de la vista es el mismo para todas las rutas: los eventos van en una raíz propia.
+  const raiz = document.createElement('div');
+  raiz.className = 'bld';
+  el.replaceChildren(raiz);
+
+  let expandida = '';
+  function pintarTodo() {
+    const foco = document.activeElement?.dataset?.foco;
+    const c = calcular(cat, b);
+    const titulo = meta.nombre || (guardada ? 'Build' : 'Nueva build');
+    pintar(raiz, html`
+      ${avisoDemo()}
+      <a class="volver" href="${volverA}">${volverA === '#/yo' ? 'Mi perfil' : 'Volver'}</a>
+      <header class="cabeza-pagina">
+        <h1 class="titulo titulo--pagina">${titulo}</h1>
+        <p class="apoyo">${[c.adv ? nombreAdv(cat, c.adv.id) : '', guardada?.autor && !esMia ? `de ${guardada.autor.nick}` : '',
+          meta.clase === 'ejemplo' ? 'build de ejemplo' : '', editable && guardada ? 'editar build' : ''].filter(Boolean).join(' · ') || 'Elige adventurer, arma y armadura: el resto se calcula solo.'}</p>
+      </header>
+      ${recuperado && !sucio ? html`<p class="aviso bld-recuperado"><span>Seguiste donde quedaste en este dispositivo.</span> <button type="button" class="boton boton--chico boton--tenue" data-de-cero>Empezar de cero</button></p>` : ''}
+      ${c.avisos.length ? html`<p class="alerta" role="status">${c.avisos.join(' ')}</p>` : ''}
+      <div class="pestanas bld-pestanas" role="tablist">
+        <button type="button" role="tab" aria-selected="${vista === 'hoja'}" data-vista="hoja" data-foco="v-hoja">Build</button>
+        <button type="button" role="tab" aria-selected="${vista === 'habilidades'}" data-vista="habilidades" data-foco="v-hab">Habilidades${c.habilidades.length ? ` · ${c.habilidades.length}` : ''}</button>
+      </div>
+      <div class="bld-cuerpo">${vista === 'hoja' ? vistaHoja(c) : vistaHabilidades(c)}</div>
+      ${editable && guardada ? html`<button type="button" class="boton boton--ancho boton--peligro" data-eliminar>Eliminar build</button>` : ''}
+      <p class="nota bld-fuente">Datos del juego: gacha.gg y GameWith (catálogo ${cat.meta.version || ''}). Nombres en inglés por ahora.</p>
+      ${barra(c)}`);
+    if (expandida) {
+      const fila = raiz.querySelector(`[data-hab="${expandida}"]`);
+      if (fila) { fila.setAttribute('aria-expanded', 'true'); fila.insertAdjacentHTML('afterend', String(detalleHab(c, expandida))); }
+    }
+    if (foco) raiz.querySelector(`[data-foco="${foco}"]`)?.focus({ preventScroll: true });
+  }
+  pintarTodo();
+
+  /* ---------- Eventos ---------- */
+
+  function manejarError(e, porDefecto) {
+    if (esSesionCaida(e)) {
+      olvidarSesion();
+      toast('Tu sesión venció. Vuelve a entrar.', { error: true });
+      ir(`/entrar?volver=${guardada ? `build/${guardada.id}` : 'build/nueva'}`);
+      return null;
+    }
+    return e instanceof ErrorApi ? e.message : (e?.message || porDefecto);
+  }
+
+  async function guardar(boton) {
+    const nombre = meta.nombre.trim();
+    if (!nombre) {
+      abierto = 'adv';
+      vista = 'hoja';
+      pintarTodo();
+      raiz.querySelector('[data-meta="nombre"]')?.focus();
+      toast('Ponle un nombre a la build.', { error: true });
+      return;
+    }
+    boton.disabled = true;
+    boton.textContent = 'Guardando…';
+    try {
+      const datos = {
+        ...(guardada ? { id: guardada.id } : {}),
+        nombre, clase: meta.clase, adventurer_id: meta.clase === 'perfil' ? meta.adventurer_id : '', notas: meta.notas,
+        datos: b, catalogo_version: cat.meta.version || '', ...resumenParaGuardar(cat, b),
+      };
+      const r = await escribir('build.guardar', datos, s.token);
+      borrarBorrador('build', claveBorrador);
+      sucio = false;
+      toast(guardada ? 'Cambios guardados.' : `${nombre} quedó guardada.`);
+      if (!guardada) ir(`/build/${r.id}`);
+      else { guardada = r; pintarTodo(); }
+    } catch (e) {
+      boton.disabled = false;
+      boton.textContent = guardada ? 'Guardar' : 'Guardar build';
+      const msg = manejarError(e, 'No se pudo guardar. Inténtalo de nuevo.');
+      if (msg) toast(msg, { error: true });
+    }
+  }
+
+  let armado = 0;
+  async function eliminar(boton) {
+    if (!armado) {
+      boton.textContent = 'Toca otra vez para eliminar';
+      boton.classList.add('boton--peligro-armado');
+      armado = setTimeout(() => { armado = 0; boton.textContent = 'Eliminar build'; boton.classList.remove('boton--peligro-armado'); }, 4000);
+      return;
+    }
+    clearTimeout(armado);
+    boton.disabled = true;
+    try {
+      await escribir('build.eliminar', { id: guardada.id }, s.token);
+      borrarBorrador('build', claveBorrador);
+      toast(`${guardada.nombre} se eliminó.`);
+      ir(volverA.slice(1));
+    } catch (e) {
+      boton.disabled = false;
+      const msg = manejarError(e, 'No se pudo eliminar.');
+      if (msg) toast(msg, { error: true });
+    }
+  }
+
+  raiz.addEventListener('click', (ev) => {
+    const t = ev.target;
+    const cj = t.closest('[data-cajon]');
+    if (cj) { abierto = abierto === cj.dataset.cajon ? '' : cj.dataset.cajon; pintarTodo(); return; }
+    const v = t.closest('[data-vista]');
+    if (v) { vista = v.dataset.vista; pintarTodo(); return; }
+    const fh = t.closest('[data-filtro-hab]');
+    if (fh) { filtroHab = fh.dataset.filtroHab; expandida = ''; pintarTodo(); return; }
+    const fila = t.closest('[data-hab]');
+    if (fila) { expandida = expandida === fila.dataset.hab ? '' : fila.dataset.hab; pintarTodo(); return; }
+    const el2 = t.closest('[data-elegir]');
+    if (el2) {
+      const parte = el2.dataset.elegir;
+      selector = abrirSelector(cat, b, parte, {
+        armaTipo: armaTipo(),
+        alElegir: (id, r) => cambiar(() => { b = conPieza(b, parte, id, r); }),
+      });
+      return;
+    }
+    if (t.closest('[data-guardar]')) { guardar(t.closest('[data-guardar]')); return; }
+    if (t.closest('[data-eliminar]')) { eliminar(t.closest('[data-eliminar]')); return; }
+    if (t.closest('[data-de-cero]')) {
+      borrarBorrador('build', '');
+      b = buildVacia();
+      meta = { nombre: '', clase: 'perfil', adventurer_id: '', notas: '' };
+      recuperado = false;
+      abierto = 'adv';
+      pintarTodo();
+      return;
+    }
+    if (t.closest('[data-base]')) {
+      guardarBorrador('build', '', { b, meta: { nombre: `${meta.nombre} (copia)`.slice(0, 40), clase: 'perfil', adventurer_id: '', notas: '' } });
+      ir('/build/nueva');
+    }
+  });
+
+  raiz.addEventListener('keydown', (ev) => {
+    if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.matches('[data-hab]')) { ev.preventDefault(); ev.target.click(); }
+  });
+
+  raiz.addEventListener('change', (ev) => {
+    const t = ev.target;
+    if (t.dataset.rareza) {
+      const parte = t.dataset.rareza;
+      const actual = parte === 'arma' ? b.arma : b.piezas[parte];
+      cambiar(() => { b = conPieza(b, parte, actual.id, Number(t.value)); });
+    } else if (t.matches('[data-adv]')) {
+      cambiar(() => {
+        const nuevo = t.value ? cat.adventurers.get(t.value) : null;
+        b = { ...b, adv: nuevo ? { id: nuevo.id, ...(b.adv?.nivel ? { nivel: b.adv.nivel } : {}) } : null };
+        const w = b.arma?.id ? cat.armas.get(b.arma.id) : null;
+        if (w && nuevo && w.arma !== nuevo.arma) { b.arma = null; toast('Quitamos el arma: ese adventurer usa otra.'); }
+      });
+    } else if (t.matches('[data-nivel]')) {
+      const n = Math.round(Number(t.value));
+      cambiar(() => {
+        b = { ...b, adv: { ...b.adv } };
+        if (n >= 1 && n <= 80) b.adv.nivel = n; else delete b.adv.nivel;
+      });
+    } else if (t.dataset.meta === 'adventurer_id') {
+      cambiar(() => { meta.adventurer_id = t.value; });
+    } else if (t.matches('[data-ejemplo]')) {
+      cambiar(() => { meta.clase = t.checked ? 'ejemplo' : 'perfil'; if (t.checked) meta.adventurer_id = ''; });
+    }
+  });
+
+  // Nombre y notas: sin repintar (no perder el cursor); solo borrador y título.
+  raiz.addEventListener('input', (ev) => {
+    const k = ev.target.dataset.meta;
+    if (k !== 'nombre' && k !== 'notas') return;
+    meta[k] = ev.target.value;
+    sucio = true;
+    if (!guardada) guardarBorrador('build', '', { b, meta });
+    if (k === 'nombre') raiz.querySelector('.titulo--pagina').textContent = meta.nombre || (guardada ? 'Build' : 'Nueva build');
+  });
+
+  return {
+    titulo: meta.nombre || (guardada ? 'Build' : 'Nueva build'),
+    limpiar: () => { selector?.cerrar({ desdeHistorial: true }); clearTimeout(armado); },
+  };
+}

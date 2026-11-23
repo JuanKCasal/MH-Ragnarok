@@ -6,6 +6,7 @@ import vm from 'node:vm';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
 const firmados = (buf) => Array.from(buf, (b) => (b > 127 ? b - 256 : b));
 const aBuffer = (bytes) => Buffer.from(bytes.map((b) => (b + 256) % 256));
@@ -143,7 +144,7 @@ export function crearEntorno() {
   };
 
   const ctx = vm.createContext(globals);
-  const dir = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../apps-script');
+  const dir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../apps-script');
   // Mismo orden que en el editor (alfabético); el código no depende del orden porque todo corre en tiempo de petición.
   const fuentes = fs.readdirSync(dir).filter((f) => f.endsWith('.gs')).sort()
     .map((f) => `// ${f}\n` + fs.readFileSync(path.join(dir, f), 'utf8')).join('\n');

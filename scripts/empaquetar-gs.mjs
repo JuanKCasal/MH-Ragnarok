@@ -1,6 +1,6 @@
 /**
  * Une apps-script/*.gs en un solo archivo para pegarlo en el editor de Apps Script
- * (un único archivo "MH-Ragnarok.gs" en vez de diez). Mismo orden que usan las pruebas
+ * (un único archivo "MH-Ragnarok.gs" en vez de uno por módulo). Mismo orden que usan las pruebas
  * (tests/gas-mock.mjs), así que lo que se pega es exactamente lo que se probó.
  *
  * Uso: node scripts/empaquetar-gs.mjs [salida]   (por defecto: "Claude outputs/MH-Ragnarok.gs")

@@ -142,6 +142,32 @@ let advsYo = [
 let cambiosNick = 0;
 let idDemo = 0;
 
+// Builds del builder (E2): misma forma que la hoja Builds (docs/BUILDER.md §3), con ids reales del catálogo.
+let buildsDemo = [
+  { id: 'demo-build-1', miembro_id: 'demo-yo', clase: 'perfil', adventurer_id: 'demo-yo-a', nombre: 'Fire Heavy',
+    arma_tipo: 'heavy_bowgun', elemento: 'fire', catalogo_version: '2026-11-23', poder_estimado: '', notas: 'Para Rathalos y Anjanath.',
+    creado: hace(2), actualizado: hace(2),
+    datos: { v: 1, adv: { id: 'fated-adventurer-heavy-bowgun', nivel: 70 }, arma: { id: 'blazing-assault-i', r: 14 },
+      piezas: { head: { id: 'rath-heart-helm-iv', r: 13 }, chest: { id: 'rathalos-mail-ii', r: 13 },
+        arms: { id: 'radiant-rathalos-vambraces-v', r: 13 }, waist: { id: 'anja-coil-i', r: 13 }, legs: { id: 'radiant-rathalos-greaves-v', r: 13 } } } },
+];
+const PARTES_B = ['head', 'chest', 'arms', 'waist', 'legs'];
+const ID_CAT = /^[a-z0-9][a-z0-9-]{0,79}$/;
+const conAutor = (b) => ({ ...b, datos: structuredClone(b.datos), autor: { id: b.miembro_id, nick: b.miembro_id === 'demo-yo' ? YO.nick : 'Oficial' } });
+
+function composicionDemo(d) {
+  if (!d || typeof d !== 'object' || Number(d.v) !== 1) falla('DATO_INVALIDO', 'La build está mal formada.');
+  const out = { v: 1, piezas: {} };
+  const id = (v) => (ID_CAT.test(String(v)) ? String(v) : falla('DATO_INVALIDO', 'Identificador no válido.'));
+  if (d.adv?.id) { out.adv = { id: id(d.adv.id) }; if (d.adv.nivel) out.adv.nivel = numeroDemo(d.adv.nivel, 1, 80, 'nivel', false); }
+  if (d.arma?.id) out.arma = { id: id(d.arma.id), r: numeroDemo(d.arma.r, 1, 14, 'rareza', false) };
+  for (const [p, x] of Object.entries(d.piezas || {})) {
+    if (!PARTES_B.includes(p)) falla('DATO_INVALIDO', 'Parte no válida.');
+    if (x?.id) out.piezas[p] = { id: id(x.id), r: numeroDemo(x.r, 1, 14, 'rareza', false) };
+  }
+  return out;
+}
+
 // ---------- Administración (oficiales y admin) ----------
 let whatsappDemo = '';
 let codigoClanDemo = ''; // vacío: en el ejemplo cualquier código sirve hasta que el admin ponga uno
@@ -304,6 +330,16 @@ export async function leerDemo(accion, params = {}) {
         const { adventurers, ...p } = perfilDemo(m);
         return { ...p, principal: adventurers.find((a) => a.id === p.adventurer_principal_id) ?? null };
       }).sort((a, b) => (b.principal?.poder_total ?? 0) - (a.principal?.poder_total ?? 0));
+    case 'builds':
+      if (params.clase === 'ejemplo') return buildsDemo.filter((b) => b.clase === 'ejemplo').map(conAutor);
+      if (!params.miembro) falla('DATO_INVALIDO', 'Indica el miembro o clase=ejemplo.');
+      return buildsDemo.filter((b) => b.miembro_id === params.miembro && b.clase === 'perfil').map(conAutor)
+        .sort((a, b) => (a.actualizado < b.actualizado ? 1 : -1));
+    case 'build': {
+      const b = buildsDemo.find((x) => x.id === params.id);
+      if (!b) falla('NO_EXISTE', 'Build no encontrada.');
+      return conAutor(b);
+    }
     case 'miembro': {
       const m = activos().find((x) => x.id === params.id);
       if (!m) falla('NO_EXISTE', 'Miembro no encontrado.');
@@ -386,8 +422,33 @@ export async function escribirDemo(accion, datos = {}) {
     }
     case 'adventurer.eliminar':
       advsYo = advsYo.filter((x) => x.id !== datos.id);
+      buildsDemo.forEach((b) => { if (b.adventurer_id === datos.id) b.adventurer_id = ''; });
       if (YO.adventurer_principal_id === datos.id) YO.adventurer_principal_id = [...advsYo].sort((x, y) => y.poder_total - x.poder_total)[0]?.id || '';
       sincronizar();
+      return { eliminado: true };
+    case 'build.guardar': {
+      let b = datos.id ? buildsDemo.find((x) => x.id === datos.id) : null;
+      if (datos.id && !b) falla('NO_EXISTE', 'Build no encontrada.');
+      const nombre = recortar(datos.nombre, 40);
+      if (!nombre) falla('DATO_INVALIDO', 'Ponle un nombre a la build.');
+      const clase = datos.clase || b?.clase || 'perfil';
+      if (!['perfil', 'ejemplo'].includes(clase)) falla('DATO_INVALIDO', 'Clase no válida.');
+      if (!b && clase === 'perfil' && buildsDemo.filter((x) => x.miembro_id === 'demo-yo' && x.clase === 'perfil').length >= 10) {
+        falla('LIMITE', 'Llegaste al máximo de 10 builds en tu perfil.');
+      }
+      const adv = clase === 'perfil' && datos.adventurer_id ? advsYo.find((x) => x.id === datos.adventurer_id) : null;
+      if (clase === 'perfil' && datos.adventurer_id && !adv) falla('DATO_INVALIDO', 'Ese adventurer no es del dueño de la build.');
+      const ahora = new Date().toISOString();
+      const nuevo = { nombre, clase, adventurer_id: adv?.id || '', datos: composicionDemo(datos.datos),
+        arma_tipo: datos.arma_tipo || '', elemento: datos.elemento || 'none', catalogo_version: recortar(datos.catalogo_version, 20),
+        poder_estimado: '', notas: recortar(datos.notas, 500), actualizado: ahora };
+      if (b) Object.assign(b, nuevo);
+      else buildsDemo.push(b = { id: `demo-build-n${++idDemo}`, miembro_id: 'demo-yo', creado: ahora, ...nuevo });
+      return conAutor(b);
+    }
+    case 'build.eliminar':
+      if (!buildsDemo.some((x) => x.id === datos.id)) falla('NO_EXISTE', 'Build no encontrada.');
+      buildsDemo = buildsDemo.filter((x) => x.id !== datos.id);
       return { eliminado: true };
     case 'adventurer.principal':
       if (!advsYo.some((x) => x.id === datos.id)) falla('NO_EXISTE', 'Adventurer no encontrado.');

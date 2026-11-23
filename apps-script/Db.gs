@@ -24,7 +24,10 @@ var ESQUEMA = {
   Imagenes: { id: 's', miembro_id: 's', tipo: 's', creado: 's' },
   Config: { clave: 's', valor: 's' },
   Log: { fecha: 's', miembro_id: 's', accion: 's', entidad: 's', entidad_id: 's', detalle: 's' },
-  Catalogo: { tipo: 's', id: 's', nombre_es: 's', nombre_en: 's', extra_json: 's', validado: 'b', creado_por: 's' }
+  Catalogo: { tipo: 's', id: 's', nombre_es: 's', nombre_en: 's', extra_json: 's', validado: 'b', creado_por: 's' },
+  // Nueva en la versión 3 del Web App (builder E2). Agregar hojas al final; nunca reordenar columnas.
+  Builds: { id: 's', miembro_id: 's', clase: 's', adventurer_id: 's', nombre: 's', arma_tipo: 's', elemento: 's',
+    datos: 's', catalogo_version: 's', poder_estimado: 'n', notas: 's', creado: 's', actualizado: 's' }
 };
 
 var memoTablas_ = {};

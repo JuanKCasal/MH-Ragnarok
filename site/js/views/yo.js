@@ -13,6 +13,7 @@ import { comprimir, urlImagen } from '../image.js';
 
 const ROLES = { admin: 'Admin', oficial: 'Oficial', miembro: 'Miembro' };
 const MAX_ADVENTURERS = 30;
+const MAX_BUILDS = 10;
 
 export function avatar(m, tam = 88) {
   const src = urlImagen(m.avatar_id, tam * 2);
@@ -77,8 +78,13 @@ export default async function vistaYo(el, { query, recargar }) {
   pintar(el, cargando());
 
   let perfil;
+  let builds = [];
   try {
-    perfil = await leer('miembro', { id: s.miembro.id });
+    [perfil, builds] = await Promise.all([
+      leer('miembro', { id: s.miembro.id }),
+      // El builder es nuevo: si el backend aún no tiene la hoja Builds, el perfil igual se muestra.
+      leer('builds', { miembro: s.miembro.id }).catch(() => []),
+    ]);
   } catch (e) {
     fallo(el, e, recargar);
     return { titulo: 'Mi perfil' };
@@ -143,6 +149,23 @@ export default async function vistaYo(el, { query, recargar }) {
       ${advs.length < MAX_ADVENTURERS
         ? html`<a class="boton boton--ancho ${advs.length ? '' : 'boton--oro latido'}" href="#/yo/adventurer">Agregar adventurer</a>`
         : ''}
+    </section>
+
+    <section class="seccion" aria-labelledby="t-builds">
+      <div class="encabezado">
+        <h2 class="titulo" id="t-builds">Mis builds</h2>
+        ${builds.length ? html`<span class="nota">${builds.length} de ${MAX_BUILDS}</span>` : ''}
+      </div>
+      ${builds.length
+        ? html`<ul class="bld-mis">${builds.map((b) => {
+            const adv = advs.find((a) => a.id === b.adventurer_id);
+            return html`<li><a href="#/build/${b.id}">
+              <span class="bld-mis__nombre">${elemDot(b.elemento)}${b.nombre}</span>
+              <span class="nota">${[adv?.adventurer, armaBilingue(b.arma_tipo).split(' · ')[0]].filter(Boolean).join(' · ')}</span>
+            </a></li>`;
+          })}</ul>`
+        : html`<div class="vacio"><p>Arma tu build con el equipo real: ves qué habilidades sobran, qué sets te faltan y qué cambia si pruebas otra pieza.</p></div>`}
+      ${builds.length < MAX_BUILDS ? html`<a class="boton boton--ancho" href="#/build/nueva">Nueva build</a>` : ''}
     </section>
 
     ${tieneRol('oficial')

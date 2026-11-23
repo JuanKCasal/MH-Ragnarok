@@ -1,6 +1,6 @@
 # Builder de builds — modelo de datos y plan (sesión 10, propuesta)
 
-Estado: **plan aprobado por Juan (2026-11-23)**; **E1 hecha** (catálogo limpio). Dirección elegida: **C · Hoja única con cajones** + pantallas comunes (selector de pieza, tarjeta de build, comparar). Mockups en `docs/mockups/builder/`.
+Estado: **plan aprobado por Juan (2026-11-23)**; **E1 hecha** (catálogo limpio); **E2 hecha** (hoja con cajones, sin publicar todavía el backend v3). Dirección elegida: **C · Hoja única con cajones** + pantallas comunes (selector de pieza, tarjeta de build, comparar). Mockups en `docs/mockups/builder/`.
 
 Decisiones ya tomadas (2026-11-23): el builder sirve para el perfil del miembro **y** para builds de ejemplo en guías; alcance completo (equipo + Rostros + Camarada + Keepsake + Reflexiones); nombres EN ahora y ES después (los agrega un oficial, "por confirmar"); catálogo como JSON estático en `site/data/`; cálculo de stats y habilidades + **poder estimado** (el del Clash sigue siendo el que escribe el miembro).
 
@@ -126,3 +126,17 @@ Resueltas (2026-11-23): **no hay joyas**; **rareza hasta 14** en armas y armadur
 - Salida en `site/data/catalogo/` (un elemento por línea para que los diffs se lean bien). Cada array de stats va alineado desde `rmin` (índice = rareza − rmin).
 - Para actualizar: re-descargar de gacha.gg en `datos/gacha-gg/`, correr `npm run catalogo`, revisar los avisos y hacer commit. La prueba `tests/catalogo.test.mjs` falla si los JSON no están al día con el script o si aparece algo raro (habilidad desconocida, set incompleto, rareza con hueco).
 - Pruebas: **87** (`npm test`).
+
+## 8. E2 — hecho (2026-11-23, sesión 11)
+
+- **Cálculo** `site/js/build-calc.js` (puro): `indexarCatalogo`, `calcular` (defensa, ataque, afinidad %, elemento/estado, habilidades con aporte por origen `arma`/parte/`set`, sets con bono activo, resumen y avisos), `diferencia` (gana / igual / pierde según el nivel efectivo con tope), `conPieza`, `buscarPiezas` (parte, texto sin tildes, monstruo u "otros", habilidad, elemento; en armaduras el elemento filtra por habilidades `fire-…`), `limpiarBuild`, `resumenParaGuardar`. Pruebas en `tests/build-calc.test.mjs` con el catálogo real.
+- **Carga** `site/js/catalogo.js`: los 7 JSON con `?v=<VERSION>`, una sola vez por sesión de página.
+- **Pantallas** `site/js/views/build.js` (rutas `#/build/nueva[?adv=<id de mi adventurer>]` y `#/build/:id`), `site/js/ui/selector-pieza.js` (pantalla completa; el "atrás" del celular la cierra) y `site/js/ui/build-textos.js`. Estilos `.bld-*` al final de `views.css`.
+  - Cajón **Adventurer y arma** (nombre, adventurer del catálogo, nivel, unión opcional a un adventurer del perfil, arma filtrada por el tipo del adventurer) y cajón **Armadura** (5 filas con rareza editable y ⇄ para cambiar; chips de defensa y sets). Rostros, Camarada, Keepsake y Reflexiones se ven como "próximamente" (E4).
+  - Pestaña **Habilidades**: matriz habilidad × (Arma, Cab, Pec, Bra, Cin, Pie, Set) con total `nivel/máx` y "+sobra"; filtros Todas / Sobran / Al tope / Les falta; tocar una fila muestra qué hace en el nivel actual y en el máximo; lista de sets. **Sin columna de joyas.**
+  - Barra fija con defensa, ataque y resumen (habilidades, sobran, sets listos, sets a una pieza) + Guardar.
+  - Cualquiera puede armar; guardar pide sesión. Build ajena: solo lectura con **Usar de base** (copia al borrador de una build nueva). Borrador local solo para builds nuevas.
+  - Oficiales: casilla "Build de ejemplo" (`clase = ejemplo`).
+  - Entrada: sección **Mis builds** en `#/yo` (si el backend aún no tiene `Builds`, la sección queda vacía sin romper el perfil).
+- **Backend** `apps-script/Builds.gs` + hoja `Builds` al final del `ESQUEMA`: `builds`, `build`, `build.guardar`, `build.eliminar`. Valida la forma de la composición (v1: `adv`, `arma`, `piezas`, `poder`; lo demás se descarta hasta la E4), ids tipo slug, rarezas 1–14, máx. 8.000 caracteres, 10 builds de perfil por miembro, `adventurer_id` del mismo dueño. Al borrar un adventurer sus builds quedan sueltas. Pruebas en `tests/builds.test.mjs`. Modo demo con una build de ejemplo (`demo-build-1`).
+- Pruebas: **104** (`npm test`).
