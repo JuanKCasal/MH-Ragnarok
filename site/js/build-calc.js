@@ -30,6 +30,7 @@ export function indexarCatalogo(raw) {
     adventurers: porId(raw.adventurers),
     rostros: porId(raw.rostros),
     rostrosSets: porId(raw['rostros-sets']),
+    camaradas: porId(raw.camaradas),
     lista: {
       armaduras: raw.armaduras || [],
       armas: raw.armas || [],
@@ -37,6 +38,7 @@ export function indexarCatalogo(raw) {
       monstruos: raw.monstruos || [],
       habilidades: raw.habilidades || [],
       rostros: raw.rostros || [],
+      camaradas: raw.camaradas || [],
     },
   };
 }
@@ -178,6 +180,7 @@ export function calcular(cat, build) {
   }
 
   const rostros = calcularRostros(cat, b.rostros, avisos);
+  const camarada = calcularCamarada(cat, b.camarada, adv, avisos);
   const habNucleo = rostros?.nucleo?.item.nucleo?.hab;
   if (habNucleo) sumar(habNucleo[0], 'rostro', habNucleo[1]);
 
@@ -202,7 +205,7 @@ export function calcular(cat, build) {
   }).sort((x, y) => y.nivel - x.nivel || y.suma - x.suma || porNombre(x, y));
 
   return {
-    adv, arma, piezas, def, atk, afi, ele, estado, habilidades, sets, rostros,
+    adv, arma, piezas, def, atk, afi, ele, estado, habilidades, sets, rostros, camarada,
     resumen: {
       habilidades: habilidades.length,
       sobran: habilidades.filter((h) => h.sobra > 0).length,
@@ -326,6 +329,8 @@ export function limpiarBuild(cat, build) {
   }
   const ros = limpiarRostros(cat, build?.rostros);
   if (ros) b.rostros = ros;
+  const cam = limpiarCamarada(cat, build?.camarada);
+  if (cam) b.camarada = cam;
   return b;
 }
 
@@ -438,4 +443,64 @@ export function diferenciaRostros(antes, despues) {
   const orden = { gana: 0, igual: 1, pierde: 2 };
   sets.sort((x, y) => orden[x.efecto] - orden[y.efecto]);
   return { sets, costo: (despues?.costo || 0) - (antes?.costo || 0), costoFinal: despues?.costo || 0 };
+}
+
+/* ---------------- Camarada (Buddy) ---------------- */
+
+export const CAMARADA_NV_MAX = 80;
+export const ESTRELLAS_MAX = 6; // capturas de Juan (2026-11-23): Kojiro e Icarus Lv 80/80 con 6 estrellas
+export const PODER_MAX = 999999;
+
+/** Entero en [min, max]; fuera de rango o vacío → null. */
+function entero(v, min, max) {
+  if (v === '' || v === null || v === undefined) return null;
+  const n = Math.round(Number(v));
+  return Number.isFinite(n) && n >= min && n <= max ? n : null;
+}
+
+/**
+ * Normaliza el bloque `camarada`: { id, nv?, estrellas?, poder? }. Nivel, estrellas y poder los
+ * escribe el miembro desde su captura (no hay tablas públicas de stats por nivel). Sin camarada → null.
+ */
+export function limpiarCamarada(cat, c) {
+  if (!c?.id || !cat.camaradas?.has(c.id)) return null;
+  const out = { id: c.id };
+  const nv = entero(c.nv, 1, CAMARADA_NV_MAX);
+  const estrellas = entero(c.estrellas, 0, ESTRELLAS_MAX);
+  const poder = entero(c.poder, 0, PODER_MAX);
+  if (nv !== null) out.nv = nv;
+  if (estrellas !== null) out.estrellas = estrellas;
+  if (poder !== null) out.poder = poder;
+  return out;
+}
+
+/**
+ * Ficha del camarada para la hoja: el del catálogo + lo que escribió el miembro.
+ * `compatible`: false si el adventurer tiene tipo conocido y no coincide con el del camarada
+ * (el tipo del camarada depende del tipo de Definitiva del adventurer, según GameWith; por confirmar).
+ */
+export function calcularCamarada(cat, c, adv = null, avisos = []) {
+  if (!c?.id) return null;
+  const item = cat.camaradas?.get(c.id);
+  if (!item) { avisos.push(`Camarada desconocido: ${c.id}`); return null; }
+  const compatible = !adv?.tipo || adv.tipo === item.tipo;
+  return { item, nv: c.nv ?? null, estrellas: c.estrellas ?? null, poder: c.poder ?? null, compatible };
+}
+
+/** Pone, cambia o quita (id vacío) el camarada. Al cambiarlo se conservan nivel, estrellas y poder solo si se pide. */
+export function conCamarada(build, id, datos = null) {
+  const b = structuredClone(build || buildVacia());
+  if (!id) { delete b.camarada; return b; }
+  const previo = b.camarada || {};
+  const base = datos || (previo.id === id ? previo : {});
+  b.camarada = { id };
+  for (const k of ['nv', 'estrellas', 'poder']) if (base[k] !== undefined && base[k] !== null && base[k] !== '') b.camarada[k] = base[k];
+  return b;
+}
+
+/** Camaradas que encajan con el adventurer primero (mismo tipo), luego por rareza y nombre. */
+export function ordenarCamaradas(lista, tipo = '') {
+  const RAREZA = { SSR: 0, SR: 1, R: 2 };
+  return [...lista].sort((a, b) => (tipo ? Number(b.tipo === tipo) - Number(a.tipo === tipo) : 0)
+    || RAREZA[a.rareza] - RAREZA[b.rareza] || (a.es || a.en).localeCompare(b.es || b.en));
 }

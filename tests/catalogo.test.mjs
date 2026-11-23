@@ -105,6 +105,18 @@ test('los JSON de site/data/catalogo están al día con el script (no se editan 
   }
 });
 
+test('camaradas: 38 de GameWith con rareza, tipo y aumento; ids únicos y estables', () => {
+  assert.equal(cat.camaradas.length, 38);
+  assert.equal(cat.meta.conteos.camaradas, 38);
+  const conteo = (k, v) => cat.camaradas.filter((c) => c[k] === v).length;
+  assert.deepEqual([conteo('rareza', 'SSR'), conteo('rareza', 'SR'), conteo('rareza', 'R')], [8, 15, 15]);
+  assert.deepEqual([conteo('tipo', 'assault'), conteo('tipo', 'disruptor'), conteo('tipo', 'support')], [14, 12, 12]);
+  assert.equal(new Set(cat.camaradas.map((c) => c.id)).size, 38);
+  const devu = cat.camaradas.find((c) => c.id === 'devu');
+  assert.deepEqual(devu, { id: 'devu', en: 'Devu', es: 'Devu', rareza: 'SSR', tipo: 'disruptor', aumento: [['ataque_elemental', 350], ['afinidad', 9]] });
+  assert.ok(cat.camaradas.every((c) => c.aumento.length >= 1 && c.es));
+});
+
 test('rostros: 56 cartas y 12 sets de GameWith, con nombre ES y efecto núcleo en las de costo 3 y 4', () => {
   assert.equal(cat.rostros.length, 56);
   assert.equal(cat['rostros-sets'].length, 12);

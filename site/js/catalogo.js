@@ -10,7 +10,7 @@ import { indexarCatalogo } from './build-calc.js';
 import { leer } from './api.js';
 import { aplicarNombres } from './nombres.js';
 
-export const ARCHIVOS = ['meta', 'armaduras', 'armas', 'sets', 'habilidades', 'monstruos', 'adventurers', 'rostros', 'rostros-sets'];
+export const ARCHIVOS = ['meta', 'armaduras', 'armas', 'sets', 'habilidades', 'monstruos', 'adventurers', 'rostros', 'rostros-sets', 'camaradas'];
 let promesa = null;
 
 export function cargarCatalogo() {

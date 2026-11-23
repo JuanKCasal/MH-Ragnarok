@@ -38,7 +38,8 @@ site/data/catalogo/
   monstruos.json    21 monstruos, nombre EN (+ ES cuando se confirme)
   rostros.json      56 Rostros (GameWith, E4)
   rostros-sets.json 12 sets de Rostros
-  (después) camaradas.json · reflexiones.json
+  camaradas.json    38 camaradas (GameWith, E4)
+  (después) reflexiones.json
 ```
 
 Formato compacto (ejemplo de armadura):
@@ -202,3 +203,21 @@ Decisiones de Juan: **página + atajo**; armas y armaduras se corrigen por **nom
 - **Navegador** `site/js/nombres.js` (puro): `aplicarNombres` (al cargar el catálogo, encima de lo de GameWith; arma por base + número + elemento; habilidades también a sus variantes `-s0`…), `entradasNombres` (lista para la página, estado `en` / `gw` / `ok`), `claveNombre`, `partirNombre`, `baseEs`. `catalogo.js` lo aplica tras indexar (si falla la lectura, sigue sin correcciones). Las tuplas quedan `[r, en, es?, confirmado?]`; `nombreOk(item, r)` en `build-calc.js`.
 - **Pantallas**: página `#/nombres` (pestañas Armas / Armaduras / Habilidades / Sets / Monstruos; filtros En inglés / Por confirmar / Confirmados / Todos; buscador ES+EN; los oficiales editan, "Confirmar" y "Volver al de GameWith"; los demás solo leen). En el selector de pieza, "Corregir nombre en español" (solo oficiales). Enlace "Nombres del juego" al pie del builder. ✓ verde junto al nombre confirmado (piezas, arma, matriz, sets). Modo demo con una corrección de ejemplo (Cota de Rathalos).
 - Pruebas: **119**. Revisado en navegador (modo demo, 390 px): página (guardar → ✓, volver al de GameWith), atajo en el selector, sin scroll horizontal ni errores de consola.
+
+## 13. E4 · Camarada — hecho (2026-11-23, sesión 14)
+
+Decisiones de Juan (sesión 14): el resto de la E4 va **una entrega por vez** (Camarada → Reflexiones → Keepsake), cada una publicada y probada en el celular. Camarada: **catálogo + datos del miembro** (nivel, estrellas y poder desde su captura). Keepsake: **nivel + poder + matriz de grabados** (marcar los hechos; la web bloquea los que el nivel no abre). Reflexiones: **catálogo de nodos por adventurer** (GameWith), capacidad que escribe el miembro y nodos activos con suma de puntos.
+
+**Fuente**: GameWith `/en/buddies` y `/es-mx/buddies` (2026-11-23): **38 camaradas** (8 SSR, 15 SR, 15 R; 14 Asalto/Palico, 12 Alterador/Rutaco, 12 Apoyo/Trillan). gacha.gg decía 42: faltan 4 que GameWith no lista (por confirmar). Solo "Shadow" cambia de nombre en es-MX (**Sombra**). Por camarada: rareza, tipo y **Aumento de aventurero** (p. ej. Devu: Ataque elemental +350 · Afinidad +9 %). GameWith también muestra Ataque y Ataque máx., 3 habilidades y una "etapa de mejora 0–4" del efecto de apoyo: fuera del alcance.
+
+**Confirmado con capturas de Juan (2026-11-23, pantalla Adventurer/Buddy)**: su camarada es **Kojiro** (SSR, Lv 80/80, **6 estrellas**, poder **1998**; Adventurer Boost Affinity 9.0 % + Elemental Attack 350). Icarus (SR, Lv 80/80, 6 estrellas, poder 1399; Affinity 6.3 % + Elemental Attack 245). Los aumentos de GameWith coinciden; las estrellas van de **0 a 6**. El camarada se equipa desde la pantalla de cada adventurer (botón Equip) → uno por adventurer. La pantalla también muestra **Core Passive** con "Tier" (Kojiro Tier 1, Icarus Tier 2) y **Ultimate Effect**: fuera del alcance por ahora.
+
+**Por confirmar con el juego**: ¿el tipo del camarada tiene que coincidir con el del adventurer? (GameWith: "depende del tipo de Definitiva"; la web solo avisa) · ¿38 o 42 camaradas?
+
+**Hecho**
+- Datos: `datos/gamewith/camaradas.json` (transcrito; `aumento` = pares `[stat, valor]`, etiquetas en `stats`). Script: `armarCamaradas` en `scripts/catalogo.mjs` → `site/data/catalogo/camaradas.json` (orden SSR→R, tipo, nombre). `catalogo.js` lo carga (10 archivos).
+- Composición: `camarada: { id, nv?, estrellas?, poder? }` (nivel 1–80, estrellas 0–6, poder 0–999999; todo menos el id es opcional).
+- Cálculo (`build-calc.js`): `limpiarCamarada`, `calcularCamarada` (ficha + `compatible` = tipo del adventurer igual al del camarada; el Fated Adventurer no tiene tipo → siempre compatible), `conCamarada` (al cambiar de camarada se borran nivel/estrellas/poder), `ordenarCamaradas` (primero los del tipo del adventurer). `calcular()` devuelve `camarada`.
+- Pantallas: cajón **Camarada** (rareza, nombre ES · EN, tipo · especie, aumento, ⇄; Nivel / Estrellas / Poder; aviso si el tipo no coincide; resumen "Kojiro · Nv 80 · 6 ★ · poder 1.998"). Selector `ui/selector-camarada.js` (buscador por nombre o aumento, filtros Tipo —preseleccionado con el del adventurer— y Rareza, "Quitar el camarada"). Textos en `ui/build-textos.js` (`textoAumento`, `tipoCamarada`, `TIPOS_CAMARADA`). Estilos `.bld-camarada`, `.bld-rareza-cam*`, `.bld-cam-datos`.
+- Backend `Builds.gs`: `camaradaValido_`. **Requiere publicar la versión 6 del Web App** (no cambia hojas; sin `instalar()`). Si la web sale antes, la build se guarda igual pero el backend v5 descarta el camarada. Modo demo igual (build de ejemplo con Kojiro Nv 80, 6 ★, poder 1998, como en la captura de Juan).
+- Pruebas: **125** (4 en `build-calc`, 1 en `builds`, 1 en `catalogo`). Revisado en navegador (modo demo, 390 px): cajón, selector, aviso de tipo, borrador; sin scroll horizontal ni errores de consola.

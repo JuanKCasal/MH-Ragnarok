@@ -74,6 +74,22 @@ test('rostros (E4): núcleo + 4 cartas con calidad y nivel; valida forma y rango
   ok(E.post('build.eliminar', { id: b.id }, pepe));
 });
 
+test('camarada (E4): id + nivel, estrellas y poder opcionales; valida rangos', () => {
+  const b = ok(E.post('build.guardar', { nombre: 'Cam', datos: { v: 1, camarada: { id: 'devu', nv: 60, estrellas: 6, poder: 1998, x: 1 } } }, pepe));
+  assert.deepEqual(b.datos.camarada, { id: 'devu', nv: 60, estrellas: 6, poder: 1998 });
+  const solo = ok(E.post('build.guardar', { id: b.id, nombre: 'Cam', datos: { v: 1, camarada: { id: 'devu', nv: '', estrellas: 0 } } }, pepe));
+  assert.deepEqual(solo.datos.camarada, { id: 'devu', estrellas: 0 });
+  const sin = ok(E.post('build.guardar', { id: b.id, nombre: 'Cam', datos: { v: 1, camarada: { nv: 10 } } }, pepe));
+  assert.equal(sin.datos.camarada, undefined);
+  const mal = (camarada) => err(E.post('build.guardar', { nombre: 'X', datos: { v: 1, camarada } }, pepe), 'DATO_INVALIDO');
+  mal({ id: 'devu', nv: 81 });
+  mal({ id: 'devu', nv: 0 });
+  mal({ id: 'devu', estrellas: 7 });
+  mal({ id: 'devu', poder: 1000000 });
+  mal({ id: 'Devu X' });
+  ok(E.post('build.eliminar', { id: b.id }, pepe));
+});
+
 test('adventurer_id debe ser del dueño; al borrar el adventurer la build queda suelta', () => {
   const ajeno = ok(E.post('adventurer.guardar', { adventurer: 'Midori', arma: 'long_sword', poder_total: 9000 }, ana)).id;
   err(E.post('build.guardar', { nombre: 'X', datos: DATOS, adventurer_id: ajeno }, pepe), 'DATO_INVALIDO');

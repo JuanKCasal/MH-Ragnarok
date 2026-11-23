@@ -1,16 +1,45 @@
-# HANDOFF — MH-Ragnarok (sesión 13: equipo en español publicado · E6 nombres editables hecha, sin commit)
+# HANDOFF — MH-Ragnarok (sesión 14: E4 · Camarada hecha, sin commit · siguen Reflexiones y Keepsake)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
 
-## Sesión 13 — Equipo en español (publicado, `d1e513c`) + E6 · nombres editables (sin commit)
+## Sesión 14 — Camarada (sin commit todavía)
+
+### Punto de partida exacto para la sesión 15
+1. Leer `CLAUDE.md`, este bloque y **`docs/BUILDER.md` §13** (Camarada: decisiones de Juan para todo el resto de la E4, fuente, qué se hizo, qué falta confirmar) y §10 (notas del Keepsake).
+2. **Publicar Camarada (en este orden)**:
+   1. `npm test` en su PC → **125** (Claude ya las corrió en su PC el 2026-11-23: 125 pasan).
+   2. ~~Backend versión 6~~ **HECHO 2026-11-23 (Claude con el Chrome de Juan):** el editor tenía exactamente la v5 (SHA-256 `1f743716…`); se aplicó el cambio de `Builds.gs` y se verificó idéntico al paquete probado `Claude outputs/MH-Ragnarok.gs` (SHA-256 `f6d4bdf892aa…`), guardado y publicada la **versión 6** ("v6 (E4: Camarada)", misma URL). `builds?clase=ejemplo` → `{ok:true,data:[]}`. Sin `instalar()`.
+   3. **Commit + push (lo hace Juan; comandos abajo).** Hasta entonces la web publicada no muestra el cajón Camarada (el backend ya lo acepta).
+   4. Probar en el celular: abrir "Fire Heavy" → cajón Camarada → Elegir → el tuyo → escribir Nivel, Estrellas y Poder de tu captura → Guardar → volver a abrir: debe seguir ahí.
+3. **Confirmado con capturas de Juan (2026-11-23)**: su camarada es **Kojiro** (SSR, Lv 80/80, 6 estrellas, poder 1998); estrellas **0–6** (ajustado en web, backend y pruebas). **Falta preguntar**: ¿se puede poner un camarada de otro tipo que el adventurer? ¿ve 38 camaradas o 42?
+4. Siguen abiertos de antes: probar en el celular equipo en español, E6 (nombre de Scintillant Bayard) y Rostros (sus 4 cartas); rarezas de GameWith (§11); Pages a Node 24; activador de `limpiarSesiones`.
+5. **Siguiente entrega (ya decidida por Juan): Reflexiones** — catálogo de nodos por adventurer desde GameWith (página de cada adventurer, tabla "Insights": nombre, tipo, puntos, efecto; 8 Fated por arma + 13 con nombre; ES "Reflexión" por confirmar), capacidad escrita por el miembro (65 en su captura), marcar nodos activos y sumar puntos. La página de GameWith es larga (>100.000 caracteres): leerla por partes. Después: **Keepsake** (nivel + poder + matriz de grabados, §10 y §13).
+
+### Git (sesión 14)
+Modificados: `HANDOFF.md`, `SPEC.md`, `docs/BUILDER.md`, `apps-script/Builds.gs`, `scripts/catalogo.mjs`, `site/data/catalogo/meta.json`, `site/js/{build-calc,catalogo,demo-data}.js`, `site/js/ui/build-textos.js`, `site/js/views/build.js`, `site/assets/css/views.css`, `tests/{build-calc,builds,catalogo}.test.mjs`. Nuevos: `datos/gamewith/camaradas.json`, `site/data/catalogo/camaradas.json`, `site/js/ui/selector-camarada.js`.
+```
+git add -A
+git commit -m "Sesión 14: E4 · Camarada (catálogo GameWith, cajón, selector y backend v6)"
+git push
+```
+Nota: un `git fetch` de Claude dejó `.git/stale-maintenance-lock-claude` (renombrado para que no moleste); se puede borrar.
+
+---
+
+# (Sesión 13) HANDOFF — MH-Ragnarok (sesión 13: equipo en español y E6 publicados · falta probar en el celular)
+
+Fecha: 2026-11-23
+Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
+
+## Sesión 13 — Equipo en español (publicado, `d1e513c`) + E6 · nombres editables (commit `aa94707` + backend v5, publicados)
 
 ### Punto de partida exacto para la sesión 14
 1. Leer `CLAUDE.md`, este bloque y **`docs/BUILDER.md` §11** (nombres ES de GameWith) y **§12** (E6).
 2. **Publicar la E6 (en este orden)**:
    1. `npm test` en su PC → **119** (Claude ya las corrió en su PC el 2026-11-23: 119 pasan).
-   2. **Backend versión 5**: pegar `Claude outputs/MH-Ragnarok.gs` (12 módulos, nuevo `Catalogo.gs`; SHA-256 empieza `cfd68ec67c4c`) en el editor de Apps Script, guardar y publicar **versión 5** (misma URL: Implementar → Gestionar implementaciones → editar → Versión nueva). **Sin `instalar()`**: la hoja `Catalogo` ya existe. Comprobar `?accion=catalogo_nombres` → `{ok:true,data:[]}`.
-   3. Commit + push (comandos abajo).
+   2. ~~Backend versión 5~~ **HECHO 2026-11-23 (Claude con el Chrome de Juan):** código armado desde GitHub (`aa94707`, apps-script/) y verificado idéntico al paquete probado (SHA-256 `1f743716…`), guardado y publicada la **versión 5** ("v5 (E6: nombres ES, hoja Catalogo)", misma URL). `catalogo_nombres` → `{ok:true,data:[]}` y `builds?clase=ejemplo` sigue respondiendo. Sin `instalar()`.
+   3. ~~Commit + push~~ **HECHO:** commit `aa94707`, pusheado por Juan el 2026-11-23 (la web ya lo tiene; guardar un nombre da "Acción desconocida" hasta publicar la v5).
    4. Probar: entrar como oficial → pie del builder "Nombres del juego" → Armas · En inglés → escribir el nombre de Scintillant Bayard como sale en el juego en español → Guardar → ✓; abrir "Fire Heavy": el arma sale en español con ✓. En el selector de pieza, "Corregir nombre en español".
 3. Equipo en español (`d1e513c`): publicado (el primer despliegue falló por GitHub; con "Re-run failed jobs" salió bien). Falta probarlo en el celular (ver abajo).
 4. Siguen abiertos: probar Rostros en el celular y confirmar con Juan sus 4 cartas (sesión 12); rarezas de GameWith por revisar (`docs/BUILDER.md` §11); Pages a Node 24; activador de `limpiarSesiones`.

@@ -100,3 +100,27 @@ export function siLaCambiasRostro(d) {
   if (!lineas.length) return html`<p class="nota">No cambia ningún set ni el costo.</p>`;
   return html`<ul class="bld-difs">${lineas}</ul>`;
 }
+
+/* ---------- Camarada ---------- */
+
+/** Tipo de camarada = tipo de Definitiva (GameWith es-MX): Asalto/Palico, Alterador/Rutaco, Apoyo/Trillan. */
+export const TIPOS_CAMARADA = {
+  assault: { es: 'Asalto', en: 'Assault', especie: 'Palico' },
+  disruptor: { es: 'Alterador', en: 'Disruptor', especie: 'Rutaco' },
+  support: { es: 'Apoyo', en: 'Support', especie: 'Trillan' },
+};
+const STATS_CAMARADA = {
+  ataque_elemental: ['Ataque elemental', ''], afinidad: ['Afinidad', ' %'], carga_definitiva: ['Carga de la definitiva', ' %'],
+  fire: ['Fuego', ' %'], water: ['Agua', ' %'], thunder: ['Trueno', ' %'], ice: ['Hielo', ' %'], dragon: ['Dragón', ' %'],
+};
+
+/** "Ataque elemental +350 · Afinidad +9 %" (Aumento de aventurero según GameWith). */
+export function textoAumento(item) {
+  return (item?.aumento || []).map(([k, v]) => {
+    const [n, u] = STATS_CAMARADA[k] || [k, ''];
+    return `${n} +${Number(v).toLocaleString('es-CL', { maximumFractionDigits: 1 })}${u}`;
+  }).join(' · ');
+}
+
+/** "Alterador · Rutaco" */
+export const tipoCamarada = (t) => (TIPOS_CAMARADA[t] ? `${TIPOS_CAMARADA[t].es} · ${TIPOS_CAMARADA[t].especie}` : '');

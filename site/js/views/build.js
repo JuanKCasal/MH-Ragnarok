@@ -1,7 +1,7 @@
 /**
  * Builder · hoja única con cajones (opción C). Ver docs/BUILDER.md (E2: adventurer, arma y armadura).
  * #/build/nueva[?adv=<id de mi adventurer>]  ·  #/build/:id
- * Cualquiera puede armar y mirar; guardar requiere sesión. Rostros: E4 (Camarada, Keepsake y Reflexiones después).
+ * Cualquiera puede armar y mirar; guardar requiere sesión. E4: Rostros y Camarada (Keepsake y Reflexiones después).
  */
 import { leer, escribir, ErrorApi } from '../api.js';
 import { sesion, olvidarSesion, esSesionCaida, tieneRol } from '../auth.js';
@@ -11,15 +11,17 @@ import { avisoDemo, cargando, fallo } from '../ui/comun.js';
 import { toast } from '../ui/toast.js';
 import { ARMAS } from '../etiquetas.js';
 import { cargarCatalogo } from '../catalogo.js';
-import { calcular, limpiarBuild, buildVacia, conPieza, conRostro, resumenParaGuardar, PARTES, NOMBRE_PARTE,
-  CALIDADES, COSTO_ROSTROS, CARTAS_ROSTROS } from '../build-calc.js';
+import { calcular, limpiarBuild, buildVacia, conPieza, conRostro, conCamarada, resumenParaGuardar, PARTES, NOMBRE_PARTE,
+  CALIDADES, COSTO_ROSTROS, CARTAS_ROSTROS, CAMARADA_NV_MAX, ESTRELLAS_MAX, PODER_MAX } from '../build-calc.js';
 import { abrirSelector } from '../ui/selector-pieza.js';
 import { abrirSelectorRostro } from '../ui/selector-rostro.js';
-import { chipsHab, statsArma, nombreElemento, bilingue, bil, bilFicha, chipsSetsRostro, listaSetsRostros } from '../ui/build-textos.js';
+import { abrirSelectorCamarada } from '../ui/selector-camarada.js';
+import { chipsHab, statsArma, nombreElemento, bilingue, bil, bilFicha, chipsSetsRostro, listaSetsRostros,
+  textoAumento, tipoCamarada, TIPOS_CAMARADA } from '../ui/build-textos.js';
 import { leerBorrador, guardarBorrador, borrarBorrador } from '../borradores.js';
 
 const FILTROS_HAB = [['todas', 'Todas'], ['sobra', 'Sobran'], ['tope', 'Al tope'], ['falta', 'Les falta']];
-const PRONTO = [['Camarada', 'Nivel, estrellas y poder'], ['Keepsake', 'Nivel y grabados'], ['Reflexiones', 'Puntos y nodos']];
+const PRONTO = [['Keepsake', 'Nivel y grabados'], ['Reflexiones', 'Puntos y nodos']];
 
 function nombreAdv(cat, id) {
   const a = cat.adventurers.get(id);
@@ -270,6 +272,48 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     return cajon('rostros', `Rostros · ${r?.costo || 0}/${COSTO_ROSTROS}`, resumen, cuerpo);
   }
 
+  /* ---------- Camarada ---------- */
+
+  function cajonCamarada(c) {
+    const cam = c.camarada;
+    const advTipo = c.adv?.tipo || '';
+    const numero_ = (n) => (n === null || n === undefined ? '' : n);
+    const resumen = !cam ? 'Sin camarada'
+      : [cam.item.es || cam.item.en, cam.nv ? `Nv ${cam.nv}` : '', cam.estrellas !== null ? `${cam.estrellas} ★` : '',
+        cam.poder !== null ? `poder ${numero(cam.poder)}` : ''].filter(Boolean).join(' · ');
+    const cuerpo = !cam
+      ? html`<ul class="bld-piezas"><li class="bld-pieza bld-pieza--vacia">
+          <span class="bld-pieza__parte">Cam</span>
+          <div class="bld-pieza__texto"><p class="bld-pieza__nombre">Camarada</p>
+            <p class="nota">${advTipo ? `Tu adventurer lleva uno de tipo ${TIPOS_CAMARADA[advTipo].es}` : 'Sin camarada'}</p></div>
+          ${editable ? html`<button type="button" class="boton boton--chico" data-elegir-camarada data-foco="ecam">Elegir</button>` : ''}
+        </li></ul>`
+      : html`
+        <ul class="bld-piezas"><li class="bld-pieza bld-camarada">
+          <span class="bld-pieza__parte bld-rareza-cam bld-rareza-cam--${cam.item.rareza.toLowerCase()}" title="Rareza">${cam.item.rareza}</span>
+          <div class="bld-pieza__texto">
+            <p class="bld-pieza__nombre">${bil(cam.item.es, cam.item.en)}</p>
+            <p class="nota">${tipoCamarada(cam.item.tipo)}</p>
+            <p class="nota"><span class="rotulo">Aumento</span> ${textoAumento(cam.item)}</p>
+          </div>
+          ${editable ? html`<button type="button" class="bld-cambiar" data-elegir-camarada data-foco="ecam" aria-label="Cambiar camarada"><span aria-hidden="true">⇄</span></button>` : ''}
+        </li></ul>
+        ${cam.compatible ? '' : html`<p class="alerta bld-alerta-cam">Es de tipo ${TIPOS_CAMARADA[cam.item.tipo].es} y tu adventurer es ${TIPOS_CAMARADA[advTipo].es}: en el juego quizá no puedas ponérselo.</p>`}
+        <div class="campos-tres bld-cam-datos">
+          <label class="campo"><span class="campo__etiqueta">Nivel</span>
+            <input class="entrada" data-cam="nv" data-foco="cam-nv" inputmode="numeric" maxlength="2" value="${numero_(cam.nv)}" placeholder="1–${CAMARADA_NV_MAX}" ${editable ? '' : 'disabled'}></label>
+          <label class="campo"><span class="campo__etiqueta">Estrellas</span>
+            <select class="entrada" data-cam="estrellas" data-foco="cam-es" ${editable ? '' : 'disabled'}>
+              <option value="" ${cam.estrellas === null ? 'selected' : ''}>—</option>
+              ${Array.from({ length: ESTRELLAS_MAX + 1 }, (_, i) => i).map((n) => html`<option value="${n}" ${n === cam.estrellas ? 'selected' : ''}>${n} ★</option>`)}
+            </select></label>
+          <label class="campo"><span class="campo__etiqueta">Poder</span>
+            <input class="entrada" data-cam="poder" data-foco="cam-po" inputmode="numeric" maxlength="6" value="${numero_(cam.poder)}" placeholder="1998" ${editable ? '' : 'disabled'}></label>
+        </div>`;
+    return cajon('camarada', 'Camarada', resumen, html`${cuerpo}
+      <p class="nota bld-cajon__nota">Nivel, estrellas y poder: cópialos de la pantalla del camarada en el juego (no hay tablas públicas). Aumento de aventurero según GameWith, por confirmar.</p>`);
+  }
+
   const cajonesPronto = () => html`
     <ul class="bld-pronto">
       ${PRONTO.map(([t, d]) => html`<li><span class="rotulo">${t}</span><span class="nota">${d} · próximamente</span></li>`)}
@@ -280,6 +324,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       ${cajonAdv(c)}
       ${cajonArmadura(c)}
       ${cajonRostros(c)}
+      ${cajonCamarada(c)}
       ${cajonesPronto()}
       ${editable ? html`
         <label class="campo"><span class="campo__etiqueta">Notas <span class="campo__opcional">opcional</span></span>
@@ -499,6 +544,13 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       });
       return;
     }
+    if (t.closest('[data-elegir-camarada]')) {
+      selector = abrirSelectorCamarada(cat, b, {
+        tipo: advCat()?.tipo || '',
+        alElegir: (id) => cambiar(() => { b = conCamarada(b, id); }),
+      });
+      return;
+    }
     if (t.closest('[data-guardar]')) { guardar(t.closest('[data-guardar]')); return; }
     if (t.closest('[data-eliminar]')) { eliminar(t.closest('[data-eliminar]')); return; }
     if (t.closest('[data-de-cero]')) {
@@ -529,6 +581,18 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       const extra = t.dataset.rostroCal !== undefined ? { cal: t.value, nv: actual.nv } : { cal: actual.cal, nv: Number(t.value) };
       if (extra.cal !== 'fine' && actual.cal === 'fine' && t.dataset.rostroCal !== undefined) extra.nv = 10;
       cambiar(() => { b = conRostro(b, ranura, actual.id, extra); });
+    } else if (t.dataset.cam) {
+      const k = t.dataset.cam;
+      const max = { nv: CAMARADA_NV_MAX, estrellas: ESTRELLAS_MAX, poder: PODER_MAX }[k];
+      const txt = String(t.value).replace(/[.\s]/g, '');
+      const n = txt === '' ? null : Math.round(Number(txt));
+      const valido = n === null || (Number.isFinite(n) && n >= (k === 'nv' ? 1 : 0) && n <= max);
+      if (!valido) toast(k === 'nv' ? `El nivel va de 1 a ${CAMARADA_NV_MAX}.` : 'Escribe solo números.', { error: true });
+      cambiar(() => {
+        const datos = { ...b.camarada };
+        if (valido && n !== null) datos[k] = n; else delete datos[k];
+        b = conCamarada(b, b.camarada.id, datos);
+      });
     } else if (t.matches('[data-maestria]')) {
       cambiar(() => { b = { ...b, rostros: { ...b.rostros, maestria: t.checked } }; });
     } else if (t.dataset.rareza) {

@@ -1,6 +1,6 @@
 /**
  * Genera el catálogo del builder (site/data/catalogo/*.json) a partir de los datos descargados
- * de gacha.gg (datos/gacha-gg/mho-equipo.json), los Rostros de GameWith (datos/gamewith/rostros.json),
+ * de gacha.gg (datos/gacha-gg/mho-equipo.json), los Rostros y camaradas de GameWith (datos/gamewith/rostros.json, camaradas.json),
  * los nombres en español de GameWith es-MX (datos/gamewith/nombres-es.json) y las tablas manuales de scripts/catalogo/.
  * Los JSON generados NO se editan a mano: se corrige la tabla y se vuelve a correr.
  *
@@ -180,7 +180,28 @@ export function armarRostros(fuente, avisos, idPorNombre = new Map()) {
   return { rostros, sets };
 }
 
-export function construirCatalogo({ equipo, correcciones, monstruos, adventurers, rostros: fuenteRostros, nombresEs = null }) {
+/** Camaradas (Buddy) desde datos/gamewith/camaradas.json: nombre EN/ES, rareza, tipo y Aumento de aventurero. */
+export const RAREZAS_CAMARADA = ['SSR', 'SR', 'R'];
+export const TIPOS_CAMARADA = ['assault', 'disruptor', 'support'];
+export function armarCamaradas(fuente, avisos) {
+  const stats = new Set(Object.keys(fuente.stats || {}));
+  const ids = new Set();
+  const lista = fuente.camaradas.map((x) => {
+    const c = { id: slug(x.en), en: x.en, es: x.es || x.en, rareza: x.rareza, tipo: x.tipo, aumento: x.aumento };
+    if (ids.has(c.id)) throw new Error(`Id de camarada repetido: ${c.id}`);
+    ids.add(c.id);
+    if (!RAREZAS_CAMARADA.includes(c.rareza)) throw new Error(`Camarada ${x.en}: rareza desconocida "${c.rareza}"`);
+    if (!TIPOS_CAMARADA.includes(c.tipo)) throw new Error(`Camarada ${x.en}: tipo desconocido "${c.tipo}"`);
+    for (const [k] of c.aumento) if (!stats.has(k)) throw new Error(`Camarada ${x.en}: stat desconocido "${k}"`);
+    return c;
+  });
+  const orden = (c) => RAREZAS_CAMARADA.indexOf(c.rareza);
+  lista.sort((a, b) => orden(a) - orden(b) || TIPOS_CAMARADA.indexOf(a.tipo) - TIPOS_CAMARADA.indexOf(b.tipo) || a.en.localeCompare(b.en));
+  if (!lista.length) avisos.push('Sin camaradas');
+  return lista;
+}
+
+export function construirCatalogo({ equipo, correcciones, monstruos, adventurers, rostros: fuenteRostros, camaradas: fuenteCamaradas, nombresEs = null }) {
   const avisos = [];
   const tr = crearTraductor(nombresEs);
   const sinEs = { armaduras: new Set(), armas: new Set() };
@@ -275,6 +296,7 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
   }
 
   const visage = armarRostros(fuenteRostros, avisos, idPorNombre);
+  const camaradas = fuenteCamaradas ? armarCamaradas(fuenteCamaradas, avisos) : [];
 
   // ---- Monstruos: solo los que aparecen
   const usados = new Set([...armaduras, ...armas].map((x) => x.monstruo).filter(Boolean));
@@ -315,16 +337,17 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
       { nombre: equipo.source, que: 'armas, armaduras, habilidades y sets', fecha: equipo.fetched },
       { nombre: adventurers.fuente, que: 'adventurers', fecha: adventurers.revisado },
       { nombre: fuenteRostros.source, que: 'rostros (Visage) y sus sets', fecha: fuenteRostros.fetched },
+      ...(fuenteCamaradas ? [{ nombre: fuenteCamaradas.source, que: 'camaradas (Buddy)', fecha: fuenteCamaradas.fetched }] : []),
       ...(nombresEs ? [{ nombre: nombresEs.source, que: 'nombres en español (por confirmar)', fecha: nombresEs.fetched }] : []),
     ],
     conteos: {
       armaduras: armaduras.length, armas: armas.length, sets: listaSets.length,
       habilidades: listaHab.length, monstruos: listaMonstruos.length, adventurers: listaAdv.length,
-      rostros: visage.rostros.length, rostros_sets: visage.sets.length,
+      rostros: visage.rostros.length, rostros_sets: visage.sets.length, camaradas: camaradas.length,
       descartados,
     },
   };
-  return { meta, armaduras, armas, sets: listaSets, habilidades: listaHab, monstruos: listaMonstruos, adventurers: listaAdv, rostros: visage.rostros, 'rostros-sets': visage.sets, avisos, faltanEs };
+  return { meta, armaduras, armas, sets: listaSets, habilidades: listaHab, monstruos: listaMonstruos, adventurers: listaAdv, rostros: visage.rostros, 'rostros-sets': visage.sets, camaradas, avisos, faltanEs };
 }
 
 /** JSON con un elemento por línea: diffs legibles en git y archivo compacto. */
@@ -333,7 +356,7 @@ export function aTexto(valor) {
   return `${JSON.stringify(valor, null, 2)}\n`;
 }
 
-export const ARCHIVOS = ['meta', 'armaduras', 'armas', 'sets', 'habilidades', 'monstruos', 'adventurers', 'rostros', 'rostros-sets'];
+export const ARCHIVOS = ['meta', 'armaduras', 'armas', 'sets', 'habilidades', 'monstruos', 'adventurers', 'rostros', 'rostros-sets', 'camaradas'];
 
 export async function leerFuentes(raiz = RAIZ) {
   const leer = async (...p) => JSON.parse(await readFile(join(raiz, ...p), 'utf8'));
@@ -343,6 +366,7 @@ export async function leerFuentes(raiz = RAIZ) {
     monstruos: await leer('scripts', 'catalogo', 'monstruos.json'),
     adventurers: await leer('scripts', 'catalogo', 'adventurers.json'),
     rostros: await leer('datos', 'gamewith', 'rostros.json'),
+    camaradas: await leer('datos', 'gamewith', 'camaradas.json'),
     nombresEs: await leer('datos', 'gamewith', 'nombres-es.json'),
   };
 }

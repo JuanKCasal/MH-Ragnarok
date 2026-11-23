@@ -5,6 +5,7 @@ import {
   indexarCatalogo, calcular, diferencia, conPieza, buscarPiezas, rarezaDe, enRareza, nombreEn,
   habilidadesDePieza, limpiarBuild, resumenParaGuardar, buildVacia, PARTES,
   calcularRostros, conRostro, diferenciaRostros, limpiarRostros,
+  calcularCamarada, conCamarada, limpiarCamarada, ordenarCamaradas,
 } from '../site/js/build-calc.js';
 import { ARCHIVOS } from '../site/js/catalogo.js';
 
@@ -235,4 +236,54 @@ test('rostros: "si la cambias…" dice qué set gana o pierde y el costo', () =>
   assert.equal(d.costo, 0);
   const f = d.sets.find((s) => s.id === 'ink-of-flames');
   assert.deepEqual([f.antes, f.despues, f.efecto], [4, 3, 'pierde']);
+});
+
+/* ---------- Camarada (E4) ---------- */
+
+test('camarada: limpiar conserva id + nivel/estrellas/poder válidos y descarta lo desconocido', () => {
+  assert.deepEqual(limpiarCamarada(cat, { id: 'devu', nv: 60, estrellas: 3, poder: 1998 }), { id: 'devu', nv: 60, estrellas: 3, poder: 1998 });
+  assert.deepEqual(limpiarCamarada(cat, { id: 'devu', nv: 99, estrellas: 7, poder: -1 }), { id: 'devu' });
+  assert.deepEqual(limpiarCamarada(cat, { id: 'kojiro', nv: 80, estrellas: 6, poder: 1998 }), { id: 'kojiro', nv: 80, estrellas: 6, poder: 1998 });
+  assert.deepEqual(limpiarCamarada(cat, { id: 'devu', nv: '', estrellas: 0 }), { id: 'devu', estrellas: 0 });
+  assert.equal(limpiarCamarada(cat, { id: 'no-existe', nv: 10 }), null);
+  assert.equal(limpiarCamarada(cat, null), null);
+  const b = limpiarBuild(cat, { v: 1, piezas: {}, camarada: { id: 'nailu', nv: 80 } });
+  assert.deepEqual(b.camarada, { id: 'nailu', nv: 80 });
+});
+
+test('camarada: calcular devuelve la ficha y avisa si el tipo no coincide con el del adventurer', () => {
+  const pepper = calcular(cat, { v: 1, piezas: {}, adv: { id: 'pepper' }, camarada: { id: 'devu', nv: 60 } });
+  assert.equal(pepper.camarada.item.en, 'Devu');
+  assert.equal(pepper.camarada.item.tipo, 'disruptor');
+  assert.equal(pepper.camarada.compatible, true);
+  assert.equal(pepper.camarada.nv, 60);
+  assert.equal(pepper.camarada.estrellas, null);
+  const midori = calcular(cat, { v: 1, piezas: {}, adv: { id: 'midori' }, camarada: { id: 'devu' } });
+  assert.equal(midori.camarada.compatible, false);
+  // El Fated Adventurer no tiene tipo en el catálogo: cualquiera sirve.
+  assert.equal(calcularCamarada(cat, { id: 'devu' }, cat.adventurers.get('fated-adventurer-bow')).compatible, true);
+  const avisos = [];
+  assert.equal(calcularCamarada(cat, { id: 'nada' }, null, avisos), null);
+  assert.equal(avisos.length, 1);
+  assert.equal(calcular(cat, buildVacia()).camarada, null);
+});
+
+test('camarada: conCamarada cambia, conserva datos solo del mismo camarada y quita', () => {
+  let b = conCamarada(buildVacia(), 'devu', { nv: 60, estrellas: 3, poder: 1998 });
+  assert.deepEqual(b.camarada, { id: 'devu', nv: 60, estrellas: 3, poder: 1998 });
+  b = conCamarada(b, 'devu');
+  assert.deepEqual(b.camarada, { id: 'devu', nv: 60, estrellas: 3, poder: 1998 });
+  b = conCamarada(b, 'nailu');
+  assert.deepEqual(b.camarada, { id: 'nailu' });
+  b = conCamarada(b, '');
+  assert.equal(b.camarada, undefined);
+});
+
+test('camarada: 38 de GameWith; los del tipo del adventurer van primero, luego por rareza', () => {
+  assert.equal(cat.lista.camaradas.length, 38);
+  const orden = ordenarCamaradas(cat.lista.camaradas, 'support');
+  assert.ok(orden.slice(0, 12).every((c) => c.tipo === 'support'));
+  assert.equal(orden[0].rareza, 'SSR');
+  assert.equal(orden[12].tipo === 'support', false);
+  assert.equal(cat.camaradas.get('shadow').es, 'Sombra');
 });

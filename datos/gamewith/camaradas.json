@@ -1,0 +1,651 @@
+{
+ "source": "GameWith",
+ "url": "https://gamewith.ai/monster-hunter-outlanders/en/buddies (y /es-mx/buddies)",
+ "fetched": "2026-11-23",
+ "_nota": "Transcrito de la lista de camaradas de GameWith (EN y es-MX): 38 camaradas (8 SSR, 15 SR, 15 R). Tipo = tipo de Definitiva (Asalto/Palico, Alterador/Rutaco, Apoyo/Trillan). 'aumento' = Adventurer Boost / Aumento de aventurero tal como lo lista GameWith (valores en %, salvo ataque_elemental). Solo 'Shadow' cambia de nombre en es-MX (Sombra). gacha.gg dice 42: faltan 4 que GameWith no lista (por confirmar).",
+ "stats": {
+  "ataque_elemental": [
+   "Elemental Attack",
+   "Ataque elemental",
+   ""
+  ],
+  "afinidad": [
+   "Affinity",
+   "Afinidad",
+   "%"
+  ],
+  "carga_definitiva": [
+   "Ultimate Charge Rate",
+   "Tasa de carga de la definitiva",
+   "%"
+  ],
+  "fire": [
+   "Fire",
+   "Fuego",
+   "%"
+  ],
+  "water": [
+   "Water",
+   "Agua",
+   "%"
+  ],
+  "thunder": [
+   "Thunder",
+   "Rayo",
+   "%"
+  ],
+  "ice": [
+   "Ice",
+   "Hielo",
+   "%"
+  ],
+  "dragon": [
+   "Dragon",
+   "Draco",
+   "%"
+  ]
+ },
+ "tipos": {
+  "assault": [
+   "Assault",
+   "Asalto",
+   "Palico"
+  ],
+  "disruptor": [
+   "Disruptor",
+   "Alterador",
+   "Rutaco"
+  ],
+  "support": [
+   "Support",
+   "Apoyo",
+   "Trillan"
+  ]
+ },
+ "camaradas": [
+  {
+   "en": "Kojiro",
+   "es": "Kojiro",
+   "rareza": "SSR",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     350
+    ],
+    [
+     "afinidad",
+     9
+    ]
+   ]
+  },
+  {
+   "en": "Daisho",
+   "es": "Daisho",
+   "rareza": "SSR",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     350
+    ],
+    [
+     "dragon",
+     15
+    ]
+   ]
+  },
+  {
+   "en": "Pipa",
+   "es": "Pipa",
+   "rareza": "SSR",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     350
+    ],
+    [
+     "thunder",
+     15
+    ]
+   ]
+  },
+  {
+   "en": "Ro",
+   "es": "Ro",
+   "rareza": "SSR",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     350
+    ],
+    [
+     "ice",
+     15
+    ]
+   ]
+  },
+  {
+   "en": "Hoppy",
+   "es": "Hoppy",
+   "rareza": "SSR",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     350
+    ],
+    [
+     "water",
+     15
+    ]
+   ]
+  },
+  {
+   "en": "Devu",
+   "es": "Devu",
+   "rareza": "SSR",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     350
+    ],
+    [
+     "afinidad",
+     9
+    ]
+   ]
+  },
+  {
+   "en": "Nailu",
+   "es": "Nailu",
+   "rareza": "SSR",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     350
+    ],
+    [
+     "dragon",
+     15
+    ]
+   ]
+  },
+  {
+   "en": "Pheasant",
+   "es": "Pheasant",
+   "rareza": "SSR",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     350
+    ],
+    [
+     "thunder",
+     15
+    ]
+   ]
+  },
+  {
+   "en": "Icarus",
+   "es": "Icarus",
+   "rareza": "SR",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "afinidad",
+     6.3
+    ],
+    [
+     "ataque_elemental",
+     245
+    ]
+   ]
+  },
+  {
+   "en": "Fortie",
+   "es": "Fortie",
+   "rareza": "SR",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ],
+    [
+     "water",
+     10.5
+    ]
+   ]
+  },
+  {
+   "en": "Banako",
+   "es": "Banako",
+   "rareza": "SR",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ],
+    [
+     "afinidad",
+     6.3
+    ]
+   ]
+  },
+  {
+   "en": "Sand Velvet",
+   "es": "Sand Velvet",
+   "rareza": "SR",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ],
+    [
+     "afinidad",
+     6.3
+    ]
+   ]
+  },
+  {
+   "en": "Tidal Claw",
+   "es": "Tidal Claw",
+   "rareza": "SR",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ],
+    [
+     "afinidad",
+     6.3
+    ]
+   ]
+  },
+  {
+   "en": "Nako",
+   "es": "Nako",
+   "rareza": "SR",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ]
+   ]
+  },
+  {
+   "en": "Barim",
+   "es": "Barim",
+   "rareza": "SR",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ],
+    [
+     "carga_definitiva",
+     4.2
+    ]
+   ]
+  },
+  {
+   "en": "Falee Hendsom",
+   "es": "Falee Hendsom",
+   "rareza": "SR",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ],
+    [
+     "thunder",
+     10.5
+    ]
+   ]
+  },
+  {
+   "en": "Sand Echo",
+   "es": "Sand Echo",
+   "rareza": "SR",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ]
+   ]
+  },
+  {
+   "en": "Reefcore",
+   "es": "Reefcore",
+   "rareza": "SR",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ]
+   ]
+  },
+  {
+   "en": "Ravinge",
+   "es": "Ravinge",
+   "rareza": "SR",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ],
+    [
+     "carga_definitiva",
+     4.2
+    ]
+   ]
+  },
+  {
+   "en": "Ario",
+   "es": "Ario",
+   "rareza": "SR",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ]
+   ]
+  },
+  {
+   "en": "Golden Bell",
+   "es": "Golden Bell",
+   "rareza": "SR",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ]
+   ]
+  },
+  {
+   "en": "Tidal Sound",
+   "es": "Tidal Sound",
+   "rareza": "SR",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ]
+   ]
+  },
+  {
+   "en": "Blademaster",
+   "es": "Blademaster",
+   "rareza": "SR",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     245
+    ],
+    [
+     "carga_definitiva",
+     4.2
+    ]
+   ]
+  },
+  {
+   "en": "Zira",
+   "es": "Zira",
+   "rareza": "R",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "thunder",
+     7.5
+    ]
+   ]
+  },
+  {
+   "en": "Aloo",
+   "es": "Aloo",
+   "rareza": "R",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "water",
+     7.5
+    ]
+   ]
+  },
+  {
+   "en": "Shadow",
+   "es": "Sombra",
+   "rareza": "R",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "afinidad",
+     4.5
+    ]
+   ]
+  },
+  {
+   "en": "Ron",
+   "es": "Ron",
+   "rareza": "R",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "ice",
+     7.5
+    ]
+   ]
+  },
+  {
+   "en": "Alon",
+   "es": "Alon",
+   "rareza": "R",
+   "tipo": "assault",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "dragon",
+     7.5
+    ]
+   ]
+  },
+  {
+   "en": "Boomie",
+   "es": "Boomie",
+   "rareza": "R",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "water",
+     7.5
+    ]
+   ]
+  },
+  {
+   "en": "Pupo",
+   "es": "Pupo",
+   "rareza": "R",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "carga_definitiva",
+     3
+    ]
+   ]
+  },
+  {
+   "en": "Mac",
+   "es": "Mac",
+   "rareza": "R",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "thunder",
+     7.5
+    ]
+   ]
+  },
+  {
+   "en": "Wolfe",
+   "es": "Wolfe",
+   "rareza": "R",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "afinidad",
+     4.5
+    ]
+   ]
+  },
+  {
+   "en": "Aku",
+   "es": "Aku",
+   "rareza": "R",
+   "tipo": "disruptor",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "carga_definitiva",
+     3
+    ]
+   ]
+  },
+  {
+   "en": "Viper",
+   "es": "Viper",
+   "rareza": "R",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "carga_definitiva",
+     3
+    ]
+   ]
+  },
+  {
+   "en": "Bladey",
+   "es": "Bladey",
+   "rareza": "R",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "carga_definitiva",
+     3
+    ]
+   ]
+  },
+  {
+   "en": "Horn",
+   "es": "Horn",
+   "rareza": "R",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "dragon",
+     7.5
+    ]
+   ]
+  },
+  {
+   "en": "Lido",
+   "es": "Lido",
+   "rareza": "R",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "carga_definitiva",
+     3
+    ]
+   ]
+  },
+  {
+   "en": "Mith",
+   "es": "Mith",
+   "rareza": "R",
+   "tipo": "support",
+   "aumento": [
+    [
+     "ataque_elemental",
+     172
+    ],
+    [
+     "thunder",
+     7.5
+    ]
+   ]
+  }
+ ]
+}

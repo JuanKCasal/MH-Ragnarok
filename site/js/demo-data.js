@@ -152,7 +152,9 @@ let buildsDemo = [
         arms: { id: 'radiant-rathalos-vambraces-v', r: 13 }, waist: { id: 'anja-coil-i', r: 13 }, legs: { id: 'radiant-rathalos-greaves-v', r: 13 } },
       // Rostros como en las capturas de Juan (2026-11-23): Kushala Daora de núcleo + 4 de Ink of Flames, 12/12.
       rostros: { nucleo: { id: 'kushala-daora', cal: 'superior', nv: 10 },
-        cartas: ['barnos', 'kestodon', 'rathian', 'radiant-rathian'].map((id) => ({ id, cal: 'superior', nv: 10 })), maestria: true } } },
+        cartas: ['barnos', 'kestodon', 'rathian', 'radiant-rathian'].map((id) => ({ id, cal: 'superior', nv: 10 })), maestria: true },
+      // Camarada como en la captura de Juan (2026-11-23): Kojiro SSR, Lv 80/80, 6 estrellas, poder 1998.
+      camarada: { id: 'kojiro', nv: 80, estrellas: 6, poder: 1998 } } },
 ];
 // Nombres ES corregidos por oficiales (E6): uno de ejemplo para ver el ✓ en el modo demo.
 let nombresDemo = [
@@ -183,6 +185,18 @@ function composicionDemo(d) {
     if ((d.rostros.cartas || []).length > 4) falla('DATO_INVALIDO', 'Demasiados Rostros.');
     const r = { nucleo: carta(d.rostros.nucleo), cartas: [0, 1, 2, 3].map((i) => carta(d.rostros.cartas?.[i])), maestria: d.rostros.maestria !== false };
     if (r.nucleo || r.cartas.some(Boolean)) out.rostros = r;
+  }
+  // Camarada (E4): misma validación que Builds.gs (camaradaValido_).
+  if (d.camarada?.id) {
+    const c = { id: id(d.camarada.id) };
+    const opc = (v, min, max, nombre) => (v === undefined || v === null || v === '' ? null : numeroDemo(v, min, max, nombre, false));
+    const nv = opc(d.camarada.nv, 1, 80, 'nivel del camarada');
+    const es = opc(d.camarada.estrellas, 0, 6, 'número de estrellas del camarada');
+    const po = opc(d.camarada.poder, 0, 999999, 'poder del camarada');
+    if (nv !== null) c.nv = nv;
+    if (es !== null) c.estrellas = es;
+    if (po !== null) c.poder = po;
+    out.camarada = c;
   }
   return out;
 }

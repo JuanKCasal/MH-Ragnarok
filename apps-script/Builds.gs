@@ -10,6 +10,8 @@ var PARTES_BUILD = ['head', 'chest', 'arms', 'waist', 'legs'];
 var ID_CATALOGO_RE = /^[a-z0-9][a-z0-9-]{0,79}$/;
 var CALIDADES_ROSTRO = ['fine', 'rare', 'epic', 'superior'];
 var CARTAS_ROSTROS = 4;
+var CAMARADA_NV_MAX = 80;
+var ESTRELLAS_MAX = 6;
 var CAMPOS_BUILD_PUBLICO = ['id', 'miembro_id', 'clase', 'adventurer_id', 'nombre', 'arma_tipo', 'elemento',
   'catalogo_version', 'poder_estimado', 'notas', 'creado', 'actualizado'];
 
@@ -51,9 +53,22 @@ function rostrosValidos_(r) {
   return { nucleo: nucleo, cartas: cartas, maestria: r.maestria !== false };
 }
 
+/** Bloque camarada (E4): { id, nv?, estrellas?, poder? }. Lo numérico lo escribe el miembro. Sin id → null. */
+function camaradaValido_(c) {
+  if (!c || typeof c !== 'object' || Array.isArray(c) || !c.id) return null;
+  var out = { id: idCatalogo_(c.id, 'camarada') };
+  var nv = numeroValido_(c.nv, 1, CAMARADA_NV_MAX, 'nivel del camarada', true);
+  var estrellas = numeroValido_(c.estrellas, 0, ESTRELLAS_MAX, 'estrellas del camarada', true);
+  var poder = numeroValido_(c.poder, 0, 999999, 'poder del camarada', true);
+  if (nv !== '') out.nv = nv;
+  if (estrellas !== '') out.estrellas = estrellas;
+  if (poder !== '') out.poder = poder;
+  return out;
+}
+
 /**
  * Reconstruye la composición solo con lo conocido (versión 1). Bloques opcionales.
- * Rostros desde la E4; Camarada, Keepsake y Reflexiones todavía se descartan.
+ * Rostros y Camarada desde la E4; Keepsake y Reflexiones todavía se descartan.
  */
 function composicionValida_(entrada) {
   var d = entrada;
@@ -79,6 +94,8 @@ function composicionValida_(entrada) {
   });
   var rostros = rostrosValidos_(d.rostros);
   if (rostros) out.rostros = rostros;
+  var camarada = camaradaValido_(d.camarada);
+  if (camarada) out.camarada = camarada;
   if (d.poder && typeof d.poder === 'object') {
     var poder = {};
     ['total', 'equipo', 'rostros', 'camarada'].forEach(function (k) {
