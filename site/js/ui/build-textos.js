@@ -52,3 +52,36 @@ export function siLaCambias(d) {
   if (!lineas.length) return html`<p class="nota">No cambia nada.</p>`;
   return html`<ul class="bld-difs">${lineas}</ul>`;
 }
+
+/* ---------- Rostros ---------- */
+
+/** "Rathalos radiante · Radiant Rathalos" (nombres ES de GameWith es-MX, por confirmar). */
+export const bilingue = (x) => (x?.es && x.es !== x.en ? `${x.es} · ${x.en}` : x?.en || '');
+
+/** Chips de sets de una carta: "Tinta de llamas". */
+export function chipsSetsRostro(cat, ids, { resaltar } = {}) {
+  return html`<ul class="bld-chips">${ids.map((id) => html`
+    <li class="bld-chip ${id === resaltar ? 'bld-chip--resalta' : ''}">${cat.rostrosSets.get(id)?.es || id}</li>`)}</ul>`;
+}
+
+/** Lista de sets de Rostros con sus bonos (✓ activo), como en la pantalla del juego. */
+export function listaSetsRostros(sets) {
+  if (!sets.length) return '';
+  return html`<ul class="bld-rsets">${sets.map((st) => html`
+    <li class="bld-rset ${st.activo ? 'bld-rset--activo' : ''}">
+      <p class="bld-rset__cabeza"><span class="bld-pieza__nombre">${bilingue(st)}</span>
+        <span class="bld-cuenta-set ${st.activo ? 'bld-cuenta-set--listo' : ''}">${st.puestas}/${st.max}</span></p>
+      <ul class="bld-rset__bonos">${st.bonos.map((b) => html`
+        <li class="${b.activo ? 'bld-rset__bono--activo' : ''}"><span aria-hidden="true">${b.activo ? '✓' : '·'}</span>
+          <span><strong>${b.n} ${b.n === 1 ? 'carta' : 'cartas'}:</strong> ${b.es}</span></li>`)}</ul>
+      ${st.maestria ? html`<p class="nota">Incluye +1 del núcleo (Proof of Mastery).</p>` : ''}
+    </li>`)}</ul>`;
+}
+
+/** "Si la cambias…" del selector de Rostros. */
+export function siLaCambiasRostro(d) {
+  const lineas = d.sets.map((s) => html`<li class="bld-dif bld-dif--${s.efecto}">${s.es} ${s.antes}/${s.max} → ${s.despues}/${s.max}</li>`);
+  if (d.costo) lineas.push(html`<li class="bld-dif ${d.costoFinal > 12 ? 'bld-dif--pierde' : ''}">Costo ${signo(d.costo)} (queda ${d.costoFinal}/12)</li>`);
+  if (!lineas.length) return html`<p class="nota">No cambia ningún set ni el costo.</p>`;
+  return html`<ul class="bld-difs">${lineas}</ul>`;
+}

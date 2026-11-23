@@ -6,7 +6,7 @@
 import { VERSION } from './version.js';
 import { indexarCatalogo } from './build-calc.js';
 
-export const ARCHIVOS = ['meta', 'armaduras', 'armas', 'sets', 'habilidades', 'monstruos', 'adventurers'];
+export const ARCHIVOS = ['meta', 'armaduras', 'armas', 'sets', 'habilidades', 'monstruos', 'adventurers', 'rostros', 'rostros-sets'];
 let promesa = null;
 
 export function cargarCatalogo() {

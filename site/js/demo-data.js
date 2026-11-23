@@ -149,7 +149,10 @@ let buildsDemo = [
     creado: hace(2), actualizado: hace(2),
     datos: { v: 1, adv: { id: 'fated-adventurer-heavy-bowgun', nivel: 70 }, arma: { id: 'blazing-assault-i', r: 14 },
       piezas: { head: { id: 'rath-heart-helm-iv', r: 13 }, chest: { id: 'rathalos-mail-ii', r: 13 },
-        arms: { id: 'radiant-rathalos-vambraces-v', r: 13 }, waist: { id: 'anja-coil-i', r: 13 }, legs: { id: 'radiant-rathalos-greaves-v', r: 13 } } } },
+        arms: { id: 'radiant-rathalos-vambraces-v', r: 13 }, waist: { id: 'anja-coil-i', r: 13 }, legs: { id: 'radiant-rathalos-greaves-v', r: 13 } },
+      // Rostros como en las capturas de Juan (2026-11-23): Kushala Daora de núcleo + 4 de Ink of Flames, 12/12.
+      rostros: { nucleo: { id: 'kushala-daora', cal: 'superior', nv: 10 },
+        cartas: ['barnos', 'kestodon', 'rathian', 'radiant-rathian'].map((id) => ({ id, cal: 'superior', nv: 10 })), maestria: true } } },
 ];
 const PARTES_B = ['head', 'chest', 'arms', 'waist', 'legs'];
 const ID_CAT = /^[a-z0-9][a-z0-9-]{0,79}$/;
@@ -164,6 +167,18 @@ function composicionDemo(d) {
   for (const [p, x] of Object.entries(d.piezas || {})) {
     if (!PARTES_B.includes(p)) falla('DATO_INVALIDO', 'Parte no válida.');
     if (x?.id) out.piezas[p] = { id: id(x.id), r: numeroDemo(x.r, 1, 14, 'rareza', false) };
+  }
+  // Rostros (E4): misma validación que Builds.gs (rostrosValidos_).
+  const carta = (x) => {
+    if (!x?.id) return null;
+    const cal = ['fine', 'rare', 'epic', 'superior'].includes(x.cal || 'superior') ? (x.cal || 'superior') : falla('DATO_INVALIDO', 'Calidad no válida.');
+    const max = cal === 'fine' ? 1 : 10;
+    return { id: id(x.id), cal, nv: x.nv === undefined || x.nv === '' ? max : numeroDemo(x.nv, 1, max, 'nivel del Rostro', false) };
+  };
+  if (d.rostros && typeof d.rostros === 'object') {
+    if ((d.rostros.cartas || []).length > 4) falla('DATO_INVALIDO', 'Demasiados Rostros.');
+    const r = { nucleo: carta(d.rostros.nucleo), cartas: [0, 1, 2, 3].map((i) => carta(d.rostros.cartas?.[i])), maestria: d.rostros.maestria !== false };
+    if (r.nucleo || r.cartas.some(Boolean)) out.rostros = r;
   }
   return out;
 }

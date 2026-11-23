@@ -104,3 +104,31 @@ test('los JSON de site/data/catalogo están al día con el script (no se editan 
     assert.equal(enDisco, aTexto(cat[nombre]), `${nombre}.json desactualizado: corre npm run catalogo`);
   }
 });
+
+test('rostros: 56 cartas y 12 sets de GameWith, con nombre ES y efecto núcleo en las de costo 3 y 4', () => {
+  assert.equal(cat.rostros.length, 56);
+  assert.equal(cat['rostros-sets'].length, 12);
+  const sets = porId(cat['rostros-sets']);
+  const cuenta = {};
+  for (const r of cat.rostros) {
+    assert.ok(r.es && r.en, r.id);
+    assert.ok([1, 3, 4].includes(r.costo), r.id);
+    assert.equal(Boolean(r.nucleo), r.costo > 1, `${r.id}: núcleo solo en costo 3/4`);
+    for (const s of r.sets) { assert.ok(sets.has(s), `${r.id}: set ${s}`); cuenta[s] = (cuenta[s] || 0) + 1; }
+  }
+  // Tamaños de set que publica GameWith.
+  assert.deepEqual(cuenta, {
+    'ink-of-flames': 9, 'ink-of-combat': 7, 'ink-of-guidance': 8, 'ink-of-protection': 8, 'ink-of-might': 9,
+    'ink-of-resonance': 9, 'ink-of-dragon': 7, 'ink-of-water': 8, 'ink-of-grace': 9, 'ink-of-frost': 9,
+    'ink-of-thunder': 8, 'kushala-daora-tempest': 1,
+  });
+  const k = sets.get('kushala-daora-tempest');
+  assert.deepEqual(k.bonos.map((b) => b.n), [1, 2]);
+  assert.equal(k.temporada0, true);
+  assert.deepEqual(sets.get('ink-of-flames').bonos.map((b) => b.n), [2, 4]);
+  assert.equal(porId(cat.rostros).get('radiant-rathalos').radiante, true);
+  // Núcleos que dan una habilidad del juego (van a la matriz de Habilidades).
+  const conHab = cat.rostros.filter((r) => r.nucleo?.hab).map((r) => `${r.id}:${r.nucleo.hab.join('+')}`);
+  assert.deepEqual(conHab.sort(), ['great-girros:paralysis-resistance+3', 'great-jagras:quick-bite+3', 'kulu-ya-ku:instinct+1',
+    'odogaron:bleeding-resistance+3', 'radobaan:sleep-resistance+3']);
+});

@@ -28,12 +28,15 @@ export function indexarCatalogo(raw) {
     habilidades: porId(raw.habilidades),
     monstruos: porId(raw.monstruos),
     adventurers: porId(raw.adventurers),
+    rostros: porId(raw.rostros),
+    rostrosSets: porId(raw['rostros-sets']),
     lista: {
       armaduras: raw.armaduras || [],
       armas: raw.armas || [],
       adventurers: raw.adventurers || [],
       monstruos: raw.monstruos || [],
       habilidades: raw.habilidades || [],
+      rostros: raw.rostros || [],
     },
   };
 }
@@ -156,6 +159,10 @@ export function calcular(cat, build) {
     piezas[parte] = { item: p, r, nombre: nombreEn(p, r), def: d, habs };
   }
 
+  const rostros = calcularRostros(cat, b.rostros, avisos);
+  const habNucleo = rostros?.nucleo?.item.nucleo?.hab;
+  if (habNucleo) sumar(habNucleo[0], 'rostro', habNucleo[1]);
+
   const sets = [];
   for (const [id, puestas] of conteoSets) {
     const s = cat.sets.get(id);
@@ -177,7 +184,7 @@ export function calcular(cat, build) {
   }).sort((x, y) => y.nivel - x.nivel || y.suma - x.suma || x.en.localeCompare(y.en));
 
   return {
-    adv, arma, piezas, def, atk, afi, ele, estado, habilidades, sets,
+    adv, arma, piezas, def, atk, afi, ele, estado, habilidades, sets, rostros,
     resumen: {
       habilidades: habilidades.length,
       sobran: habilidades.filter((h) => h.sobra > 0).length,
@@ -297,5 +304,118 @@ export function limpiarBuild(cat, build) {
     const p = sel?.id ? cat.armaduras.get(sel.id) : null;
     if (p && p.parte === parte) b.piezas[parte] = { id: p.id, r: rarezaDe(p, sel.r) };
   }
+  const ros = limpiarRostros(cat, build?.rostros);
+  if (ros) b.rostros = ros;
   return b;
+}
+
+/* ---------------- Rostros (Visage) ---------------- */
+
+export const COSTO_ROSTROS = 12;
+export const CARTAS_ROSTROS = 4; // además del núcleo
+/** Calidades de un Rostro (mhohub): Fine solo nivel 1; las demás hasta nivel 10. */
+export const CALIDADES = [
+  { id: 'fine', en: 'Fine', nvMax: 1 },
+  { id: 'rare', en: 'Rare', nvMax: 10 },
+  { id: 'epic', en: 'Epic', nvMax: 10 },
+  { id: 'superior', en: 'Superior', nvMax: 10 },
+];
+const CALIDAD = new Map(CALIDADES.map((c) => [c.id, c]));
+
+function limpiarCarta(cat, c) {
+  if (!c?.id || !cat.rostros.has(c.id)) return null;
+  const cal = CALIDAD.has(c.cal) ? c.cal : 'superior';
+  const nv = Math.round(Number(c.nv));
+  return { id: c.id, cal, nv: nv >= 1 ? Math.min(nv, CALIDAD.get(cal).nvMax) : CALIDAD.get(cal).nvMax };
+}
+
+/** Normaliza el bloque `rostros` de la composición; null si no hay ninguna carta. */
+export function limpiarRostros(cat, r) {
+  if (!r || typeof r !== 'object') return null;
+  const nucleo = limpiarCarta(cat, r.nucleo);
+  const cartas = Array.from({ length: CARTAS_ROSTROS }, (_, i) => limpiarCarta(cat, r.cartas?.[i]));
+  if (!nucleo && !cartas.some(Boolean)) return null;
+  return { nucleo, cartas, maestria: r.maestria !== false };
+}
+
+/**
+ * Cálculo de los Rostros: costo (núcleo incluido, tope 12), sets y efecto núcleo.
+ * Reglas (capturas de Juan, 2026-11-23): para los sets cuentan monstruos distintos (dos copias de la
+ * misma carta = 1); con "Proof of Mastery" el núcleo suma +1 a su set. Normal y radiante cuentan
+ * como monstruos distintos (por confirmar).
+ * @returns {null | {nucleo, cartas, costo, costoMax, maestria, sets: Array<{id,en,es,puestas,max,bonos,activo,siguiente,temporada0?}>, setsActivos:number}}
+ */
+export function calcularRostros(cat, r, avisos = []) {
+  if (!r) return null;
+  const ficha = (c, donde) => {
+    if (!c?.id) return null;
+    const item = cat.rostros.get(c.id);
+    if (!item) { avisos.push(`Rostro desconocido: ${c.id}`); return null; }
+    const cal = CALIDAD.get(c.cal) || CALIDAD.get('superior');
+    return { item, cal: cal.id, nv: Math.min(Math.max(1, Math.round(Number(c.nv)) || cal.nvMax), cal.nvMax), donde };
+  };
+  const nucleo = ficha(r.nucleo, 'nucleo');
+  const cartas = Array.from({ length: CARTAS_ROSTROS }, (_, i) => ficha(r.cartas?.[i], i));
+  const puestas = [nucleo, ...cartas].filter(Boolean);
+  if (!puestas.length) return null;
+  const maestria = r.maestria !== false;
+  const costo = puestas.reduce((t, c) => t + c.item.costo, 0);
+  if (costo > COSTO_ROSTROS) avisos.push(`Los Rostros cuestan ${costo}: el máximo es ${COSTO_ROSTROS}.`);
+
+  const monstruosPorSet = new Map();
+  for (const c of puestas) {
+    for (const s of c.item.sets) {
+      if (!monstruosPorSet.has(s)) monstruosPorSet.set(s, new Set());
+      monstruosPorSet.get(s).add(c.item.id);
+    }
+  }
+  const sets = [];
+  for (const [id, monstruos] of monstruosPorSet) {
+    const s = cat.rostrosSets.get(id);
+    if (!s) continue;
+    const extra = maestria && nucleo?.item.sets.includes(id) ? 1 : 0;
+    const max = Math.max(...s.bonos.map((b) => b.n));
+    const n = Math.min(monstruos.size + extra, max);
+    const bonos = s.bonos.map((b) => ({ ...b, activo: n >= b.n }));
+    const sig = s.bonos.find((b) => b.n > n);
+    sets.push({ id, en: s.en, es: s.es, puestas: n, max, bonos, activo: bonos.some((b) => b.activo),
+      siguiente: sig ? { n: sig.n, faltan: sig.n - n } : null, maestria: extra > 0,
+      ...(s.temporada0 ? { temporada0: true } : {}) });
+  }
+  sets.sort((x, y) => Number(y.activo) - Number(x.activo) || y.puestas - x.puestas || x.en.localeCompare(y.en));
+  return { nucleo, cartas, costo, costoMax: COSTO_ROSTROS, maestria, sets, setsActivos: sets.filter((s) => s.activo).length };
+}
+
+/** Pone (o quita, con id vacío) un Rostro en una ranura: 'nucleo' o 0..3. Conserva calidad y nivel de la ranura. */
+export function conRostro(build, ranura, id, extra = {}) {
+  const b = structuredClone(build || buildVacia());
+  const r = b.rostros || { nucleo: null, cartas: Array(CARTAS_ROSTROS).fill(null), maestria: true };
+  r.cartas = Array.from({ length: CARTAS_ROSTROS }, (_, i) => r.cartas?.[i] || null);
+  const previa = ranura === 'nucleo' ? r.nucleo : r.cartas[ranura];
+  const nueva = id ? { id, cal: extra.cal || previa?.cal || 'superior', nv: extra.nv || previa?.nv || 10 } : null;
+  if (nueva && CALIDAD.get(nueva.cal)) nueva.nv = Math.min(nueva.nv, CALIDAD.get(nueva.cal).nvMax);
+  if (ranura === 'nucleo') r.nucleo = nueva; else r.cartas[ranura] = nueva;
+  b.rostros = r;
+  if (!r.nucleo && !r.cartas.some(Boolean)) delete b.rostros;
+  return b;
+}
+
+/** Qué cambia en los sets de Rostros y en el costo ("si la cambias…" del selector de Rostros). */
+export function diferenciaRostros(antes, despues) {
+  const mapa = (x) => new Map((x?.sets || []).map((s) => [s.id, s]));
+  const sa = mapa(antes);
+  const sd = mapa(despues);
+  const sets = [];
+  for (const id of new Set([...sa.keys(), ...sd.keys()])) {
+    const a = sa.get(id)?.puestas || 0;
+    const d = sd.get(id)?.puestas || 0;
+    if (a === d) continue;
+    const ref = sd.get(id) || sa.get(id);
+    const activos = (n) => ref.bonos.filter((b) => n >= b.n).length;
+    sets.push({ id, en: ref.en, es: ref.es, max: ref.max, antes: a, despues: d,
+      efecto: activos(d) > activos(a) ? 'gana' : activos(d) < activos(a) ? 'pierde' : 'igual' });
+  }
+  const orden = { gana: 0, igual: 1, pierde: 2 };
+  sets.sort((x, y) => orden[x.efecto] - orden[y.efecto]);
+  return { sets, costo: (despues?.costo || 0) - (antes?.costo || 0), costoFinal: despues?.costo || 0 };
 }

@@ -1,7 +1,7 @@
 /**
  * Builder · hoja única con cajones (opción C). Ver docs/BUILDER.md (E2: adventurer, arma y armadura).
  * #/build/nueva[?adv=<id de mi adventurer>]  ·  #/build/:id
- * Cualquiera puede armar y mirar; guardar requiere sesión. Rostros, Camarada, Keepsake y Reflexiones: E4.
+ * Cualquiera puede armar y mirar; guardar requiere sesión. Rostros: E4 (Camarada, Keepsake y Reflexiones después).
  */
 import { leer, escribir, ErrorApi } from '../api.js';
 import { sesion, olvidarSesion, esSesionCaida, tieneRol } from '../auth.js';
@@ -11,13 +11,15 @@ import { avisoDemo, cargando, fallo } from '../ui/comun.js';
 import { toast } from '../ui/toast.js';
 import { ARMAS } from '../etiquetas.js';
 import { cargarCatalogo } from '../catalogo.js';
-import { calcular, limpiarBuild, buildVacia, conPieza, rarezaDe, resumenParaGuardar, PARTES, NOMBRE_PARTE } from '../build-calc.js';
+import { calcular, limpiarBuild, buildVacia, conPieza, conRostro, resumenParaGuardar, PARTES, NOMBRE_PARTE,
+  CALIDADES, COSTO_ROSTROS, CARTAS_ROSTROS } from '../build-calc.js';
 import { abrirSelector } from '../ui/selector-pieza.js';
-import { chipsHab, statsArma } from '../ui/build-textos.js';
+import { abrirSelectorRostro } from '../ui/selector-rostro.js';
+import { chipsHab, statsArma, nombreElemento, bilingue, chipsSetsRostro, listaSetsRostros } from '../ui/build-textos.js';
 import { leerBorrador, guardarBorrador, borrarBorrador } from '../borradores.js';
 
 const FILTROS_HAB = [['todas', 'Todas'], ['sobra', 'Sobran'], ['tope', 'Al tope'], ['falta', 'Les falta']];
-const PRONTO = [['Rostros', 'Cartas, núcleo y sets'], ['Camarada', 'Nivel, estrellas y poder'], ['Keepsake', 'Nivel y grabados'], ['Reflexiones', 'Puntos y nodos']];
+const PRONTO = [['Camarada', 'Nivel, estrellas y poder'], ['Keepsake', 'Nivel y grabados'], ['Reflexiones', 'Puntos y nodos']];
 
 function nombreAdv(cat, id) {
   const a = cat.adventurers.get(id);
@@ -214,6 +216,60 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     return cajon('armadura', `Armadura · ${puestas.length} de 5`, resumen, cuerpo);
   }
 
+  /* ---------- Rostros ---------- */
+
+  function filaRostro(c, ranura) {
+    const esNucleo = ranura === 'nucleo';
+    const f = c.rostros ? (esNucleo ? c.rostros.nucleo : c.rostros.cartas[ranura]) : null;
+    const etiqueta = esNucleo ? 'Núc' : String(ranura + 1);
+    const nombreRanura = esNucleo ? 'Núcleo' : `Rostro ${ranura + 1}`;
+    if (!f) {
+      return html`<li class="bld-pieza bld-pieza--vacia ${esNucleo ? 'bld-rostro--nucleo' : ''}">
+        <span class="bld-pieza__parte">${etiqueta}</span>
+        <div class="bld-pieza__texto"><p class="bld-pieza__nombre">${nombreRanura}</p><p class="nota">${esNucleo ? 'Su efecto núcleo solo cuenta aquí' : 'Sin Rostro'}</p></div>
+        ${editable ? html`<button type="button" class="boton boton--chico" data-elegir-rostro="${ranura}" data-foco="er-${ranura}">Elegir</button>` : ''}
+      </li>`;
+    }
+    const cal = CALIDADES.find((x) => x.id === f.cal);
+    return html`<li class="bld-pieza bld-rostro ${esNucleo ? 'bld-rostro--nucleo' : ''}">
+      <span class="bld-pieza__parte" title="${nombreRanura}">${etiqueta}</span>
+      <div class="bld-pieza__texto">
+        <p class="bld-pieza__nombre">${bilingue(f.item)} <span class="bld-costo" title="Costo">${f.item.costo}</span></p>
+        ${chipsSetsRostro(cat, f.item.sets)}
+        ${esNucleo && f.item.nucleo ? html`<p class="nota bld-nucleo-texto">${f.item.nucleo.es}</p>` : ''}
+        <div class="bld-rostro__nivel">
+          <label><span class="oculto-visual">Calidad de ${nombreRanura}</span>
+            <select data-rostro-cal="${ranura}" data-foco="rc-${ranura}" ${editable ? '' : 'disabled'}>
+              ${CALIDADES.map((q) => html`<option value="${q.id}" ${q.id === f.cal ? 'selected' : ''}>${q.en}</option>`)}
+            </select></label>
+          <label><span class="oculto-visual">Nivel de ${nombreRanura}</span>
+            <select data-rostro-nv="${ranura}" data-foco="rn-${ranura}" ${editable && cal.nvMax > 1 ? '' : 'disabled'}>
+              ${Array.from({ length: cal.nvMax }, (_, i) => cal.nvMax - i).map((n) => html`<option value="${n}" ${n === f.nv ? 'selected' : ''}>Nv ${n}</option>`)}
+            </select></label>
+        </div>
+      </div>
+      ${editable ? html`<button type="button" class="bld-cambiar" data-elegir-rostro="${ranura}" data-foco="er-${ranura}" aria-label="Cambiar ${nombreRanura.toLowerCase()}"><span aria-hidden="true">⇄</span></button>` : ''}
+    </li>`;
+  }
+
+  function cajonRostros(c) {
+    const r = c.rostros;
+    const resumen = !r ? 'Sin Rostros'
+      : [r.nucleo ? (r.nucleo.item.es || r.nucleo.item.en) : 'sin núcleo', `costo ${r.costo}/${COSTO_ROSTROS}`,
+        r.setsActivos ? `${r.setsActivos} set${r.setsActivos > 1 ? 's' : ''} activo${r.setsActivos > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ');
+    const cuerpo = html`
+      <ul class="bld-piezas">${['nucleo', ...Array.from({ length: CARTAS_ROSTROS }, (_, i) => i)].map((k) => filaRostro(c, k))}</ul>
+      <ul class="bld-resumen-chips">
+        <li class="bld-chip ${r && r.costo > COSTO_ROSTROS ? 'bld-chip--mal' : r?.costo === COSTO_ROSTROS ? 'bld-chip--listo' : ''}">Costo ${r?.costo || 0}/${COSTO_ROSTROS}</li>
+      </ul>
+      ${r ? html`
+        <label class="opcion bld-maestria"><input type="checkbox" data-maestria ${r.maestria ? 'checked' : ''} ${editable ? '' : 'disabled'}>
+          <span>Proof of Mastery: el núcleo suma +1 a su set</span></label>
+        <div class="bld-rsets-marco">${listaSetsRostros(r.sets)}</div>` : ''}
+      <p class="nota bld-cajon__nota">Para los sets cuentan monstruos distintos: dos copias de la misma carta suman 1. Nombres en español de GameWith, por confirmar.</p>`;
+    return cajon('rostros', `Rostros · ${r?.costo || 0}/${COSTO_ROSTROS}`, resumen, cuerpo);
+  }
+
   const cajonesPronto = () => html`
     <ul class="bld-pronto">
       ${PRONTO.map(([t, d]) => html`<li><span class="rotulo">${t}</span><span class="nota">${d} · próximamente</span></li>`)}
@@ -223,6 +279,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     return html`
       ${cajonAdv(c)}
       ${cajonArmadura(c)}
+      ${cajonRostros(c)}
       ${cajonesPronto()}
       ${editable ? html`
         <label class="campo"><span class="campo__etiqueta">Notas <span class="campo__opcional">opcional</span></span>
@@ -237,7 +294,8 @@ export default async function vistaBuild(el, { params, query, recargar }) {
 
   function vistaHabilidades(c) {
     const lista = c.habilidades.filter((h) => filtroHab === 'todas' || h.estado === filtroHab);
-    const cols = [['arma', 'Arm'], ...PARTES.map((p) => [p, NOMBRE_PARTE[p].corto]), ['set', 'Set']];
+    const cols = [['arma', 'Arm'], ...PARTES.map((p) => [p, NOMBRE_PARTE[p].corto]), ['set', 'Set'],
+      ...(c.habilidades.some((h) => h.aportes.rostro) ? [['rostro', 'Ros']] : [])];
     const celda = (h, k) => (h.aportes[k] ? html`<td class="bld-matriz__n">${h.aportes[k]}</td>` : html`<td class="bld-matriz__vacia" aria-label="nada">·</td>`);
     return html`
       <div class="segmentos" role="group" aria-label="Filtrar habilidades">
@@ -271,6 +329,11 @@ export default async function vistaBuild(el, { params, query, recargar }) {
               <span class="bld-cuenta-set ${st.activo ? 'bld-cuenta-set--listo' : ''}">${Math.min(st.puestas, st.necesarias)}/${st.necesarias}</span>
             </li>`)}
           </ul>
+        </section>` : ''}
+      ${c.rostros?.sets.length ? html`
+        <section class="bld-sets">
+          <h2 class="titulo titulo--menor">Sets de Rostros</h2>
+          ${listaSetsRostros(c.rostros.sets)}
         </section>` : ''}`;
   }
 
@@ -294,8 +357,8 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     return html`
       <div class="bld-barra" role="region" aria-label="Resumen de la build">
         <div class="bld-barra__datos">
-          <p><strong>Def. ${numero(c.def)}</strong>${c.atk ? html` · Atq. ${numero(c.atk)}` : ''}</p>
-          <p class="nota">${hab}${r.sobran ? html` · <span class="bld-sobra">${r.sobran} sobra${r.sobran > 1 ? 'n' : ''}</span>` : ''}${r.setsListos ? html` · <span class="bld-listo">${r.setsListos} set${r.setsListos > 1 ? 's' : ''} listo${r.setsListos > 1 ? 's' : ''}</span>` : ''}${r.setsAUna ? ` · ${r.setsAUna} a una pieza` : ''}</p>
+          <p><strong>Def. ${numero(c.def)}</strong>${c.atk ? html` · Atq. ${numero(c.atk)}` : ''}${c.ele ? html` · ${nombreElemento(c.ele.tipo)} ${numero(c.ele.v)}` : ''}${c.estado ? html` · ${nombreElemento(c.estado.tipo)} ${numero(c.estado.v)}` : ''}</p>
+          <p class="nota">${hab}${r.sobran ? html` · <span class="bld-sobra">${r.sobran} sobra${r.sobran > 1 ? 'n' : ''}</span>` : ''}${r.setsListos ? html` · <span class="bld-listo">${r.setsListos} set${r.setsListos > 1 ? 's' : ''} listo${r.setsListos > 1 ? 's' : ''}</span>` : ''}${r.setsAUna ? ` · ${r.setsAUna} a una pieza` : ''}${c.rostros ? html` · <span class="${c.rostros.costo > COSTO_ROSTROS ? 'bld-sobra' : ''}">Rostros ${c.rostros.costo}/${COSTO_ROSTROS}</span>` : ''}</p>
         </div>
         ${editable
           ? (s ? html`<button type="button" class="boton boton--oro" data-guardar>${guardada ? 'Guardar' : 'Guardar build'}</button>`
@@ -332,7 +395,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       </div>
       <div class="bld-cuerpo">${vista === 'hoja' ? vistaHoja(c) : vistaHabilidades(c)}</div>
       ${editable && guardada ? html`<button type="button" class="boton boton--ancho boton--peligro" data-eliminar>Eliminar build</button>` : ''}
-      <p class="nota bld-fuente">Datos del juego: gacha.gg y GameWith (catálogo ${cat.meta.version || ''}). Nombres en inglés por ahora.</p>
+      <p class="nota bld-fuente">Datos del juego: gacha.gg y GameWith (catálogo ${cat.meta.version || ''}). Nombres en inglés por ahora (los Rostros, en español por confirmar).</p>
       ${barra(c)}`);
     if (expandida) {
       const fila = raiz.querySelector(`[data-hab="${expandida}"]`);
@@ -427,6 +490,14 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       });
       return;
     }
+    const er = t.closest('[data-elegir-rostro]');
+    if (er) {
+      const ranura = er.dataset.elegirRostro === 'nucleo' ? 'nucleo' : Number(er.dataset.elegirRostro);
+      selector = abrirSelectorRostro(cat, b, ranura, {
+        alElegir: (id) => cambiar(() => { b = conRostro(b, ranura, id); }),
+      });
+      return;
+    }
     if (t.closest('[data-guardar]')) { guardar(t.closest('[data-guardar]')); return; }
     if (t.closest('[data-eliminar]')) { eliminar(t.closest('[data-eliminar]')); return; }
     if (t.closest('[data-de-cero]')) {
@@ -450,7 +521,16 @@ export default async function vistaBuild(el, { params, query, recargar }) {
 
   raiz.addEventListener('change', (ev) => {
     const t = ev.target;
-    if (t.dataset.rareza) {
+    if (t.dataset.rostroCal !== undefined || t.dataset.rostroNv !== undefined) {
+      const k = t.dataset.rostroCal ?? t.dataset.rostroNv;
+      const ranura = k === 'nucleo' ? 'nucleo' : Number(k);
+      const actual = ranura === 'nucleo' ? b.rostros.nucleo : b.rostros.cartas[ranura];
+      const extra = t.dataset.rostroCal !== undefined ? { cal: t.value, nv: actual.nv } : { cal: actual.cal, nv: Number(t.value) };
+      if (extra.cal !== 'fine' && actual.cal === 'fine' && t.dataset.rostroCal !== undefined) extra.nv = 10;
+      cambiar(() => { b = conRostro(b, ranura, actual.id, extra); });
+    } else if (t.matches('[data-maestria]')) {
+      cambiar(() => { b = { ...b, rostros: { ...b.rostros, maestria: t.checked } }; });
+    } else if (t.dataset.rareza) {
       const parte = t.dataset.rareza;
       const actual = parte === 'arma' ? b.arma : b.piezas[parte];
       cambiar(() => { b = conPieza(b, parte, actual.id, Number(t.value)); });

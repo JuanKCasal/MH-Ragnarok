@@ -204,7 +204,7 @@ Registro de cada archivo subido por el backend. Sirve para validar que un ID de 
 | `adventurer.guardar` | miembro | crea/edita uno propio (oficial: cualquiera) |
 | `adventurer.eliminar` | miembro | propio |
 | `adventurer.principal` | miembro | marca su principal |
-| `build.guardar` | miembro | crea/edita una propia (oficial: cualquiera). `clase: 'ejemplo'` solo oficiales. Máx. 10 de perfil por miembro |
+| `build.guardar` | miembro | crea/edita una propia (oficial: cualquiera). `clase: 'ejemplo'` solo oficiales. Máx. 10 de perfil por miembro. Composición v1: `adv`, `arma`, `piezas`, `rostros` (desde la E4, backend v4) y `poder` (docs/BUILDER.md §3) |
 | `build.eliminar` | miembro | propia (oficial: cualquiera) |
 | `imagen.subir` | miembro | `{base64, mime, tipo}` → ID de Drive. Máx. 2 MB ya comprimida |
 | `clash.asistencia` | miembro | `{respuesta}` para la semana vigente |

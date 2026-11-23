@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import {
   indexarCatalogo, calcular, diferencia, conPieza, buscarPiezas, rarezaDe, enRareza, nombreEn,
   habilidadesDePieza, limpiarBuild, resumenParaGuardar, buildVacia, PARTES,
+  calcularRostros, conRostro, diferenciaRostros, limpiarRostros,
 } from '../site/js/build-calc.js';
 import { ARCHIVOS } from '../site/js/catalogo.js';
 
@@ -156,4 +157,82 @@ test('todas las piezas del catálogo se calculan sin avisos en su rareza mínima
     }
   }
   for (const w of cat.lista.armas) assert.deepEqual(calcular(cat, { v: 1, arma: { id: w.id, r: w.rmax }, piezas: {} }).avisos, [], w.id);
+});
+
+/* ---------- Rostros (capturas de Juan, 2026-11-23: núcleo Kushala Daora + 4 de Ink of Flames, costo 12/12) ---------- */
+
+const carta = (id, nv = 10, cal = 'superior') => ({ id, cal, nv });
+const ROSTROS_JUAN = { nucleo: carta('kushala-daora'), cartas: ['barnos', 'kestodon', 'rathian', 'radiant-rathian'].map((id) => carta(id)), maestria: true };
+const setDe = (r, id) => r.sets.find((s) => s.id === id);
+
+test('rostros: el núcleo cuenta en el costo (3+1+1+3+4 = 12/12) y Ink of Flames queda 4/4', () => {
+  const r = calcularRostros(cat, ROSTROS_JUAN);
+  assert.equal(r.costo, 12);
+  assert.equal(r.costoMax, 12);
+  const f = setDe(r, 'ink-of-flames');
+  assert.equal(f.puestas, 4);
+  assert.equal(f.max, 4);
+  assert.deepEqual(f.bonos.map((b) => b.activo), [true, true]);
+  assert.equal(f.siguiente, null);
+  // Los sets con una sola carta aparecen, pero sin bono activo.
+  assert.equal(setDe(r, 'ink-of-dragon').activo, false);
+});
+
+test('rostros: con Proof of Mastery el núcleo suma +1 a su set (Kushala Daora 2/2 con una sola carta)', () => {
+  const con = setDe(calcularRostros(cat, ROSTROS_JUAN), 'kushala-daora-tempest');
+  assert.equal(con.puestas, 2);
+  assert.equal(con.maestria, true);
+  assert.deepEqual(con.bonos.map((b) => b.activo), [true, true]);
+  const sin = setDe(calcularRostros(cat, { ...ROSTROS_JUAN, maestria: false }), 'kushala-daora-tempest');
+  assert.equal(sin.puestas, 1);
+  assert.deepEqual(sin.bonos.map((b) => b.activo), [true, false]);
+});
+
+test('rostros: dos copias del mismo monstruo cuentan una vez (Ink of Flames 3/4)', () => {
+  const r = calcularRostros(cat, { ...ROSTROS_JUAN, cartas: [carta('barnos'), carta('barnos', 1), carta('rathian'), carta('radiant-rathian')] });
+  assert.equal(r.costo, 12);
+  const f = setDe(r, 'ink-of-flames');
+  assert.equal(f.puestas, 3);
+  assert.deepEqual(f.bonos.map((b) => b.activo), [true, false]);
+  assert.deepEqual(f.siguiente, { n: 4, faltan: 1 });
+});
+
+test('rostros: pasar de 12 avisa; el núcleo que da habilidad entra en la matriz', () => {
+  const avisos = [];
+  const r = calcularRostros(cat, { nucleo: carta('kulu-ya-ku'), cartas: [carta('pink-rathian'), carta('diablos'), carta('barroth'), null] }, avisos);
+  assert.equal(r.costo, 15);
+  assert.equal(avisos.length, 1);
+  const c = calcular(cat, { v: 1, piezas: {}, rostros: { nucleo: carta('kulu-ya-ku'), cartas: [] } });
+  const h = c.habilidades.find((x) => x.id === 'instinct');
+  assert.deepEqual(h.aportes, { rostro: 1 });
+  assert.ok(c.rostros);
+});
+
+test('rostros: conRostro conserva calidad/nivel de la ranura y Fine queda en nivel 1', () => {
+  let b = conRostro(buildVacia(), 'nucleo', 'kushala-daora');
+  assert.deepEqual(b.rostros.nucleo, { id: 'kushala-daora', cal: 'superior', nv: 10 });
+  assert.equal(b.rostros.maestria, true);
+  b = conRostro(b, 2, 'rathian', { cal: 'fine', nv: 7 });
+  assert.deepEqual(b.rostros.cartas[2], { id: 'rathian', cal: 'fine', nv: 1 });
+  b = conRostro(b, 2, 'radiant-rathian');
+  assert.equal(b.rostros.cartas[2].cal, 'fine');
+  b = conRostro(conRostro(b, 2, ''), 'nucleo', '');
+  assert.equal(b.rostros, undefined);
+});
+
+test('rostros: limpiar descarta cartas desconocidas y normaliza calidad y nivel', () => {
+  const r = limpiarRostros(cat, { nucleo: { id: 'no-existe' }, cartas: [{ id: 'rathian', cal: 'mala', nv: 99 }, { id: 'kelbi', cal: 'fine', nv: 5 }] });
+  assert.equal(r.nucleo, null);
+  assert.deepEqual(r.cartas, [{ id: 'rathian', cal: 'superior', nv: 10 }, { id: 'kelbi', cal: 'fine', nv: 1 }, null, null]);
+  assert.equal(limpiarRostros(cat, { cartas: [] }), null);
+  assert.deepEqual(limpiarBuild(cat, { v: 1, piezas: {}, rostros: ROSTROS_JUAN }).rostros, ROSTROS_JUAN);
+});
+
+test('rostros: "si la cambias…" dice qué set gana o pierde y el costo', () => {
+  const antes = calcularRostros(cat, ROSTROS_JUAN);
+  const despues = calcularRostros(cat, { ...ROSTROS_JUAN, cartas: [carta('barnos'), carta('barnos'), carta('rathian'), carta('radiant-rathian')] });
+  const d = diferenciaRostros(antes, despues);
+  assert.equal(d.costo, 0);
+  const f = d.sets.find((s) => s.id === 'ink-of-flames');
+  assert.deepEqual([f.antes, f.despues, f.efecto], [4, 3, 'pierde']);
 });

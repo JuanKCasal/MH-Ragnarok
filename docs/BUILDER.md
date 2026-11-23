@@ -36,7 +36,9 @@ site/data/catalogo/
   sets.json         49 sets de armadura (piezas por parte + bono)
   adventurers.json  21: 8 Fated Adventurer (uno por arma) + 13 con nombre (GameWith)
   monstruos.json    21 monstruos, nombre EN (+ ES cuando se confirme)
-  (después) rostros.json · camaradas.json · reflexiones.json
+  rostros.json      56 Rostros (GameWith, E4)
+  rostros-sets.json 12 sets de Rostros
+  (después) camaradas.json · reflexiones.json
 ```
 
 Formato compacto (ejemplo de armadura):
@@ -85,7 +87,7 @@ API nueva:
   "adv": { "id": "fated-adventurer-heavy-bowgun", "nivel": 70 },
   "arma": { "id": "blazing-assault-i", "r": 14 },
   "piezas": { "head": {"id": "rath-heart-helm-iv", "r": 13}, "chest": {…}, "arms": {…}, "waist": {…}, "legs": {…} },
-  "rostros": { "nucleo": {"id": "…", "cal": "epic", "nv": 10}, "cartas": [ … 4 … ] },
+  "rostros": { "nucleo": {"id": "kushala-daora", "cal": "superior", "nv": 10}, "cartas": [ {…} | null, … 4 ], "maestria": true },
   "camarada": { "id": "…", "nv": 60, "estrellas": 3, "poder": 1998 },
   "keepsake": { "nv": 60, "grabados": ["skill-boost", "ultimate", "…"] },
   "reflexiones": { "pts": 65, "max": 65, "nodos": [["internal-ammo", 30]] },
@@ -140,3 +142,29 @@ Resueltas (2026-11-23): **no hay joyas**; **rareza hasta 14** en armas y armadur
   - Entrada: sección **Mis builds** en `#/yo` (si el backend aún no tiene `Builds`, la sección queda vacía sin romper el perfil).
 - **Backend** `apps-script/Builds.gs` + hoja `Builds` al final del `ESQUEMA`: `builds`, `build`, `build.guardar`, `build.eliminar`. Valida la forma de la composición (v1: `adv`, `arma`, `piezas`, `poder`; lo demás se descarta hasta la E4), ids tipo slug, rarezas 1–14, máx. 8.000 caracteres, 10 builds de perfil por miembro, `adventurer_id` del mismo dueño. Al borrar un adventurer sus builds quedan sueltas. Pruebas en `tests/builds.test.mjs`. Modo demo con una build de ejemplo (`demo-build-1`).
 - Pruebas: **104** (`npm test`).
+
+## 9. E4 · Rostros — hecho (2026-11-23, sesión 12)
+
+Alcance elegido por Juan: cartas + **calidad y nivel** (sin efectos potenciales / resketch). Nombres **ES · EN** (GameWith es-MX), marcados "por confirmar".
+
+**Reglas confirmadas con capturas del juego de Juan (2026-11-23, loadout "Fire Heavy")**
+- El **núcleo es una de las 5 cartas** y su costo cuenta en el tope: Kushala Daora 3 + 1 + 1 + 3 + 4 = **12/12**.
+- Para los sets cuentan **monstruos distintos**: con dos copias de la misma carta (una Lv 10 y otra Lv 1) Ink of Flames bajó de 4/4 a 3/4.
+- **Proof of Mastery**: "Core Slot Visage set count +1": el núcleo suma +1 a su set. Así Kushala Daora's Tempest llega a 2/2 con una sola carta. En la web es una casilla (activada por defecto). Por confirmar: cómo se desbloquea y si con un núcleo de dos sets suma a ambos (hoy suma a ambos).
+- El juego muestra la cuenta como `(n/máx)` con el umbral más alto (4/4, 2/2).
+- **Por confirmar**: si normal y radiante (Rathalos / Rathalos radiante) cuentan como monstruos distintos (hoy sí: son cartas distintas).
+- Datos de la pantalla (para E7): poder de Rostros 2099 (todo Lv 10) → 1719 con una carta en Lv 1. "Visage Effects" suma atributos de las cartas (Ultimate Charge Rate, Elemental damage, Affinity, Physical Attack, Damage): vienen de los atributos al azar, fuera del alcance.
+
+**Hecho**
+- Datos: `datos/gamewith/rostros.json` (transcrito de GameWith EN y es-MX: 56 cartas, 12 sets, bonos 2/4 —1/2 en Kushala—, efecto núcleo EN/ES). Script: `armarRostros` en `scripts/catalogo.mjs` → `site/data/catalogo/rostros.json` y `rostros-sets.json`. Los núcleos "Instinct +1", "Paralysis Resistance +3", etc. llevan `nucleo.hab` y entran en la matriz de Habilidades (columna **Ros**).
+- Cálculo (`build-calc.js`): `calcularRostros` (costo, sets por monstruos distintos + maestría, bonos activos, siguiente umbral), `conRostro`, `limpiarRostros`, `diferenciaRostros`, `CALIDADES` (Fine solo Nv 1; Rare/Epic/Superior hasta 10). `calcular()` devuelve `rostros`.
+- Pantallas: cajón **Rostros** (núcleo + 4, costo, calidad y nivel, ⇄, casilla Proof of Mastery, sets con ✓ como en el juego); selector `ui/selector-rostro.js` (buscador, filtros set/costo, "si la cambias…" con sets y costo, aviso si pasa de 12, "Dejar la ranura vacía"); "Sets de Rostros" en la pestaña Habilidades; "Rostros n/12" en la barra. La capa a pantalla completa se movió a `ui/capa.js` (la usan los dos selectores).
+- Backend `Builds.gs`: `rostrosValidos_` (calidad, nivel 1–10 / Fine 1, ids slug, máx. 4 cartas, `null` = ranura vacía). **Requiere publicar la versión 4 del Web App** (no cambia hojas; no hace falta `instalar()`). Modo demo igual, y la build de ejemplo trae los Rostros de las capturas.
+- Pruebas: **113**.
+
+## 10. Keepsake — notas de las capturas de Juan (2026-11-23), para cuando toque
+
+- Pantalla con dos pestañas: **Upgrade** y **Engrave** (con % de progreso, p. ej. "Engrave 87%"). Keepsake Lv 80/80, poder **5798**.
+- **Upgrade**: hitos en Lv 60, 70 y 80; cada hito da nodos tipo "Physical Attack Up" / "Element Attack Up". El detalle de un nodo muestra Adventurer Power 112, Physical Attack 200, Fire Attack 80, Defense 490.
+- **Engrave**: matriz de columnas **Skill Boost · Ultimate · Elemental Specialization · Core Passive · Core Attribute** × filas de nivel (60, 70, 80, 80). Core Passive muestra "+15.03 %". Skill Boost tiene 3 puntos (marcadores) y Core Attribute 4 (vacíos en la captura).
+- Ejemplo de grabado: "All Elemental Specialization Bonus VII" (Elemental Specialization, +160 de poder): con arma de fuego/agua/trueno/hielo/dragón da **35 % más de daño total**; con arma sin elemento o solo de estado no se activa.

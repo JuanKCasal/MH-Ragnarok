@@ -8,6 +8,8 @@ var MAX_DATOS_BUILD = 8000;
 var CLASES_BUILD = ['perfil', 'ejemplo'];
 var PARTES_BUILD = ['head', 'chest', 'arms', 'waist', 'legs'];
 var ID_CATALOGO_RE = /^[a-z0-9][a-z0-9-]{0,79}$/;
+var CALIDADES_ROSTRO = ['fine', 'rare', 'epic', 'superior'];
+var CARTAS_ROSTROS = 4;
 var CAMPOS_BUILD_PUBLICO = ['id', 'miembro_id', 'clase', 'adventurer_id', 'nombre', 'arma_tipo', 'elemento',
   'catalogo_version', 'poder_estimado', 'notas', 'creado', 'actualizado'];
 
@@ -27,9 +29,31 @@ function rarezaBuild_(v, campo) {
   return numeroValido_(v, 1, 14, 'rareza de ' + campo, false);
 }
 
+/** Una carta de Rostro: { id, cal, nv } (Fine solo nivel 1; las demás 1–10). Vacía → null. */
+function cartaRostro_(x, campo) {
+  if (!x || !x.id) return null;
+  var cal = enumValido_(x.cal || 'superior', CALIDADES_ROSTRO, 'calidad de ' + campo);
+  var max = cal === 'fine' ? 1 : 10;
+  var nv = numeroValido_(x.nv, 1, max, 'nivel de ' + campo, true);
+  if (nv === '') nv = max;
+  return { id: idCatalogo_(x.id, campo), cal: cal, nv: nv };
+}
+
+/** Bloque rostros (E4): núcleo + 4 cartas (null = ranura vacía) + Proof of Mastery. Sin cartas → null. */
+function rostrosValidos_(r) {
+  if (!r || typeof r !== 'object' || Array.isArray(r)) return null;
+  var nucleo = cartaRostro_(r.nucleo, 'núcleo');
+  var fuente = Array.isArray(r.cartas) ? r.cartas : [];
+  if (fuente.length > CARTAS_ROSTROS) fallar_('DATO_INVALIDO', 'Demasiados Rostros.');
+  var cartas = [];
+  for (var i = 0; i < CARTAS_ROSTROS; i++) cartas.push(cartaRostro_(fuente[i], 'Rostro ' + (i + 1)));
+  if (!nucleo && !cartas.some(function (c) { return c; })) return null;
+  return { nucleo: nucleo, cartas: cartas, maestria: r.maestria !== false };
+}
+
 /**
  * Reconstruye la composición solo con lo conocido (versión 1). Bloques opcionales.
- * Rostros, Camarada, Keepsake y Reflexiones llegan en la E4: hoy se descartan.
+ * Rostros desde la E4; Camarada, Keepsake y Reflexiones todavía se descartan.
  */
 function composicionValida_(entrada) {
   var d = entrada;
@@ -53,6 +77,8 @@ function composicionValida_(entrada) {
     if (!x || !x.id) return;
     out.piezas[p] = { id: idCatalogo_(x.id, p), r: rarezaBuild_(x.r, p) };
   });
+  var rostros = rostrosValidos_(d.rostros);
+  if (rostros) out.rostros = rostros;
   if (d.poder && typeof d.poder === 'object') {
     var poder = {};
     ['total', 'equipo', 'rostros', 'camarada'].forEach(function (k) {

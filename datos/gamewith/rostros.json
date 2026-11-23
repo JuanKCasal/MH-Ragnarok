@@ -1,0 +1,102 @@
+{
+  "source": "GameWith",
+  "url": "https://gamewith.ai/monster-hunter-outlanders/en/visages (y /es-mx/visages, /visages/set/<slug>)",
+  "fetched": "2026-11-23",
+  "_nota": "Transcrito a mano de las páginas de lista y de set de GameWith (EN y es-MX). Nombres ES sin el prefijo 'Rostro:'. Textos de Kushala Daora (núcleo y set) y de Ink of Flames comprobados con capturas del juego de Juan (2026-11-23).",
+  "sets": [
+    { "en": "Ink of Flames", "es": "Tinta de llamas", "bonos": [
+      { "piezas": 2, "en": "Fire damage +5%.", "es": "Daño de fuego +5%." },
+      { "piezas": 4, "en": "After hitting a part with good or decent hitzone values, fire damage +24% for 20s.", "es": "Al golpear una parte con valores de daño buenos o decentes, el daño de fuego propio aumenta en +24% durante 20 s." } ] },
+    { "en": "Ink of Combat", "es": "Tinta de combate", "bonos": [
+      { "piezas": 2, "en": "Affinity +5%.", "es": "Afinidad +5%." },
+      { "piezas": 4, "en": "When an ultimate inflicts a debuff on a monster, squad damage +6.5% for 60s.", "es": "Cuando una definitiva aplica desventaja a un monstruo, el daño de brigada aumenta en 6.5% durante 60 s." } ] },
+    { "en": "Ink of Guidance", "es": "Tinta de guía", "bonos": [
+      { "piezas": 2, "en": "Ultimate charge rate +5%.", "es": "Tasa de carga de la definitiva +5%." },
+      { "piezas": 4, "en": "Within 8s after an ultimate inflicts suppression on a monster, each time the squad uses an ultimate, squad damage +2.2% for 60s, up to 3 stacks.", "es": "Durante los 8 s posteriores a que la definitiva aplique Supresión a un monstruo, cada vez que la brigada usa una definitiva, daño de la brigada +2.2% durante 60 s, se acumula hasta 3 veces." } ] },
+    { "en": "Ink of Protection", "es": "Tinta de protección", "bonos": [
+      { "piezas": 2, "en": "Ultimate charge rate +5%.", "es": "Tasa de carga de la definitiva +5%." },
+      { "piezas": 4, "en": "When an adventurer and Buddy grant a squadmate healing or shield effect, the effect +20%, squad damage +6% for 45s.", "es": "Cuando un aventurero y su Camarada otorgan a un camarada de brigada un efecto de curación o Escudo, efecto +20%, daño de brigada +6% durante 45 s." } ] },
+    { "en": "Ink of Might", "es": "Tinta de poder", "bonos": [
+      { "piezas": 2, "en": "Physical damage +5%.", "es": "Daño físico +5%." },
+      { "piezas": 4, "en": "After landing a critical hit, physical damage +12% for 60s.", "es": "Tras asestar un golpe crítico, daño físico +12% durante 60 s." } ] },
+    { "en": "Ink of Resonance", "es": "Tinta de resonancia", "bonos": [
+      { "piezas": 2, "en": "Affinity +5%.", "es": "Afinidad +5%." },
+      { "piezas": 4, "en": "When not playing as the Main Adventurer, ultimate damage +32%.", "es": "Cuando no juegas como aventurero principal, daño de definitiva +32%." } ] },
+    { "en": "Ink of Dragon", "es": "Tinta de draco", "bonos": [
+      { "piezas": 2, "en": "Dragon damage +5%.", "es": "Daño de draco +5%." },
+      { "piezas": 4, "en": "After using an ultimate, dragon damage +24% for 60s.", "es": "Tras usar la definitiva, daño de draco +24% durante 60 s." } ] },
+    { "en": "Ink of Water", "es": "Tinta de agua", "bonos": [
+      { "piezas": 2, "en": "Water damage +5%.", "es": "Daño de agua +5%." },
+      { "piezas": 4, "en": "Each time a squadmate unleashes an ultimate, water damage +6% for 60s, up to 4 stacks.", "es": "Cada vez que un camarada de brigada desata una definitiva, el daño de agua +6% durante 60 s, hasta un máximo de 4 acumulaciones." } ] },
+    { "en": "Ink of Grace", "es": "Tinta de gracia", "bonos": [
+      { "piezas": 2, "en": "Ultimate charge rate +5%.", "es": "Tasa de carga de la definitiva +5%." },
+      { "piezas": 4, "en": "When an adventurer grants a squadmate a buff, squad damage +6.5% for 60s.", "es": "Cuando un aventurero aplica ventaja a un camarada de brigada, daño de la brigada +6.5% durante 60 s." } ] },
+    { "en": "Ink of Frost", "es": "Tinta de escarcha", "bonos": [
+      { "piezas": 2, "en": "Ice damage +5%.", "es": "Daño de hielo +5%." },
+      { "piezas": 4, "en": "After hitting a monster, ice damage +24% for 8s.", "es": "Tras golpear a un monstruo, daño de hielo +24% durante 8 s." } ] },
+    { "en": "Ink of Thunder", "es": "Tinta de rayo", "bonos": [
+      { "piezas": 2, "en": "Thunder damage +5%.", "es": "Daño de rayo +5%." },
+      { "piezas": 4, "en": "After dealing damage to monsters, thunder damage +5% for 12s, up to 5 stacks.", "es": "Tras causar daño a monstruos, daño de rayo +5% durante 12 s, hasta 5 acumulaciones." } ] },
+    { "en": "Kushala Daora's Tempest", "es": "Tempestad de Kushala Daora", "bonos": [
+      { "piezas": 1, "en": "Elemental Damage +2% (Season 0 only)", "es": "Daño elemental +2% (solo temporada 0)" },
+      { "piezas": 2, "en": "Elemental Damage +3%, increased to 10% when the monster is suppressed. (Season 0 only)", "es": "Daño elemental +3%, aumenta a 10% cuando el monstruo está sometido. (Solo temporada 0)" } ] }
+  ],
+  "rostros": [
+    { "en": "Rathian", "es": "Rathian", "costo": 3, "sets": ["Ink of Flames"], "nucleo": { "en": "When equipped with a fire weapon, fire damage +7%.", "es": "Cuando se equipa un arma de fuego, daño de fuego +7%." } },
+    { "en": "Pink Rathian", "es": "Rathian Rosa", "costo": 4, "sets": ["Ink of Combat"], "nucleo": { "en": "After a debuff skill hits a monster, its damage taken +6% for 30s. Cooldown: 60s.", "es": "Tras el impacto de una habilidad de desventaja en un monstruo, el daño recibido +6% durante 30 s. Tiempo de reutilización: 60 s." } },
+    { "en": "Rathalos", "es": "Rathalos", "costo": 3, "sets": ["Ink of Guidance", "Ink of Combat"], "nucleo": { "en": "After an ultimate inflicts suppression on a monster, squad damage +6% for 30s. Cooldown: 60s.", "es": "Tras aplicar Supresión a un monstruo con la definitiva, el daño de la brigada aumenta en 6% durante 30 s. Tiempo de reutilización: 60 s." } },
+    { "en": "Radiant Rathalos", "es": "Rathalos radiante", "costo": 3, "sets": ["Ink of Flames", "Ink of Guidance"], "nucleo": { "en": "After using a charged skill, fire damage +10% for 15s.", "es": "Tras usar una habilidad de Carga, daño de fuego +10% durante 15 s." } },
+    { "en": "Diablos", "es": "Diablos", "costo": 4, "sets": ["Ink of Protection"], "nucleo": { "en": "When equipped with a physical or ailment weapon, physical damage +3.5%.", "es": "Cuando se equipa un arma física o de alteración, el daño físico +3.5%." } },
+    { "en": "Black Diablos", "es": "Diablos Negra", "costo": 4, "sets": ["Ink of Might", "Ink of Resonance"], "nucleo": { "en": "When equipped with a dragon weapon, dragon damage +7%.", "es": "Cuando se equipa un arma de draco, daño de draco +7%." } },
+    { "en": "Radiant Diablos", "es": "Diablos radiante", "costo": 3, "sets": ["Ink of Dragon", "Ink of Protection"], "nucleo": { "en": "After triggering ferocity, dragon damage +10% for 45s.", "es": "Tras activar Ferocidad, daño de draco +10% durante 45 s." } },
+    { "en": "Barroth", "es": "Barroth", "costo": 4, "sets": ["Ink of Water", "Ink of Protection"], "nucleo": { "en": "When equipped with a water weapon, water damage +7%.", "es": "Cuando se equipa un arma de agua, daño de agua +7%." } },
+    { "en": "Radiant Barroth", "es": "Barroth radiante", "costo": 3, "sets": ["Ink of Water"], "nucleo": { "en": "When charge reaches its highest level, water damage +10% for 45s.", "es": "Cuando la carga alcanza su nivel más alto, el daño de agua +10% durante 45 s." } },
+    { "en": "Anjanath", "es": "Anjanath", "costo": 3, "sets": ["Ink of Grace"], "nucleo": { "en": "After an adventurer uses a buff squadmate skill, squad damage +3.5% for 60s.", "es": "Cuando el aventurero usa una habilidad de camarada de brigada que otorga ventaja, daño de brigada +3.5% durante 60 s." } },
+    { "en": "Radiant Anjanath", "es": "Anjanath radiante", "costo": 3, "sets": ["Ink of Might"], "nucleo": { "en": "During charged attacks, dragon damage +10%.", "es": "Durante los ataques de Carga, daño de draco +10%." } },
+    { "en": "Radiant Great Jagras", "es": "Gran Jagras radiante", "costo": 4, "sets": ["Ink of Guidance"], "nucleo": { "en": "After eating a BBQ, fire damage +10% for 45s. Effect ends early after taking 100 total damage.", "es": "Tras comer una barbacoa, el daño de fuego aumenta en +10% durante 45 s. El efecto termina antes si se recibe un total de 100 de daño." } },
+    { "en": "Pukei-Pukei", "es": "Pukei-Pukei", "costo": 3, "sets": ["Ink of Grace", "Ink of Protection"], "nucleo": { "en": "When an ultimate heals a squadmate, squad damage +3.5% for 60s.", "es": "Cuando una definitiva cura a un camarada de brigada, daño de brigada +3.5% durante 60 s." } },
+    { "en": "Radiant Pukei-Pukei", "es": "Pukei-Pukei radiante", "costo": 3, "sets": ["Ink of Grace", "Ink of Might"], "nucleo": { "en": "After using a skill that consumes a coating, water damage +10% for 45s.", "es": "Tras usar una habilidad de vial, daño de agua +10% durante 45 s." } },
+    { "en": "Kulu-Ya-Ku", "es": "Kulu-Ya-Ku", "costo": 3, "sets": ["Ink of Might", "Ink of Flames"], "nucleo": { "en": "Instinct +1. Attacks will not be deflected.", "es": "Instinto +1. No se desviarán los ataques." } },
+    { "en": "Radiant Kulu-Ya-Ku", "es": "Kulu-Ya-Ku radiante", "costo": 4, "sets": ["Ink of Flames", "Ink of Guidance"], "nucleo": { "en": "After triggering combo damage, fire damage +16% for 10s. Cooldown: 20s.", "es": "Tras activar daño de combo, daño de fuego +16% durante 10 s. Tiempo de reutilización: 20 s." } },
+    { "en": "Jyuratodus", "es": "Jyuratodus", "costo": 4, "sets": ["Ink of Water", "Ink of Frost"], "nucleo": { "en": "Unaffected by movement penalties when stuck in mud.", "es": "No lo afectan las ralentizaciones de movimiento cuando está atrapado en el lodo." } },
+    { "en": "Radiant Jyuratodus", "es": "Jyuratodus radiante", "costo": 3, "sets": ["Ink of Water", "Ink of Protection"], "nucleo": { "en": "After using shield, squad defense +10 and squad damage +4% for 45s.", "es": "Tras usar Escudo, defensa de la brigada +10 y daño de la brigada +4% durante 45 s." } },
+    { "en": "Tobi-Kadachi", "es": "Tobi-Kadachi", "costo": 4, "sets": ["Ink of Thunder", "Ink of Grace"], "nucleo": { "en": "When equipped with a thunder weapon, thunder damage +7%.", "es": "Cuando se equipa un arma de rayo, daño de rayo +7%." } },
+    { "en": "Paolumu", "es": "Paolumu", "costo": 4, "sets": ["Ink of Resonance", "Ink of Might"], "nucleo": { "en": "When Windproof reaches level 3, grants the entire squad immunity to all wind pressure (including dragon wind pressure).", "es": "Cuando Antiviento alcanza el nivel 3, otorga a toda la brigada inmunidad a toda presión de viento (incluida la presión de viento de draco)." } },
+    { "en": "Radiant Paolumu", "es": "Paolumu radiante", "costo": 3, "sets": ["Ink of Guidance"], "nucleo": { "en": "While airborne, water damage +10%.", "es": "Mientras estés aéreo, daño de agua +10%." } },
+    { "en": "Legiana", "es": "Legiana", "costo": 4, "sets": ["Ink of Frost"], "nucleo": { "en": "When equipped with an ice weapon, ice damage +7%.", "es": "Cuando se equipa un arma de hielo, daño de hielo +7%." } },
+    { "en": "Great Girros", "es": "Gran Girros", "costo": 4, "sets": ["Ink of Thunder", "Ink of Grace"], "nucleo": { "en": "Paralysis Resistance +3. Prevents paralysis.", "es": "Antiparálisis +3. Anula la parálisis." } },
+    { "en": "Odogaron", "es": "Odogaron", "costo": 3, "sets": ["Ink of Combat", "Ink of Dragon"], "nucleo": { "en": "Bleeding Resistance +3. Prevents bleeding.", "es": "Antisangrado +3. Anula el sangrado." } },
+    { "en": "Radobaan", "es": "Radobaan", "costo": 3, "sets": ["Ink of Resonance", "Ink of Frost"], "nucleo": { "en": "Sleep Resistance +3. Prevents sleep.", "es": "Antisueño +3. Anula el sueño." } },
+    { "en": "Tzitzi-Ya-Ku", "es": "Tzitzi-Ya-Ku", "costo": 3, "sets": ["Ink of Water"], "nucleo": { "en": "Daze duration +0.5s. After a monster is dazed, its damage taken +6% for 30s. Cooldown: 60s.", "es": "Duración de Mareo +0.5 s. Tras marear a un monstruo, el daño recibido +6% durante 30 s. Tiempo de reutilización: 60 s." } },
+    { "en": "Radiant Rathian", "es": "Rathian radiante", "costo": 4, "sets": ["Ink of Flames"], "nucleo": { "en": "After triggering rupture damage, fire damage +10% for 20s.", "es": "Tras activar daño de ruptura, daño de fuego +10% durante 20 s." } },
+    { "en": "Aptonoth", "es": "Aptonoth", "costo": 1, "sets": ["Ink of Protection"] },
+    { "en": "Apceros", "es": "Apceros", "costo": 1, "sets": ["Ink of Protection", "Ink of Water"] },
+    { "en": "Kelbi", "es": "Kelbi", "costo": 1, "sets": ["Ink of Frost", "Ink of Grace"] },
+    { "en": "Hornetaur", "es": "Hornetaur", "costo": 1, "sets": ["Ink of Protection", "Ink of Dragon"] },
+    { "en": "Vespoid", "es": "Vespoid", "costo": 1, "sets": ["Ink of Thunder", "Ink of Guidance"] },
+    { "en": "Gajau", "es": "Gajau", "costo": 1, "sets": ["Ink of Water", "Ink of Frost"] },
+    { "en": "Jagras", "es": "Jagras", "costo": 1, "sets": ["Ink of Resonance", "Ink of Combat"] },
+    { "en": "Mernos", "es": "Mernos", "costo": 1, "sets": ["Ink of Water", "Ink of Thunder"] },
+    { "en": "Kestodon", "es": "Kestodon", "costo": 1, "sets": ["Ink of Might", "Ink of Flames"] },
+    { "en": "Raphinos", "es": "Raphinos", "costo": 1, "sets": ["Ink of Grace", "Ink of Frost"] },
+    { "en": "Shamos", "es": "Shamos", "costo": 1, "sets": ["Ink of Grace", "Ink of Resonance"] },
+    { "en": "Barnos", "es": "Barnos", "costo": 1, "sets": ["Ink of Flames", "Ink of Dragon"] },
+    { "en": "Girros", "es": "Girros", "costo": 1, "sets": ["Ink of Thunder", "Ink of Combat"] },
+    { "en": "Gastodon", "es": "Gastodon", "costo": 1, "sets": ["Ink of Might", "Ink of Dragon"] },
+    { "en": "Noios", "es": "Noios", "costo": 1, "sets": ["Ink of Guidance", "Ink of Flames"] },
+    { "en": "Warrior Atecoli", "es": "Atecoli guerrero", "costo": 1, "sets": ["Ink of Might", "Ink of Combat"] },
+    { "en": "Pitcher Atecoli", "es": "Atecoli lanzador", "costo": 1, "sets": ["Ink of Resonance", "Ink of Guidance"] },
+    { "en": "Great Jagras", "es": "Gran Jagras", "costo": 3, "sets": ["Ink of Dragon", "Ink of Resonance"], "nucleo": { "en": "Quick-Bite +3. Greatly increases the speed of eating meat and using items.", "es": "Mordisco rápido +3. Aumenta enormemente la velocidad al comer carne y usar objetos." } },
+    { "en": "Radiant Legiana", "es": "Legiana radiante", "costo": 3, "sets": ["Ink of Frost"], "nucleo": { "en": "While airborne, ice damage +10%.", "es": "Mientras estés aéreo, daño de hielo +10%." } },
+    { "en": "Radiant Tobi-Kadachi", "es": "Tobi-Kadachi radiante", "costo": 3, "sets": ["Ink of Thunder"], "nucleo": { "en": "When dealing piercing damage, thunder damage +10%.", "es": "Al causar daño perforante, daño de rayo +10%." } },
+    { "en": "Radiant Radobaan", "es": "Radobaan radiante", "costo": 3, "sets": ["Ink of Frost"], "nucleo": { "en": "After using a charged skill, ice damage +10% for 15s.", "es": "Tras usar una habilidad de Carga, daño de hielo +10% durante 15 s." } },
+    { "en": "Radiant Tzitzi-Ya-Ku", "es": "Tzitzi-Ya-Ku radiante", "costo": 3, "sets": ["Ink of Thunder"], "nucleo": { "en": "After triggering daze on a monster, thunder damage +16% for 30s. Cooldown: 60s.", "es": "Tras activar aturdimiento en un monstruo, daño de rayo +16% durante 30 s. Tiempo de reutilización: 60 s." } },
+    { "en": "Radiant Odogaron", "es": "Odogaron radiante", "costo": 4, "sets": ["Ink of Might", "Ink of Combat"], "nucleo": { "en": "After triggering combo damage, dragon damage +10% for 15s.", "es": "Tras causar daño de combo, daño de draco +10% durante 15 s." } },
+    { "en": "Radiant Great Girros", "es": "Gran Girros radiante", "costo": 3, "sets": ["Ink of Thunder", "Ink of Grace"], "nucleo": { "en": "After triggering combo damage, thunder damage +10% for 15s.", "es": "Tras activar daño de combo, daño de rayo +10% durante 15 s." } },
+    { "en": "Radiant Pink Rathian", "es": "Rathian Rosa radiante", "costo": 4, "sets": ["Ink of Dragon", "Ink of Resonance"], "nucleo": { "en": "When not playing as the Main Adventurer, ultimate elemental damage +32%.", "es": "Cuando no juegas como aventurero principal, daño elemental de la definitiva +32%." } },
+    { "en": "Radiant Black Diablos", "es": "Diablos Negra radiante", "costo": 3, "sets": ["Ink of Resonance"], "nucleo": { "en": "When not playing as the Main Adventurer, ultimate elemental damage +32%.", "es": "Cuando no juegas como aventurero principal, daño elemental de la definitiva +32%." } },
+    { "en": "Nergigante", "es": "Nergigante", "costo": 3, "sets": ["Ink of Frost"], "nucleo": { "en": "When equipped with an ice weapon, ice damage +15%. (Season 0 only)", "es": "Cuando se equipa un arma de hielo, el daño de hielo +15%. (Solo temporada 0)" } },
+    { "en": "Kushala Daora", "es": "Kushala Daora", "costo": 3, "sets": ["Kushala Daora's Tempest"], "nucleo": { "en": "Elemental Damage +10%, increased to 18% against a monster's broken parts. (Season 0 only)", "es": "Daño elemental +10%, aumenta a 18% contra partes rotas del monstruo. (Solo temporada 0)" } },
+    { "en": "Ruger Aidal", "es": "Ruger Aidal", "costo": 3, "sets": ["Ink of Flames"], "nucleo": { "en": "When equipped with a fire weapon, fire damage +15%. (Season 0 only)", "es": "Cuando se equipa un arma de fuego, daño de fuego +15%. (Solo temporada 0)" } }
+  ]
+}

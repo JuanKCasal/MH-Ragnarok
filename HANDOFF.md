@@ -1,4 +1,38 @@
-# HANDOFF — MH-Ragnarok (sesión 11: builder E2 publicada y verificada · siguiente: Rostros)
+# HANDOFF — MH-Ragnarok (sesión 12: E4 · Rostros programada · backend v4 publicado · falta commit + push)
+
+Fecha: 2026-11-23
+Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
+
+## Sesión 12 — Rostros (sin commit todavía)
+
+### Punto de partida exacto para la sesión 13
+1. Leer `CLAUDE.md`, este bloque y **`docs/BUILDER.md` §9** (E4 Rostros: reglas confirmadas con capturas y qué se hizo) y §10 (notas del Keepsake).
+2. **Publicar la E4 (en este orden)**:
+   1. `npm test` en su PC (deben pasar **113**).
+   2. ~~Backend versión 4~~ **HECHO 2026-11-23 (Claude con el Chrome de Juan):** código aplicado en el editor y verificado idéntico a `Claude outputs/MH-Ragnarok.gs` (SHA-256 `9d990f7e…`), guardado y publicada la **versión 4** ("v4 (builder E4: Rostros)", misma URL); `builds?clase=ejemplo` responde `{ok:true,data:[]}`. Sin `instalar()` (no cambian hojas).
+   3. Commit + push (mensaje sugerido: `Sesión 12: builder E4 · Rostros (catálogo GameWith, cajón, selector y backend v4)`).
+   4. Probar en el celular: abrir su build "Fire Heavy" → cajón Rostros → poner Kushala Daora de núcleo + Barnos, Kestodon, Rathian y Rathian radiante (lo que sale en sus capturas; **confirmar con Juan cuáles son las 4 cartas**, las identifiqué por el dibujo) → debe dar 12/12, Tinta de llamas 4/4 y Tempestad de Kushala Daora 2/2.
+3. **Por confirmar en el juego** (no bloquea): normal y radiante ¿cuentan como monstruos distintos? · Proof of Mastery: ¿cómo se desbloquea? ¿suma +1 a los dos sets si el núcleo tiene dos? · nombres ES de calidades (Fine/Rare/Epic/Superior).
+4. **Siguiente entrega (a decidir con Juan)**: resto de la E4 (Camarada, **Keepsake** —Juan ya mandó capturas, ver `docs/BUILDER.md` §10—, Reflexiones) o E3 (tarjeta de build). Confirmar alcance antes de programar.
+5. Siguen abiertos de antes: activador de `limpiarSesiones`, Node 24 en Pages, glosario ES; Critical Element y efecto despertado del arma por confirmar en el juego.
+
+### Decisiones de Juan (sesión 12, 2026-11-23)
+- Rostros: alcance **cartas + calidad y nivel** (sin efectos potenciales).
+- Nombres de Rostros **ES · EN** con "por confirmar" (ES de GameWith es-MX).
+- Mandó capturas de su pantalla de Rostros (reglas en `docs/BUILDER.md` §9) y del Keepsake (§10).
+
+### Hecho en la sesión 12
+- Arreglo rápido: la barra fija muestra elemento y estado del arma ("Atq. 1.040 · Fuego 520").
+- E4 · Rostros completa: datos `datos/gamewith/rostros.json`, catálogo `rostros.json` + `rostros-sets.json`, cálculo en `build-calc.js`, cajón y selector (`ui/selector-rostro.js`, `ui/capa.js`), backend `rostrosValidos_` en `Builds.gs`, modo demo, estilos `.bld-rostro*`/`.bld-rset*`. Detalle en `docs/BUILDER.md` §9.
+- Revisado en navegador (modo demo, 390 px): cajón, selector con "si la cambias…", duplicado → 3/4, Fine bloquea el nivel en 1, núcleo Kulu-Ya-Ku → Instinct en la matriz (columna Ros), sin scroll horizontal, sin errores de consola.
+
+### Git (sin commit)
+Modificados: `HANDOFF.md`, `SPEC.md`, `docs/BUILDER.md`, `apps-script/Builds.gs`, `scripts/catalogo.mjs`, `site/data/catalogo/meta.json`, `site/js/{build-calc,catalogo,demo-data}.js`, `site/js/views/build.js`, `site/js/ui/{selector-pieza,build-textos}.js`, `site/assets/css/views.css`, `tests/{catalogo,build-calc,builds}.test.mjs`. Nuevos: `datos/gamewith/rostros.json`, `site/data/catalogo/{rostros,rostros-sets}.json`, `site/js/ui/{selector-rostro,capa}.js`.
+(En `Claude outputs/` quedaron `site-revision.tgz` y `views-rev.css`, copias de revisión: se pueden borrar.)
+
+---
+
+# (Sesión 11) HANDOFF — MH-Ragnarok (sesión 11: builder E2 publicada y verificada · siguiente: Rostros)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)

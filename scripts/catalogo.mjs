@@ -1,6 +1,7 @@
 /**
  * Genera el catálogo del builder (site/data/catalogo/*.json) a partir de los datos descargados
- * de gacha.gg (datos/gacha-gg/mho-equipo.json) y las tablas manuales de scripts/catalogo/.
+ * de gacha.gg (datos/gacha-gg/mho-equipo.json), los Rostros de GameWith (datos/gamewith/rostros.json)
+ * y las tablas manuales de scripts/catalogo/.
  * Los JSON generados NO se editan a mano: se corrige la tabla y se vuelve a correr.
  *
  * Uso: node scripts/catalogo.mjs   (npm run catalogo)
@@ -102,7 +103,44 @@ function pasos(item, avisos) {
 const nombres = (st) => st.filter((s) => s.n).map((s) => [s.r, s.n.trim()]);
 const redondear = (v, d = 2) => Math.round(v * 10 ** d) / 10 ** d;
 
-export function construirCatalogo({ equipo, correcciones, monstruos, adventurers }) {
+/**
+ * Rostros (Visage) desde datos/gamewith/rostros.json. Cada carta es un monstruo: para los sets
+ * cuentan monstruos distintos, así que el id de la carta sirve también de "monstruo".
+ */
+export function armarRostros(fuente, avisos, idPorNombre = new Map()) {
+  const sets = fuente.sets.map((x) => {
+    const s = { id: slug(x.en), en: x.en, es: x.es, bonos: x.bonos.map((b) => ({ n: b.piezas, en: b.en, es: b.es })) };
+    if (x.bonos.some((b) => esTemporada0(b.en))) s.temporada0 = true;
+    return s;
+  });
+  const setPorNombre = new Map(fuente.sets.map((x, i) => [x.en, sets[i].id]));
+  const rostros = fuente.rostros.map((x) => {
+    const r = { id: slug(x.en), en: x.en, es: x.es, costo: x.costo, sets: x.sets.map((n) => {
+      const id = setPorNombre.get(n);
+      if (!id) throw new Error(`Rostro ${x.en}: set desconocido "${n}"`);
+      return id;
+    }) };
+    if (/^Radiant /.test(x.en)) r.radiante = true;
+    if (x.nucleo) {
+      r.nucleo = { en: x.nucleo.en, es: x.nucleo.es };
+      // "Instinct +1. …", "Paralysis Resistance +3. …": el núcleo da una habilidad del juego.
+      const m = /^([A-Z][A-Za-z' -]+?) \+(\d+)\./.exec(x.nucleo.en);
+      if (m && idPorNombre.has(m[1])) r.nucleo.hab = [idPorNombre.get(m[1]), Number(m[2])];
+      if (esTemporada0(x.nucleo.en)) r.temporada0 = true;
+    } else if (x.costo > 1) avisos.push(`Rostro ${x.en} (costo ${x.costo}) sin efecto núcleo`);
+    if (![1, 3, 4].includes(x.costo)) avisos.push(`Rostro ${x.en}: costo raro ${x.costo}`);
+    return r;
+  });
+  const ids = new Set();
+  for (const r of rostros) {
+    if (ids.has(r.id)) throw new Error(`Id de rostro repetido: ${r.id}`);
+    ids.add(r.id);
+  }
+  for (const s of sets) if (!rostros.some((r) => r.sets.includes(s.id))) avisos.push(`Set de rostros sin cartas: ${s.en}`);
+  return { rostros, sets };
+}
+
+export function construirCatalogo({ equipo, correcciones, monstruos, adventurers, rostros: fuenteRostros }) {
   const avisos = [];
   const corr = correcciones;
   const descartar = new Set(corr.descartar || []);
@@ -192,6 +230,8 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
     armas.push(a);
   }
 
+  const visage = armarRostros(fuenteRostros, avisos, idPorNombre);
+
   // ---- Monstruos: solo los que aparecen
   const usados = new Set([...armaduras, ...armas].map((x) => x.monstruo).filter(Boolean));
   for (const m of usados) if (!monstruos.lista.some((x) => x.id === m)) avisos.push(`Monstruo sin ficha: ${m}`);
@@ -202,6 +242,7 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
   armaduras.forEach((x) => x.hab.forEach(([, k]) => k.forEach(([h]) => habUsadas.add(h))));
   listaSets.forEach((s) => s.bonos.forEach((b) => habUsadas.add(b.hab)));
   armas.forEach((x) => x.innato && habUsadas.add(x.innato.hab));
+  visage.rostros.forEach((x) => x.nucleo?.hab && habUsadas.add(x.nucleo.hab[0]));
   const listaHab = habilidades.filter((h) => habUsadas.has(h.id));
 
   const listaAdv = adventurers.lista.map((x) => ({ ...x }));
@@ -210,14 +251,16 @@ export function construirCatalogo({ equipo, correcciones, monstruos, adventurers
     fuentes: [
       { nombre: equipo.source, que: 'armas, armaduras, habilidades y sets', fecha: equipo.fetched },
       { nombre: adventurers.fuente, que: 'adventurers', fecha: adventurers.revisado },
+      { nombre: fuenteRostros.source, que: 'rostros (Visage) y sus sets', fecha: fuenteRostros.fetched },
     ],
     conteos: {
       armaduras: armaduras.length, armas: armas.length, sets: listaSets.length,
       habilidades: listaHab.length, monstruos: listaMonstruos.length, adventurers: listaAdv.length,
+      rostros: visage.rostros.length, rostros_sets: visage.sets.length,
       descartados,
     },
   };
-  return { meta, armaduras, armas, sets: listaSets, habilidades: listaHab, monstruos: listaMonstruos, adventurers: listaAdv, avisos };
+  return { meta, armaduras, armas, sets: listaSets, habilidades: listaHab, monstruos: listaMonstruos, adventurers: listaAdv, rostros: visage.rostros, 'rostros-sets': visage.sets, avisos };
 }
 
 /** JSON con un elemento por línea: diffs legibles en git y archivo compacto. */
@@ -226,7 +269,7 @@ export function aTexto(valor) {
   return `${JSON.stringify(valor, null, 2)}\n`;
 }
 
-export const ARCHIVOS = ['meta', 'armaduras', 'armas', 'sets', 'habilidades', 'monstruos', 'adventurers'];
+export const ARCHIVOS = ['meta', 'armaduras', 'armas', 'sets', 'habilidades', 'monstruos', 'adventurers', 'rostros', 'rostros-sets'];
 
 export async function leerFuentes(raiz = RAIZ) {
   const leer = async (...p) => JSON.parse(await readFile(join(raiz, ...p), 'utf8'));
@@ -235,6 +278,7 @@ export async function leerFuentes(raiz = RAIZ) {
     correcciones: await leer('scripts', 'catalogo', 'correcciones.json'),
     monstruos: await leer('scripts', 'catalogo', 'monstruos.json'),
     adventurers: await leer('scripts', 'catalogo', 'adventurers.json'),
+    rostros: await leer('datos', 'gamewith', 'rostros.json'),
   };
 }
 

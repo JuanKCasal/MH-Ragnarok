@@ -10,6 +10,11 @@
       "nombre": "GameWith",
       "que": "adventurers",
       "fecha": "2026-11-23"
+    },
+    {
+      "nombre": "GameWith",
+      "que": "rostros (Visage) y sus sets",
+      "fecha": "2026-11-23"
     }
   ],
   "conteos": {
@@ -19,6 +24,8 @@
     "habilidades": 96,
     "monstruos": 21,
     "adventurers": 21,
+    "rostros": 56,
+    "rostros_sets": 12,
     "descartados": 27
   }
 }

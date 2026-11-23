@@ -47,7 +47,8 @@ test('guardar: composición limpia, validaciones y lectura pública', () => {
   const b = ok(E.post('build.guardar', { nombre: 'Fire Heavy', datos: DATOS, adventurer_id: advId, arma_tipo: 'heavy_bowgun',
     elemento: 'fire', catalogo_version: '2026-11-23', poder_estimado: 16700, notas: 'Para Rathalos' }, pepe));
   assert.equal(b.clase, 'perfil');
-  assert.deepEqual(b.datos, { v: 1, adv: DATOS.adv, arma: DATOS.arma, piezas: DATOS.piezas });
+  assert.deepEqual(b.datos, { v: 1, adv: DATOS.adv, arma: DATOS.arma, piezas: DATOS.piezas,
+    rostros: { nucleo: { id: 'x', cal: 'superior', nv: 10 }, cartas: [null, null, null, null], maestria: true } });
 
   const lista = ok(E.get({ accion: 'builds', miembro: pepeId }));
   assert.equal(lista.length, 1);
@@ -55,6 +56,22 @@ test('guardar: composición limpia, validaciones y lectura pública', () => {
   assert.equal(ok(E.get({ accion: 'build', id: b.id })).nombre, 'Fire Heavy');
   err(E.get({ accion: 'build', id: 'nada' }), 'NO_EXISTE');
   err(E.get({ accion: 'builds' }), 'DATO_INVALIDO');
+});
+
+test('rostros (E4): núcleo + 4 cartas con calidad y nivel; valida forma y rangos', () => {
+  const R = { nucleo: { id: 'kushala-daora', cal: 'superior', nv: 10 },
+    cartas: [{ id: 'barnos', cal: 'epic', nv: 7 }, null, { id: 'kelbi', cal: 'fine', nv: 1 }], maestria: false };
+  const b = ok(E.post('build.guardar', { nombre: 'Rostros', datos: { v: 1, rostros: R } }, pepe));
+  assert.deepEqual(b.datos.rostros, { nucleo: R.nucleo, cartas: [R.cartas[0], null, R.cartas[2], null], maestria: false });
+  const sinCartas = ok(E.post('build.guardar', { id: b.id, nombre: 'Rostros', datos: { v: 1, rostros: { cartas: [] } } }, pepe));
+  assert.equal(sinCartas.datos.rostros, undefined);
+  const mal = (rostros) => err(E.post('build.guardar', { nombre: 'X', datos: { v: 1, rostros } }, pepe), 'DATO_INVALIDO');
+  mal({ nucleo: { id: 'kushala-daora', cal: 'legendaria', nv: 1 } });
+  mal({ nucleo: { id: 'kelbi', cal: 'fine', nv: 2 } });
+  mal({ cartas: [{ id: 'barnos', nv: 11 }] });
+  mal({ cartas: [{ id: 'Barnos X' }] });
+  mal({ cartas: [null, null, null, null, { id: 'barnos' }] });
+  ok(E.post('build.eliminar', { id: b.id }, pepe));
 });
 
 test('adventurer_id debe ser del dueño; al borrar el adventurer la build queda suelta', () => {

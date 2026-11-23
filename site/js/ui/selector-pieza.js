@@ -1,13 +1,14 @@
 /**
  * Selector de pieza o arma del builder (pantalla completa encima de la hoja).
  * Buscador + filtros (monstruo, elemento, habilidad, rareza) y "si la cambias…" en cada candidata.
- * El botón "atrás" del celular lo cierra (se apila un estado en el historial sin cambiar el hash).
+ * La capa y el "atrás" del celular: ui/capa.js.
  */
 import { html, pintar, numero } from './dom.js';
 import { calcular, diferencia, conPieza, buscarPiezas, rarezaDe, nombreEn, habilidadesDePieza, NOMBRE_PARTE,
   ELEMENTOS_FILTRO, RAREZA_MAX } from '../build-calc.js';
 import { ARMAS, ELEMENTOS } from '../etiquetas.js';
 import { chipsHab, statsArma, siLaCambias } from './build-textos.js';
+import { abrirCapa } from './capa.js';
 
 const POR_PAGINA = 30;
 
@@ -34,14 +35,7 @@ export function abrirSelector(cat, build, parte, { armaTipo = '', alElegir }) {
   const habs = [...habIds].map((h) => cat.habilidades.get(h)).filter(Boolean).sort((a, b) => a.en.localeCompare(b.en));
   const elementos = esArma ? [...Object.keys(ELEMENTOS)] : ELEMENTOS_FILTRO;
 
-  const capa = document.createElement('div');
-  capa.className = 'bld-capa';
-  capa.setAttribute('role', 'dialog');
-  capa.setAttribute('aria-modal', 'true');
-  capa.setAttribute('aria-label', titulo);
-  const previo = document.activeElement;
-  document.body.append(capa);
-  document.body.classList.add('bld-sin-scroll');
+  const { capa, cerrar } = abrirCapa(titulo);
 
   const select = (nombre, etiqueta, opciones, valor) => html`
     <label class="bld-filtro">
@@ -134,21 +128,6 @@ export function abrirSelector(cat, build, parte, { armaTipo = '', alElegir }) {
     clearTimeout(espera);
     espera = setTimeout(pintarLista, k === 'texto' ? 160 : 0);
   });
-
-  function cerrar({ desdeHistorial = false } = {}) {
-    if (!capa.isConnected) return;
-    window.removeEventListener('popstate', alVolver);
-    document.removeEventListener('keydown', alTeclado);
-    capa.remove();
-    document.body.classList.remove('bld-sin-scroll');
-    if (!desdeHistorial && history.state?.bldSelector) history.back();
-    previo?.focus?.({ preventScroll: true });
-  }
-  const alVolver = () => cerrar({ desdeHistorial: true });
-  const alTeclado = (ev) => { if (ev.key === 'Escape') cerrar(); };
-  history.pushState({ bldSelector: true }, '');
-  window.addEventListener('popstate', alVolver);
-  document.addEventListener('keydown', alTeclado);
 
   capa.addEventListener('click', (ev) => {
     if (ev.target.closest('[data-cerrar]')) { cerrar(); return; }
