@@ -1,21 +1,23 @@
 # HANDOFF — MH-Ragnarok (fin de sesión 8 en Cowork)
 
-Fecha: 2026-11-22
+Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
 
 ## Punto de partida exacto para la sesión 9
 
 1. Leer `CLAUDE.md`, este archivo, `SPEC.md` y `DESIGN.md`.
-2. **Backend montado y publicado** (sesión 8). El commit de la sesión 8 lleva `site/config.js` con la URL `/exec`: al publicarse en GitHub Pages **se apaga el modo demostración** en la web pública.
-3. Juan, en la web publicada (celular o PC):
+2. **Backend montado y web en vivo.** Commit `5257516` publicado y verificado en `juankcasal.github.io/MH-Ragnarok` (versión `5257516`): ya **no** hay modo demostración; Inicio muestra 1/52 miembros, el Clash del sáb. 28-11 y el Carnival con datos reales. La primera carga tarda ~10 s (arranque en frío de Apps Script).
+3. **Primero, preguntar a Juan si ya hizo esto** (al cierre de la sesión 8 estaba pendiente; los del clan ya le pedían el código):
+   - **Código del clan**: aún **no existe**. Juan lo elige y lo pone en Mi perfil → Herramientas de oficial → Administración → Código (mín. 6 caracteres, ×2). Se guarda solo como hash: ni Claude ni el Sheet pueden mostrarlo después; si se olvida o se filtra, se cambia ahí mismo (no afecta a los ya registrados). Se comparte solo por el grupo de WhatsApp. Nunca escribirlo en el repo. Mientras no exista, el registro responde `NO_INSTALADO` ("El código del clan no está configurado").
    - Entrar como **MyMarLa** (admin) y **cambiar el PIN** en Mi perfil (el que usó al crear el admin quedó visible en pantalla).
-   - Poner el **código del clan** en Mi perfil → Administración → Código (mientras no haya código nadie puede registrarse: error `NO_INSTALADO`).
    - Revisar Gremio → datos y horarios (ya vienen de `CONFIG_INICIAL`) y pegar el **enlace de WhatsApp**.
+   - Si algo de esto falla, revisar Apps Script → Ejecuciones (ahí salen los `console.error` con la pila).
 4. Pruebas pendientes con el backend real (Claude acompaña):
    - Noticia cuyo texto empiece con `- ` o `=` (ahora todo se escribe con formato `@` justo antes de `setValues`; confirmar que no se toma como fórmula. Si fallara, anteponer `'` en `Db.gs` › `serializar_`).
    - Flujo de reset de PIN de punta a punta con una cuenta de prueba (oficial/admin resetea → entra con el temporal → `#/yo?pin=1` obliga a cambiarlo).
    - Registro con el código, subir avatar y capturas (Drive), asistencia y armado de brigadas.
 5. Opcional: activador diario de `limpiarSesiones` (Apps Script → Activadores).
+   - El editor de Apps Script ya tiene el código de `5257516` (incluye `invalidarCache_()` en `crearAdmin_`), pero la **implementación publicada es la versión 2**, sin ese cambio (solo afecta a una función que se corre desde el editor). En el próximo cambio de backend publicar la **versión 3**.
 6. Pendientes menores: acciones de GitHub Pages a Node 24; glosario ES con capturas del juego en español; si se quiere seguir viendo la demo con la API puesta, añadir un interruptor (p. ej. `?demo=1`).
 
 ## Hecho en la sesión 8 (Cowork, Claude manejó el Chrome de Juan)
