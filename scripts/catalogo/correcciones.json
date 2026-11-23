@@ -1,0 +1,28 @@
+{
+  "_nota": "Correcciones manuales al catálogo de gacha.gg. Las aplica scripts/catalogo.mjs. Ver docs/BUILDER.md §1.",
+  "descartar": [
+    "damaged-long-sword",
+    "iron-katana-i-100000011"
+  ],
+  "descartar_categorias": ["Gunlance", "Weapons"],
+  "habilidades_por_confirmar": {
+    "critical-element": "gacha.gg trae dos fichas \"Critical Element\" (crítico elemental / daño a monstruos derribados con Co-op Skills). Las piezas no dicen cuál es: confirmar con la descripción en el juego."
+  },
+  "habilidades_ids_duplicados": {
+    "_nota": "Fichas con el mismo nombre y distinto efecto. Clave = nombre; valor = id para la 2.ª ficha (en el orden del archivo de origen), si no es una variante 'Season 0'.",
+    "Critical Element": "critical-element-control",
+    "Evade Extender": "evade-extender-2",
+    "Muck Resistance": "muck-resistance-2",
+    "Resuscitate": "resuscitate-2"
+  },
+  "monstruos_por_set": {
+    "_nota": "Sets cuyo nombre no nombra al monstruo. null = armadura genérica (sin monstruo).",
+    "Insulation of the Summit": "vespoid",
+    "Butterfly Bond": null,
+    "Monocerus Divinity": null,
+    "Sepulcros Divinity": null
+  },
+  "alias_ids": {
+    "_nota": "Si gacha.gg cambia el id de una pieza, aquí va id_viejo → id_nuevo para no romper builds guardadas."
+  }
+}

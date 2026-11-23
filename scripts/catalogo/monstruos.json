@@ -1,0 +1,26 @@
+{
+  "_nota": "Monstruos del catálogo. 'en' tal como lo escribe el juego en inglés; 'es' se completa cuando se confirme. 'cortos' = prefijos con que aparecen en los nombres de armaduras.",
+  "lista": [
+    { "id": "great-jagras", "en": "Great Jagras", "cortos": ["Jagras"] },
+    { "id": "kulu-ya-ku", "en": "Kulu-Ya-Ku", "cortos": ["Kulu"] },
+    { "id": "pukei-pukei", "en": "Pukei-Pukei", "cortos": ["Pukei"] },
+    { "id": "barroth", "en": "Barroth", "cortos": [] },
+    { "id": "great-girros", "en": "Great Girros", "cortos": ["Girros"] },
+    { "id": "jyuratodus", "en": "Jyuratodus", "cortos": ["Jyura"] },
+    { "id": "vespoid", "en": "Vespoid", "cortos": [] },
+    { "id": "hornetaur", "en": "Hornetaur", "cortos": [] },
+    { "id": "anjanath", "en": "Anjanath", "cortos": ["Anja"] },
+    { "id": "tobi-kadachi", "en": "Tobi-Kadachi", "cortos": ["Kadachi"] },
+    { "id": "rathian", "en": "Rathian", "cortos": [] },
+    { "id": "pink-rathian", "en": "Pink Rathian", "cortos": ["Rath Heart"] },
+    { "id": "rathalos", "en": "Rathalos", "cortos": [] },
+    { "id": "radobaan", "en": "Radobaan", "cortos": ["Baan"] },
+    { "id": "diablos", "en": "Diablos", "cortos": [] },
+    { "id": "black-diablos", "en": "Black Diablos", "cortos": ["Diablos Nero"] },
+    { "id": "odogaron", "en": "Odogaron", "cortos": [] },
+    { "id": "legiana", "en": "Legiana", "cortos": [] },
+    { "id": "paolumu", "en": "Paolumu", "cortos": ["Lumu"] },
+    { "id": "tzitzi-ya-ku", "en": "Tzitzi-Ya-Ku", "cortos": ["Tzitzi"] },
+    { "id": "ruger-aidal", "en": "Ruger Aidal", "cortos": [] }
+  ]
+}

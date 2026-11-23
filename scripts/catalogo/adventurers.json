@@ -1,0 +1,28 @@
+{
+  "_nota": "Adventurers del juego. Fuente: GameWith (gamewith.ai/monster-hunter-outlanders/en/adventurers), revisado 2026-11-23. Los Fated Adventurer son uno por tipo de arma, sin elemento ni tipo fijos. Verificar contra el juego cuando salgan nuevos.",
+  "fuente": "GameWith",
+  "revisado": "2026-11-23",
+  "lista": [
+    { "id": "fated-adventurer-great-sword", "en": "Fated Adventurer", "arma": "great_sword", "elemento": null, "tipo": null, "rareza": "SSR" },
+    { "id": "fated-adventurer-long-sword", "en": "Fated Adventurer", "arma": "long_sword", "elemento": null, "tipo": null, "rareza": "SSR" },
+    { "id": "fated-adventurer-dual-blades", "en": "Fated Adventurer", "arma": "dual_blades", "elemento": null, "tipo": null, "rareza": "SSR" },
+    { "id": "fated-adventurer-lance", "en": "Fated Adventurer", "arma": "lance", "elemento": null, "tipo": null, "rareza": "SSR" },
+    { "id": "fated-adventurer-hammer", "en": "Fated Adventurer", "arma": "hammer", "elemento": null, "tipo": null, "rareza": "SSR" },
+    { "id": "fated-adventurer-charge-blade", "en": "Fated Adventurer", "arma": "charge_blade", "elemento": null, "tipo": null, "rareza": "SSR" },
+    { "id": "fated-adventurer-heavy-bowgun", "en": "Fated Adventurer", "arma": "heavy_bowgun", "elemento": null, "tipo": null, "rareza": "SSR" },
+    { "id": "fated-adventurer-bow", "en": "Fated Adventurer", "arma": "bow", "elemento": null, "tipo": null, "rareza": "SSR" },
+    { "id": "pyro", "en": "Pyro", "arma": "great_sword", "elemento": "dragon", "tipo": "assault", "rareza": "SSR" },
+    { "id": "midori", "en": "Midori", "arma": "long_sword", "elemento": "fire", "tipo": "assault", "rareza": "SSR" },
+    { "id": "keres", "en": "Keres", "arma": "dual_blades", "elemento": "dragon", "tipo": "disruptor", "rareza": "SSR" },
+    { "id": "haze", "en": "Haze", "arma": "dual_blades", "elemento": "thunder", "tipo": "support", "rareza": "SSR" },
+    { "id": "arkaya", "en": "Arkaya", "arma": "lance", "elemento": "dragon", "tipo": "support", "rareza": "SSR" },
+    { "id": "rhodes", "en": "Rhodes", "arma": "hammer", "elemento": "ice", "tipo": "assault", "rareza": "SSR" },
+    { "id": "pepper", "en": "Pepper", "arma": "heavy_bowgun", "elemento": "water", "tipo": "disruptor", "rareza": "SSR" },
+    { "id": "luka", "en": "Luka", "arma": "bow", "elemento": "thunder", "tipo": "assault", "rareza": "SSR" },
+    { "id": "luxheart", "en": "Luxheart", "arma": "great_sword", "elemento": "thunder", "tipo": "disruptor", "rareza": "SR" },
+    { "id": "ryunosuke", "en": "Ryunosuke", "arma": "long_sword", "elemento": "fire", "tipo": "support", "rareza": "SR" },
+    { "id": "raya", "en": "Raya", "arma": "dual_blades", "elemento": "fire", "tipo": "disruptor", "rareza": "SR" },
+    { "id": "ouyang-varen", "en": "Ouyang Varen", "arma": "lance", "elemento": "water", "tipo": "assault", "rareza": "SR" },
+    { "id": "madelyn", "en": "Madelyn", "arma": "bow", "elemento": "water", "tipo": "support", "rareza": "SR" }
+  ]
+}

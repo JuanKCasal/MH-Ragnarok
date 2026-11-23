@@ -168,7 +168,7 @@ Registro de cada archivo subido por el backend. Sirve para validar que un ID de 
 ### 5.12 `Log` (privada)
 | fecha | miembro_id | accion | entidad | entidad_id | detalle |
 
-### 5.13 `Catalogo` (Fase 2, se crea vacía)
+### 5.13 `Catalogo` (Fase 2, se crea vacía; con el builder guarda solo los nombres ES encima del catálogo estático, ver `docs/BUILDER.md`)
 | tipo (`adventurer`/`arma`/`pieza`/`habilidad`/`rostro`/`camarada`) | id | nombre_es | nombre_en | extra_json | validado | creado_por |
 
 ## 6. API (Apps Script)
@@ -273,7 +273,7 @@ Implementado en `site/js/clash-balance.js` (JavaScript puro, sin DOM) y probado 
 | **0 — Base** (sesión 2) | SPEC, backend v1 con 18 pruebas sobre un simulador de Apps Script, algoritmo de balanceo y horarios con pruebas, direcciones visuales |
 | **1 — MVP** | Frontend completo de la sección 2 con la dirección visual elegida; despliegue en Pages y Apps Script; carga de datos iniciales del gremio |
 | **1.1** | PWA con service worker, historial de Clash con resultados y gráfico de puesto/puntos, estadísticas del gremio (armas y elementos más usados) |
-| **2 — Catálogo** | Hoja `Catalogo` ES/EN con autocompletado en el formulario de adventurers; los oficiales validan entradas nuevas; build detallada (piezas, habilidades, Rostros, Camarada, Weapon Insight) |
+| **2 — Catálogo y builder** | Catálogo estático en `site/data/catalogo/` (generado desde gacha.gg) + nombres ES en la hoja `Catalogo` que validan los oficiales; builder interactivo (opción C) con hoja nueva `Builds`. Modelo, reglas y entregas: **`docs/BUILDER.md`** |
 | **Opcional** | Lectura de capturas con IA de visión (costo por captura) |
 
 ## 12. Decisiones

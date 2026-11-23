@@ -5,6 +5,7 @@
   "description": "Web del gremio Ragnarok (Monster Hunter Outlanders). Sin dependencias: solo scripts de prueba.",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "gs": "node scripts/empaquetar-gs.mjs"
+    "gs": "node scripts/empaquetar-gs.mjs",
+    "catalogo": "node scripts/catalogo.mjs"
   }
 }

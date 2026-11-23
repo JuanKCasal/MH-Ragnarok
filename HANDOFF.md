@@ -1,4 +1,50 @@
-# HANDOFF — MH-Ragnarok (fin de sesión 9: builder interactivo, elegida la opción C)
+# HANDOFF — MH-Ragnarok (sesión 10: modelo de datos del builder y catálogo limpio · E1 hecha)
+
+Fecha: 2026-11-23
+Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
+
+## Sesión 10 — Modelo de datos, limpieza del catálogo y plan (E1 hecha)
+
+### Punto de partida exacto para la sesión 11
+1. Leer `CLAUDE.md`, este bloque, **`docs/BUILDER.md`** (modelo, reglas del catálogo y plan E1–E7), `DESIGN.md` y los mockups de la opción C (`docs/mockups/builder/C-Hoja`, `C-Habilidades`, `Selector-Pieza`, `Tarjeta-Build`, `Comparar`).
+2. **Siguiente: E2 · Hoja con cajones (solo equipo)**, confirmando con Juan antes de empezar:
+   - `site/js/build-calc.js` (puro, con pruebas): defensa, ataque, afinidad, elemento, habilidades (suma/máximo, "sobra", aporte por pieza), sets (piezas/necesarias, bono activo) y diferencia entre dos builds (para "si la cambias…" y Comparar).
+   - Carga del catálogo desde `site/data/catalogo/*.json` con `?v=<VERSION>` (el versionado solo reescribe CSS/JS: los `fetch` de JSON tienen que añadir la versión a mano).
+   - Rutas `#/build/nueva` y `#/build/:id`: adventurer, arma y 5 piezas con rareza; selector de pieza (buscador, filtros monstruo/elemento/habilidad, "si la cambias…"); barra fija; vista Habilidades (matriz habilidad × pieza, **sin columna de joyas**).
+   - Backend: hoja `Builds` en `ESQUEMA` (columnas en `docs/BUILDER.md` §3), `builds`/`build` (lectura), `build.guardar`/`build.eliminar`; modo demo. **No tocar ni reordenar columnas existentes** (`Db.gs` lee por posición). Tras el cambio: correr `instalar()` y publicar la **versión 3** del Web App.
+3. Git: quedan sin commit `docs/BUILDER.md`, `scripts/catalogo.mjs`, `scripts/catalogo/`, `site/data/catalogo/`, `tests/catalogo.test.mjs`, `package.json`, `SPEC.md` y este archivo (comandos abajo).
+4. Siguen abiertos de antes: pruebas con el backend real, activador de `limpiarSesiones`, Node 24 en Pages, glosario ES.
+
+### Decisiones de Juan (sesión 10, 2026-11-23)
+- **En el juego no existen joyas**: fuera del builder (se ignoran `beads` y `slots` de gacha.gg; quitar "Joy"/"2 joyas" de los mockups).
+- **Rareza hasta 14** también en armaduras (aunque hoy el juego muestre x/13).
+- Aprobado el plan por entregas de `docs/BUILDER.md` y empezar por E1.
+
+### Hecho en la sesión 10
+- `docs/BUILDER.md`: hallazgos del catálogo, formato del catálogo estático, hoja `Builds` + API, composición de una build (JSON v1), cálculo en el navegador y plan E1–E7. `SPEC.md` §5.13 y §11 apuntan ahí.
+- **E1 · Catálogo limpio**: `scripts/catalogo.mjs` (`npm run catalogo`) genera `site/data/catalogo/` (meta, armaduras 245, armas 291, sets 49, habilidades 96, monstruos 21, adventurers 21; 274 KB) desde `datos/gacha-gg/mho-equipo.json` + tablas manuales en `scripts/catalogo/`.
+  - Afinidad ÷100, **confirmado** con GameWith (Radiant Archer's Dance r12: ataque 1057, +2.7 %).
+  - Monstruo de armaduras sacado del nombre del set (10 sets genéricos sin monstruo); marca `radiante`.
+  - Habilidades repetidas con id propio (`-s0` para las "Season 0 only"; `critical-element-control` para la 2.ª Critical Element).
+  - Adventurers: 21 de GameWith (8 Fated Adventurer, uno por arma, sin elemento/tipo fijos + 13 con nombre), no 14 como decía gacha.gg.
+- Pruebas: **87** (`npm test`), nueva `tests/catalogo.test.mjs` (incluye que los JSON estén al día con el script).
+
+### Pendiente de confirmar en el juego (no bloquea E2)
+- **Critical Element**: mirar la descripción en una pieza que lo tenga (Girros Mask o Radiant Rathalos Greaves) para saber si es "crítico elemental" o "daño a monstruos derribados". Hoy queda marcado "por confirmar".
+- **Efecto despertado del arma** (p. ej. Third Power Shot): ¿se elige o viene con el arma? No está en los datos.
+
+### Git (Juan, por consola)
+```powershell
+cd C:\dev\mh-ragnarok
+npm test
+git add docs/BUILDER.md scripts/catalogo.mjs scripts/catalogo site/data tests/catalogo.test.mjs package.json SPEC.md HANDOFF.md
+git commit -m "Sesión 10: modelo de datos del builder y catálogo limpio (E1)"
+git push
+```
+
+---
+
+# (Sesión 9) HANDOFF — MH-Ragnarok (fin de sesión 9: builder interactivo, elegida la opción C)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
