@@ -480,3 +480,138 @@
   .noticias--entra .noticia-item, .guias > li { animation: none; }
   .noticia-tarjeta, .guia-tarjeta, .segmentos a { transition: none; }
 }
+
+/* ---------- Editor de noticias y guías (oficiales) ---------- */
+
+.cabeza-pagina__accion { align-self: flex-start; margin-top: 6px; }
+
+.estado-pub {
+  display: inline-flex; align-items: center; padding: 2px 8px;
+  border-radius: var(--filo);
+  font-size: 0.6875rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+}
+.estado-pub--publicada { background: var(--bosque); color: var(--bosque-texto); }
+.estado-pub--borrador { border: 1px dashed var(--filete-fuerte); color: var(--oro-claro); }
+
+.editor-lista { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); margin: 0; padding: 0; list-style: none; }
+@media (min-width: 760px) { .editor-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.editor-item {
+  display: flex; flex-direction: column; gap: 6px; height: 100%;
+  padding: 14px 16px;
+  background: linear-gradient(160deg, var(--panel), var(--panel-hondo));
+  border: 1px solid var(--filete-suave);
+  border-left: 3px solid var(--bosque-texto);
+  border-radius: var(--filo);
+  color: var(--marfil); text-decoration: none;
+  transition: border-color 160ms ease;
+}
+.editor-item:hover { border-color: var(--filete-fuerte); }
+.editor-item--borrador { border-left: 3px dashed var(--oro); background: linear-gradient(160deg, #221a15, var(--panel-hondo)); }
+.editor-item__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 0.8125rem; color: var(--texto-tenue); }
+.editor-item__titulo { font-family: var(--f-display); font-weight: 700; font-size: 1.0625rem; line-height: 1.3; color: var(--marfil-claro); text-wrap: balance; }
+.editor-item__fijada { display: inline-flex; align-items: center; gap: 4px; color: var(--oro-claro); font-weight: 700; }
+.editor-item__fijada svg { width: 14px; height: 14px; }
+.editor-item__local { color: var(--error); font-weight: 700; }
+
+.editor-estado { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0; font-size: 0.875rem; color: var(--texto-suave); }
+.editor-estado a { color: var(--oro-claro); font-weight: 700; }
+.editor-estado__sucio { color: var(--oro-claro); font-weight: 700; }
+.editor-estado__sucio::before { content: ''; display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: var(--oro); vertical-align: 1px; }
+
+.alerta--accion > div { display: flex; flex-direction: column; gap: 10px; }
+.alerta--accion p { margin: 0; }
+.alerta__botones { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Pestañas Editar / Vista previa (en pantallas anchas se ven las dos a la vez). */
+.pestanas { display: flex; gap: 0; border-bottom: 1px solid var(--filete); }
+.pestanas button {
+  flex: 1; min-height: 46px; padding: 0 12px;
+  background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  font: inherit; font-size: 0.9375rem; font-weight: 800; color: var(--texto-tenue); cursor: pointer;
+}
+.pestanas button[aria-selected='true'] { color: var(--oro-claro); border-bottom-color: var(--oro); }
+.pestanas button:focus-visible { outline: 2px solid var(--oro); outline-offset: -2px; }
+.editor-zona { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--hueco); margin-top: calc(var(--hueco) * -0.5); }
+.editor-zona[data-zona='editar'] .editor-previa,
+.editor-zona[data-zona='previa'] .editor-form { display: none; }
+.editor-previa { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.editor-previa__rotulo { margin: 0; }
+.editor-previa .articulo { padding: 16px; border: 1px dashed var(--filete); border-radius: var(--filo); background: rgba(255, 255, 255, 0.015); }
+@media (min-width: 1000px) {
+  .pestanas { display: none; }
+  .editor-zona { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; margin-top: 0; }
+  .editor-zona[data-zona] .editor-form, .editor-zona[data-zona] .editor-previa { display: flex; }
+  .editor-previa { position: sticky; top: 84px; max-height: calc(100vh - 170px); overflow-y: auto; padding-right: 4px; }
+}
+
+/* Botones de formato: quedan a mano mientras se escribe un texto largo. */
+.formato {
+  position: sticky; top: 60px; z-index: 5;
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+  margin: 0 calc(var(--margen) * -1); padding: 8px var(--margen);
+  background: rgba(15, 12, 13, 0.94);
+}
+.formato::-webkit-scrollbar { display: none; }
+.formato__boton {
+  flex: none; min-height: 40px; min-width: 44px; padding: 0 12px;
+  background: var(--celda); border: 1px solid var(--filete); border-radius: var(--filo);
+  font: inherit; font-size: 0.875rem; font-weight: 700; color: var(--texto-suave); cursor: pointer;
+}
+.formato__boton:hover { border-color: var(--oro); color: var(--marfil-claro); }
+.formato__boton:focus-visible { outline: 2px solid var(--oro); outline-offset: 1px; }
+.formato__boton--negrita { font-weight: 900; color: var(--marfil-claro); }
+.formato__boton--cursiva { font-style: italic; }
+.formato__boton--titulo { font-family: var(--f-display); }
+@media (min-width: 1000px) { .formato { margin: 0; padding: 8px 0; } }
+
+textarea.editor-cuerpo { min-height: 18lh; line-height: 1.6; field-sizing: content; font-size: 1rem; }
+.editor-cuenta { text-align: right; }
+.editor-cuenta--excede { color: var(--error); font-weight: 700; }
+
+.chuleta { display: grid; gap: 6px; margin: 0 0 10px; }
+.chuleta > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 8px 10px; border: 1px solid var(--filete-suave); border-radius: var(--filo); }
+@media (min-width: 520px) { .chuleta > div { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 12px; align-items: center; } }
+.chuleta dt, .chuleta dd { margin: 0; }
+.chuleta code { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 0.8125rem; color: var(--oro-claro); overflow-wrap: anywhere; }
+.chuleta dd { font-size: 0.875rem; color: var(--texto-suave); }
+
+.editor-portada { display: flex; flex-direction: column; gap: 10px; }
+.editor-portada__vacia {
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 16 / 9; max-height: 200px; width: 100%;
+  border: 1px dashed var(--filete-fuerte); border-radius: var(--filo);
+  background: repeating-linear-gradient(135deg, rgba(230, 192, 104, 0.04) 0 10px, transparent 10px 20px);
+  cursor: pointer;
+}
+.editor-portada__vacia:focus-within { outline: 2px solid var(--oro); outline-offset: 2px; }
+.editor-portada__vacia--subiendo { cursor: progress; color: var(--texto-suave); font-size: 0.9375rem; animation: latido-suave 1.2s ease-in-out infinite alternate; }
+@keyframes latido-suave { to { border-color: var(--oro); } }
+.editor-portada__botones { display: flex; flex-wrap: wrap; gap: 8px; }
+.editor-portada__botones label:focus-within { outline: 2px solid var(--oro); outline-offset: 2px; }
+
+.interruptor--texto { align-items: flex-start; padding: 4px 0; }
+.interruptor--texto input { margin-top: 2px; }
+.interruptor--texto > span { display: flex; flex-direction: column; gap: 2px; color: var(--marfil); }
+
+.editor-direccion { margin-top: -6px; overflow-wrap: anywhere; }
+.editor-direccion:empty { display: none; }
+.editor-acciones .boton { flex: 1; }
+.editor-pie { margin-top: calc(var(--hueco) * -0.25); }
+
+/* Atajos de oficial en Mi perfil */
+.atajos { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.atajo {
+  display: flex; flex-direction: column; gap: 2px; min-height: 64px; justify-content: center;
+  padding: 10px 14px;
+  border: 1px solid var(--filete); border-left: 3px solid var(--oro); border-radius: var(--filo);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--marfil-claro); text-decoration: none;
+}
+.atajo:hover { border-color: var(--oro); }
+.atajo span { font-size: 0.8125rem; color: var(--texto-tenue); }
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-portada__vacia--subiendo { animation: none; }
+  .editor-item { transition: none; }
+}
+.editor-aviso:empty, .editor-pie:empty { display: none; }

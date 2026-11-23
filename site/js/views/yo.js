@@ -1,6 +1,6 @@
 /** Mi perfil: adventurers, enlace del grupo, datos, PIN y salir. Ver SPEC.md §2 (#/yo). */
 import { leer, escribir, MODO_DEMO, ErrorApi } from '../api.js';
-import { sesion, actualizarMiembro, olvidarSesion, salir, esSesionCaida } from '../auth.js';
+import { sesion, actualizarMiembro, olvidarSesion, salir, esSesionCaida, tieneRol } from '../auth.js';
 import { ir } from '../router.js';
 import { html, pintar, numero, crudo } from '../ui/dom.js';
 import { avisoDemo, cargando, fallo } from '../ui/comun.js';
@@ -144,6 +144,17 @@ export default async function vistaYo(el, { query, recargar }) {
         ? html`<a class="boton boton--ancho ${advs.length ? '' : 'boton--oro latido'}" href="#/yo/adventurer">Agregar adventurer</a>`
         : ''}
     </section>
+
+    ${tieneRol('oficial')
+      ? html`<section class="seccion" aria-labelledby="t-oficial">
+          <h2 class="titulo titulo--menor" id="t-oficial">Herramientas de oficial</h2>
+          <nav class="atajos" aria-labelledby="t-oficial">
+            <a class="atajo" href="#/editor"><strong>Noticias</strong><span>Escribir, borradores y fijar</span></a>
+            <a class="atajo" href="#/editor?tipo=guia"><strong>Guías</strong><span>Escribir y ordenar</span></a>
+            <a class="atajo" href="#/clash/armar"><strong>Brigadas</strong><span>Armar el Clash del sábado</span></a>
+          </nav>
+        </section>`
+      : ''}
 
     ${esInvitacionWhatsapp(wa)
       ? html`<section class="panel-sencillo grupo" aria-label="Grupo de WhatsApp">

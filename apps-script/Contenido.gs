@@ -147,9 +147,11 @@ function contenidoEditor_(token, d) {
   if (d.id) {
     var x = buscar_(hoja, function (r) { return r.id === d.id; });
     if (!x) fallar_('NO_EXISTE', 'No encontrado.');
-    return sinFila_(x);
+    var o = sinFila_(x);
+    o.autor = autores_()[x.autor_id] || '';
+    return o;
   }
   return leer_(hoja).map(function (r) {
-    return elegir_(r, ['id', 'titulo', 'tipo', 'categoria', 'publicado', 'fijada', 'actualizado']);
+    return elegir_(r, ['id', 'titulo', 'slug', 'tipo', 'categoria', 'nivel', 'orden', 'publicado', 'fijada', 'fecha_pub', 'actualizado']);
   });
 }

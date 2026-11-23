@@ -1,5 +1,6 @@
 /** Guías agrupadas por categoría. Ver SPEC.md §2 (#/guias). */
 import { leer } from '../api.js';
+import { tieneRol } from '../auth.js';
 import { html, pintar } from '../ui/dom.js';
 import { avisoDemo, cargando, fallo } from '../ui/comun.js';
 import { CATEGORIAS_GUIA, NIVELES_GUIA } from '../etiquetas.js';
@@ -25,6 +26,7 @@ export default async function vistaGuias(el, { recargar }) {
     <header class="cabeza-pagina">
       <h1 class="titulo titulo--pagina">Guías</h1>
       <p class="apoyo">${total ? 'Lo básico para empezar y lo que el clan va aprendiendo.' : ''}</p>
+      ${tieneRol('oficial') ? html`<a class="boton boton--chico boton--tenue cabeza-pagina__accion" href="#/editor?tipo=guia">Escribir o editar · oficiales</a>` : ''}
     </header>
     ${grupos.length > 1
       ? html`<nav class="saltos" aria-label="Categorías">${grupos.map((g) => html`

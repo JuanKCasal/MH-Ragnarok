@@ -1,5 +1,6 @@
 /** Noticias: lista con filtro por tipo y "Cargar más". Ver SPEC.md §2 (#/noticias). */
 import { leer } from '../api.js';
+import { tieneRol } from '../auth.js';
 import { html, pintar, crudo } from '../ui/dom.js';
 import { avisoDemo, cargando, fallo } from '../ui/comun.js';
 import { ICONOS } from '../ui/iconos.js';
@@ -41,9 +42,10 @@ export default async function vistaNoticias(el, { query, recargar }) {
     <header class="cabeza-pagina">
       <h1 class="titulo titulo--pagina">Noticias</h1>
       <p class="apoyo">Novedades del juego y avisos del gremio.</p>
+      ${tieneRol('oficial') ? html`<a class="boton boton--chico boton--tenue cabeza-pagina__accion" href="#/editor">Escribir o editar · oficiales</a>` : ''}
     </header>
     <nav class="segmentos" aria-label="Filtrar noticias">
-      ${FILTROS.map(([v, t]) => html`<a href="#/noticias${v ? `?tipo=${v}` : ''}" ${v === tipo ? 'aria-current="page"' : ''}>${t}</a>`)}
+      ${FILTROS.map(([v, t]) => html`<a href="#/noticias${v ? `?tipo=${v}` : ''}" ${v === tipo ? crudo('aria-current="page"') : ''}>${t}</a>`)}
     </nav>
     <ul class="noticias noticias--entra" data-lista></ul>
     <div class="noticias__mas" data-mas></div>`);

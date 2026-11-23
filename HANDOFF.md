@@ -1,25 +1,45 @@
-# HANDOFF — MH-Ragnarok (fin de sesión 6 en Cowork)
+# HANDOFF — MH-Ragnarok (fin de sesión 7 en Cowork)
 
 Fecha: 2026-11-22
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
 
-## Punto de partida exacto para la sesión 7
+## Punto de partida exacto para la sesión 8
 
 1. Leer `CLAUDE.md`, este archivo, `SPEC.md` y `DESIGN.md`.
-2. **Las sesiones 5 y 6 van en un solo commit** (decisión de Juan) y todavía no se hizo: confirmar que corrió los comandos de "Commit pendiente" abajo. Después del push, revisar con él en el celular: el aviso **"Hay una versión nueva · Actualizar"** (la primera publicación con versionado puede necesitar esperar ~10 min o borrar caché una última vez), **Miembros**, **Noticias** y **Guías**.
-3. Siguiente bloque del frontend v1 (`SPEC.md` §2): **editor** de noticias y guías para oficiales (`#/editor/noticia/:id?`, `#/editor/guia/:id?`: Markdown con vista previa usando `renderMarkdown`, portada con `comprimir` + `imagen.subir` tipo `portada`, publicar/borrador, fijar; lista vía `editor.contenido`) y luego **admin** (`#/admin`: miembros con rol/estado/reset de PIN, código del clan, configuración del gremio). Faltan en `demo-data.js` las escrituras `noticia.guardar/eliminar`, `guia.guardar/eliminar`, `editor.contenido` y las de admin.
-4. Juan monta el backend con `docs/SETUP-backend.md` y pega la URL `/exec` en `site/config.js` (con eso se apaga el modo demostración solo).
+2. **Commit pendiente de la sesión 7** (ver "Commit pendiente" abajo). Después del push, Juan prueba en el celular el **editor** (Mi perfil → Herramientas de oficial, o "Escribir o editar · oficiales" en Noticias/Guías).
+3. Siguiente bloque del frontend v1 (`SPEC.md` §2): **admin** (`#/admin`: miembros con rol/estado/reset de PIN — el PIN temporal se muestra una sola vez —, código del clan, configuración del gremio). Endpoints ya hechos en el backend: `admin.miembros`, `miembro.resetPin`, `miembro.estado`, `miembro.rol`, `config.guardar`, `config.codigoClan`. Faltan sus simulaciones en `demo-data.js`. Enlazarlo desde "Herramientas de oficial" en Mi perfil.
+4. Juan monta el backend con `docs/SETUP-backend.md` y pega la URL `/exec` en `site/config.js` (con eso se apaga el modo demostración solo). **Al montarlo, probar** una noticia cuyo texto empiece con `- ` o `=` (lista o signo igual al inicio): todas las celdas se escriben con `setValues`/`appendRow` y hay que confirmar que Sheets no las toma como fórmula (las hojas tienen formato texto `@`). Si fallara, anteponer `'` al serializar en `Db.gs` (`serializar_`).
 5. Pendiente menor: subir las acciones de GitHub Pages a versiones con Node 24 (hoy corren en Node 20, deprecado). Verificar versiones vigentes antes de cambiarlas.
 
-## Commit pendiente (sesiones 5 y 6 juntas)
+## Commit pendiente (sesión 7)
 
 ```powershell
 cd C:\dev\mh-ragnarok
 git add .
 git status
-git commit -m "Miembros, Noticias y Guías (Markdown seguro) y versionado de la web con aviso de actualización"
+git commit -m "Editor de noticias y guías para oficiales (formato, vista previa, portada, borradores)"
 git push
 ```
+
+## Hecho en la sesión 7
+
+- Juan revisó en el celular el aviso de versión nueva, Miembros, Noticias y Guías: todo bien.
+- **Editor** (oficiales; en demo, "Midori" es oficial):
+  - `views/editor.js` (`#/editor`, `#/editor?tipo=guia`): lista con Borrador/Publicada, tipo o categoría, fijada, "editada hace…"; borradores primero; marca "Cambios sin guardar" si hay copia local; botón Nueva noticia/guía. Exporta `soloOficiales` (pantalla para quien no es oficial).
+  - `views/editar.js` (`#/editor/noticia[/:id]`, `#/editor/guia[/:id]`): título (120), tipo (noticia) o categoría + nivel (guía), resumen (280), **portada** (comprime 1600 px → `imagen.subir` tipo `portada`; cambiar/quitar; la vieja se borra al guardar), **texto** con **botones de formato** fijos arriba al escribir (Título, Negrita, Cursiva, Lista, 1. Lista, Cita, Enlace) y contador de 40.000, "Cómo dar formato" (chuleta), **Fijar** (noticias), en guías "Más opciones" (dirección/slug con vista de la URL y orden). Pestañas **Editar / Vista previa** en el celular; desde 1000 px se ven las dos columnas y la vista previa se actualiza al escribir. En la vista previa los enlaces no navegan (los https se abren aparte) y el índice salta sin tocar el hash.
+  - Barra fija abajo: sin publicar **Borrador | Publicar**; publicada **Ocultar | Guardar** (etiquetas cortas para que quepan en 320 px; los `aria-label` dicen la acción completa). Al guardar una nueva, la dirección pasa a la de edición (`history.replaceState`). Eliminar con doble toque.
+  - **Copia local** (`js/borradores.js`, `localStorage` `mhr:borrador:<tipo>:<id|nuevo>`, vence a los 30 días): lo escrito sin guardar se copia cada 0,5 s; al reabrir ofrece Recuperar/Descartar; al salir con cambios avisa; si la sesión vence, lo escrito queda y manda a Entrar con `volver`. `beforeunload` pregunta al cerrar la pestaña.
+  - `js/editor-formato.js`: `aplicarFormato(texto, inicio, fin, accion)` puro (interruptor en negrita/cursiva/listas/títulos; línea en blanco antes de listas y títulos).
+  - `validar.js`: `validarContenido(tipo, datos)` y `LIMITES_CONTENIDO` (espejo de `Contenido.gs`).
+- Accesos: "Escribir o editar · oficiales" en Noticias y Guías; "Editar" en el detalle de noticia y guía; **Herramientas de oficial** en Mi perfil (Noticias, Guías, Brigadas).
+- `entrar.js` › `destino`: ahora acepta una consulta simple (`editor?tipo=guia`), sigue rechazando URLs externas.
+- **Arreglo:** el filtro marcado de Noticias (y los segmentos del editor) no se resaltaba: `aria-current="page"` salía escapado dentro de la plantilla. Ahora va con `crudo(...)`.
+- Backend (`Contenido.gs`): `editor.contenido` devuelve en la lista también `slug`, `nivel`, `orden` y `fecha_pub`, y en el ítem el nick del autor (`autor`).
+- `demo-data.js`: `editor.contenido`, `noticia.guardar/eliminar`, `guia.guardar/eliminar` con las reglas del backend (título obligatorio, `fecha_pub` al publicar por primera vez, slug único); las lecturas públicas ya no muestran borradores.
+- `SPEC.md` §2: fila de `#/editor`.
+- Verificado con Playwright a 390 y 320 px sobre la copia versionada (y 1280 px): lista, nueva noticia, error sin título, formato, portada, vista previa, borrador (no sale en Noticias), publicar + fijar (sale en Inicio), editar desde el detalle, salir con cambios → recuperar, guía con índice y dirección, ver en la web, eliminar. Sin errores de consola ni desborde.
+- Pruebas: **74** (`npm test`), nueva `tests/editor.test.mjs`.
+- En `Claude outputs/` quedó `site-build-s7.tgz` (y los viejos `site-build*.tgz`): están ignorados por git; Juan puede borrarlos.
 
 ## Hecho en la sesión 6 (misma conversación que la 5)
 

@@ -28,7 +28,8 @@ Navegación con *hash router* (`#/ruta`), porque GitHub Pages no reescribe rutas
 | `#/clash/armar` | Herramienta de armado de brigadas | Oficial |
 | `#/entrar` · `#/registro` | Login con nick + PIN · Registro con código del clan | Público |
 | `#/yo` | Mi perfil: datos, adventurers, cambiar PIN, cerrar sesión | Miembro |
-| `#/editor/noticia/:id?` · `#/editor/guia/:id?` | Editor Markdown con vista previa | Oficial |
+| `#/editor` (`?tipo=guia`) | Lista de noticias o guías con borradores, para editar | Oficial |
+| `#/editor/noticia/:id?` · `#/editor/guia/:id?` | Editor Markdown con botones de formato, vista previa, portada, borrador/publicar, fijar (noticias), eliminar. Copia local de lo escrito sin guardar | Oficial |
 | `#/admin` | Miembros (rol, estado, resetear PIN), código del clan, configuración del gremio | Admin (parte de oficial) |
 
 Pie de página en todas las pantallas: "Sitio de fans no oficial. Monster Hunter es marca de Capcom. No afiliado a Capcom ni a TiMi Studio Group."

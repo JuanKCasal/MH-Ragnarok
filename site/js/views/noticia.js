@@ -1,5 +1,6 @@
 /** Detalle de una noticia con su cuerpo en Markdown seguro. Ver SPEC.md §2 (#/noticias/:id). */
 import { leer } from '../api.js';
+import { tieneRol } from '../auth.js';
 import { html, pintar, crudo } from '../ui/dom.js';
 import { avisoDemo, cargando, fallo } from '../ui/comun.js';
 import { ICONOS } from '../ui/iconos.js';
@@ -42,6 +43,7 @@ export default async function vistaNoticia(el, { params, recargar }) {
       <footer class="articulo__pie">
         <button type="button" class="boton boton--chico" data-compartir>${crudo(ICONOS.compartir)}Compartir</button>
         <a class="boton boton--chico boton--tenue" href="#/noticias">Más noticias</a>
+        ${tieneRol('oficial') ? html`<a class="boton boton--chico boton--tenue" href="#/editor/noticia/${encodeURIComponent(n.id)}">Editar</a>` : ''}
       </footer>
     </article>`);
 

@@ -3,7 +3,8 @@
  * Adventurers.gs): solo sirven para avisar antes de enviar; el backend vuelve a validar todo.
  * Devuelven '' si está bien o el mensaje de error.
  */
-import { ARMAS } from './etiquetas.js';
+import { ARMAS, TIPOS_NOTICIA, CATEGORIAS_GUIA, NIVELES_GUIA } from './etiquetas.js';
+import { slug } from './markdown.js';
 
 export const NICK_RE = /^[\p{L}\p{N} _.\-]{3,24}$/u;
 
@@ -77,5 +78,36 @@ export function validarAdventurer(d) {
   if (!ARMAS[datos.arma]) errores.arma = 'Elige el arma.';
   const suma = [datos.poder_equipo, datos.poder_rostros, datos.poder_camarada].reduce((t, x) => t + (Number(x) || 0), 0);
   if (datos.poder_total !== '' && suma > datos.poder_total) errores.poder_total = 'El desglose suma más que el poder total. Revisa los números.';
+  return { datos, errores };
+}
+
+/** Límites de Contenido.gs (noticias y guías). */
+export const LIMITES_CONTENIDO = { titulo: 120, resumen: 280, cuerpo_md: 40000 };
+
+/**
+ * Noticia o guía del editor (espejo de Contenido.gs). Pura, para poder probarla.
+ * @param {'noticia'|'guia'} tipo
+ */
+export function validarContenido(tipo, d) {
+  const errores = {};
+  const texto = (k) => String(d[k] ?? '').replace(/\r\n?/g, '\n').trim();
+  const datos = { titulo: texto('titulo'), resumen: texto('resumen'), cuerpo_md: texto('cuerpo_md') };
+  if (!datos.titulo) errores.titulo = tipo === 'guia' ? 'La guía necesita un título.' : 'La noticia necesita un título.';
+  for (const [k, max] of Object.entries(LIMITES_CONTENIDO)) {
+    if (datos[k].length > max) errores[k] = `Máximo ${max.toLocaleString('es-CL')} caracteres (tiene ${datos[k].length.toLocaleString('es-CL')}).`;
+  }
+  if (tipo === 'guia') {
+    datos.categoria = CATEGORIAS_GUIA[d.categoria] ? d.categoria : 'otros';
+    datos.nivel = NIVELES_GUIA[d.nivel] ? d.nivel : 'basico';
+    const s = texto('slug');
+    datos.slug = s ? slug(s) : '';
+    if (s && !datos.slug) errores.slug = 'Usa letras o números.';
+    const o = String(d.orden ?? '').trim();
+    if (!o) datos.orden = 0;
+    else if (!/^-?\d+$/.test(o) || Math.abs(Number(o)) > 9999) errores.orden = 'Un número entero (1 = primera de su categoría).';
+    else datos.orden = Number(o);
+  } else {
+    datos.tipo = TIPOS_NOTICIA[d.tipo] ? d.tipo : 'gremio';
+  }
   return { datos, errores };
 }

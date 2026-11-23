@@ -1,5 +1,6 @@
 /** Una guía: índice de secciones y cuerpo en Markdown seguro. Ver SPEC.md §2 (#/guias/:slug). */
 import { leer } from '../api.js';
+import { tieneRol } from '../auth.js';
 import { html, pintar, crudo } from '../ui/dom.js';
 import { avisoDemo, cargando, fallo } from '../ui/comun.js';
 import { ICONOS } from '../ui/iconos.js';
@@ -50,6 +51,7 @@ export default async function vistaGuia(el, { params, recargar }) {
       <footer class="articulo__pie">
         <button type="button" class="boton boton--chico" data-compartir>${crudo(ICONOS.compartir)}Compartir</button>
         <a class="boton boton--chico boton--tenue" href="#/guias">Todas las guías</a>
+        ${tieneRol('oficial') && g.id ? html`<a class="boton boton--chico boton--tenue" href="#/editor/guia/${encodeURIComponent(g.id)}">Editar</a>` : ''}
       </footer>
     </article>`);
 

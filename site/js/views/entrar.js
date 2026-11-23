@@ -7,10 +7,10 @@ import { avisoDemo } from '../ui/comun.js';
 import { campo, campoPin, activarCampos, mostrarErrores, limpiarErrores, errorGeneral, ocupado, datosDe } from '../ui/form.js';
 import { toast } from '../ui/toast.js';
 
-/** Solo rutas internas sencillas ("eventos", "yo", "clash/armar"): nada de URLs externas. */
+/** Solo rutas internas sencillas ("eventos", "clash/armar", "editor?tipo=guia"): nada de URLs externas. */
 export function destino(volver) {
   const v = String(volver || '').replace(/^\/+/, '');
-  return /^[a-z][a-z0-9/-]{0,40}$/.test(v) ? `/${v}` : '/';
+  return /^[a-z][a-z0-9/-]{0,60}(\?[a-z]+=[a-z0-9-]{1,40})?$/.test(v) ? `/${v}` : '/';
 }
 
 export default function vistaEntrar(el, { query }) {

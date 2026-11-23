@@ -7,6 +7,7 @@ import { semanaClashId } from './time.js';
 import { ErrorApi } from './api.js';
 import { errorNick, errorPin, NICK_RE } from './validar.js';
 import { NOTICIAS, GUIAS, CATEGORIAS_ORDEN } from './demo-contenido.js';
+import { slug as slugDe } from './markdown.js';
 
 const GREMIO = {
   gremio_nombre: 'Ragnarok',
@@ -191,6 +192,53 @@ function numeroDemo(v, min, max, campo, opcional) {
   return Math.round(n);
 }
 
+// ---------- Noticias y guías (editor de oficiales) ----------
+// Las de ejemplo vienen sin "publicado": cuentan como publicadas.
+const publicada = (x) => x.publicado !== false;
+const TIPOS_N = ['juego', 'gremio', 'evento'];
+const CATS_G = CATEGORIAS_ORDEN;
+const NIVELES_G = ['basico', 'intermedio', 'avanzado'];
+const recortar = (v, max) => String(v ?? '').trim().slice(0, max);
+
+function guardarContenido(lista, d, guia) {
+  const ahora = new Date().toISOString();
+  let x = d.id ? lista.find((r) => r.id === d.id) : null;
+  if (d.id && !x) falla('NO_EXISTE', guia ? 'Guía no encontrada.' : 'Noticia no encontrada.');
+  const titulo = recortar(d.titulo, 120);
+  if (!titulo) falla('DATO_INVALIDO', guia ? 'La guía necesita un título.' : 'La noticia necesita un título.');
+  if (!x) {
+    x = { id: `demo-${guia ? 'g' : 'n'}-${++idDemo}`, autor: YO.nick, portada_id: '', publicado: false, fecha_pub: '', creado: ahora };
+    lista.unshift(x);
+  }
+  Object.assign(x, { titulo, resumen: recortar(d.resumen, 280), cuerpo_md: recortar(d.cuerpo_md, 40000) });
+  if (d.portada_id !== undefined) x.portada_id = String(d.portada_id || '');
+  if (guia) {
+    const base = slugDe(d.slug || x.slug || titulo) || x.id;
+    x.slug = lista.some((r) => r.slug === base && r.id !== x.id) ? `${base}-${x.id.split('-').pop()}` : base;
+    if (!CATS_G.includes(d.categoria || 'otros')) falla('DATO_INVALIDO', 'Categoría no válida.');
+    if (!NIVELES_G.includes(d.nivel || 'basico')) falla('DATO_INVALIDO', 'Nivel no válido.');
+    x.categoria = d.categoria || 'otros';
+    x.nivel = d.nivel || 'basico';
+    x.orden = numeroDemo(d.orden || 0, -9999, 9999, 'orden', false);
+  } else {
+    if (!TIPOS_N.includes(d.tipo || 'gremio')) falla('DATO_INVALIDO', 'Tipo no válido.');
+    x.tipo = d.tipo || 'gremio';
+    x.fijada = !!d.fijada;
+  }
+  const publicar = !!d.publicado;
+  if (publicar && !publicada(x)) x.fecha_pub = ahora;
+  x.publicado = publicar;
+  x.actualizado = ahora;
+  return { ...x, publicado: publicada(x) };
+}
+
+function eliminarContenido(lista, id, guia) {
+  const i = lista.findIndex((r) => r.id === id);
+  if (i < 0) falla('NO_EXISTE', guia ? 'Guía no encontrada.' : 'Noticia no encontrada.');
+  lista.splice(i, 1);
+  return { eliminado: true };
+}
+
 export async function leerDemo(accion, params = {}) {
   await espera(120);
   switch (accion) {
@@ -198,7 +246,7 @@ export async function leerDemo(accion, params = {}) {
       return {
         gremio: { ...GREMIO },
         miembros: MIEMBROS.length,
-        noticias: [...NOTICIAS].sort((a, b) => (b.fijada - a.fijada) || (a.fecha_pub < b.fecha_pub ? 1 : -1)).slice(0, 3).map(({ cuerpo_md, ...n }) => n),
+        noticias: NOTICIAS.filter(publicada).sort((a, b) => (b.fijada - a.fijada) || (a.fecha_pub < b.fecha_pub ? 1 : -1)).slice(0, 3).map(({ cuerpo_md, ...n }) => n),
         clash: { semana_id: semanaId, estado, confirmados: [...asistencia.values()].filter((r) => r === 'voy').length },
       };
     case 'clash':
@@ -206,7 +254,7 @@ export async function leerDemo(accion, params = {}) {
     case 'clash_historial':
       return [{ id: '2026-11-21', estado: 'cerrada', puesto: 29, puntos: 18240, notas: '' }];
     case 'noticias': {
-      const lista = NOTICIAS.filter((n) => !params.tipo || n.tipo === params.tipo)
+      const lista = NOTICIAS.filter((n) => publicada(n) && (!params.tipo || n.tipo === params.tipo))
         .sort((a, b) => (b.fijada - a.fijada) || (a.fecha_pub < b.fecha_pub ? 1 : -1));
       const porPagina = 5; // menos que el backend (12) para ver "Cargar más" en el ejemplo
       const pagina = Math.max(1, Number(params.pagina) || 1);
@@ -216,17 +264,17 @@ export async function leerDemo(accion, params = {}) {
       };
     }
     case 'noticia': {
-      const n = NOTICIAS.find((x) => x.id === params.id);
+      const n = NOTICIAS.find((x) => x.id === params.id && publicada(x));
       if (!n) falla('NO_EXISTE', 'Noticia no encontrada.');
       return { ...n };
     }
     case 'guias':
       return CATEGORIAS_ORDEN.map((categoria) => ({
         categoria,
-        guias: GUIAS.filter((g) => g.categoria === categoria).sort((a, b) => a.orden - b.orden).map(({ cuerpo_md, ...g }) => ({ ...g })),
+        guias: GUIAS.filter((g) => publicada(g) && g.categoria === categoria).sort((a, b) => a.orden - b.orden).map(({ cuerpo_md, ...g }) => ({ ...g })),
       })).filter((x) => x.guias.length);
     case 'guia': {
-      const g = GUIAS.find((x) => x.slug === params.slug);
+      const g = GUIAS.find((x) => x.slug === params.slug && publicada(x));
       if (!g) falla('NO_EXISTE', 'Guía no encontrada.');
       return { ...g };
     }
@@ -324,6 +372,27 @@ export async function escribirDemo(accion, datos = {}) {
       YO.adventurer_principal_id = datos.id;
       sincronizar();
       return { principal: datos.id };
+    case 'editor.contenido': {
+      const guia = datos.tipo === 'guia';
+      const lista = guia ? GUIAS : NOTICIAS;
+      if (datos.id) {
+        const x = lista.find((r) => r.id === datos.id);
+        if (!x) falla('NO_EXISTE', 'No encontrado.');
+        return { ...x, publicado: publicada(x), actualizado: x.actualizado || x.fecha_pub || '' };
+      }
+      return lista.map((r) => ({
+        id: r.id, titulo: r.titulo, slug: r.slug, tipo: r.tipo, categoria: r.categoria, nivel: r.nivel, orden: r.orden,
+        publicado: publicada(r), fijada: !!r.fijada, fecha_pub: r.fecha_pub || '', actualizado: r.actualizado || r.fecha_pub || '',
+      }));
+    }
+    case 'noticia.guardar':
+      return guardarContenido(NOTICIAS, datos, false);
+    case 'noticia.eliminar':
+      return eliminarContenido(NOTICIAS, datos.id, false);
+    case 'guia.guardar':
+      return guardarContenido(GUIAS, datos, true);
+    case 'guia.eliminar':
+      return eliminarContenido(GUIAS, datos.id, true);
     case 'imagen.subir':
       // Sin Drive: la imagen comprimida se guarda en memoria como data: URL.
       return { id: `data:${datos.mime};base64,${datos.base64}` };
