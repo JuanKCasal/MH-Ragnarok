@@ -43,6 +43,7 @@ function guardarAdventurer_(token, d) {
   a.actualizado = ahora;
 
   if (a._fila) actualizar_('Adventurers', a); else insertar_('Adventurers', a);
+  if (a.poder_build_id) recalcularAdventurer_(a.id); // v10: el poder sigue saliendo de su build
 
   // Si es el primero del miembro, queda como principal.
   var dueno = buscar_('Miembros', function (x) { return x.id === a.miembro_id; });

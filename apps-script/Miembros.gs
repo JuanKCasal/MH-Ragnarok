@@ -1,9 +1,9 @@
 /** Miembros: directorio, perfiles y administración. */
 
 var CAMPOS_MIEMBRO_PUBLICO = ['id', 'nick', 'nick_juego', 'uid_juego', 'pais', 'rol', 'bio', 'avatar_id',
-  'adventurer_principal_id', 'creado'];
+  'adventurer_principal_id', 'creado', 'maestria'];
 var CAMPOS_ADV_PUBLICO = ['id', 'miembro_id', 'adventurer', 'arma', 'elemento', 'tipo', 'nivel', 'poder_total',
-  'poder_equipo', 'poder_rostros', 'poder_camarada', 'loadout', 'notas', 'capturas', 'actualizado'];
+  'poder_equipo', 'poder_rostros', 'poder_camarada', 'loadout', 'notas', 'capturas', 'actualizado', 'poder_build_id'];
 
 function miembroPublico_(m) {
   return elegir_(m, CAMPOS_MIEMBRO_PUBLICO);
@@ -91,6 +91,8 @@ function guardarPerfil_(token, d) {
   if (d.uid_juego !== undefined) m.uid_juego = limpiarTexto_(d.uid_juego, 32);
   if (d.pais !== undefined) m.pais = limpiarTexto_(d.pais, 2).toUpperCase();
   if (d.bio !== undefined) m.bio = limpiarTexto_(d.bio, 280);
+  var maestriaAntes = m.maestria;
+  if (d.maestria !== undefined) m.maestria = numeroValido_(d.maestria, 0, 999999, 'poder de Proof of Mastery', true);
   if (d.avatar_id !== undefined && d.avatar_id !== m.avatar_id) {
     var nuevo = limpiarTexto_(d.avatar_id, 80);
     if (nuevo) validarImagenPropia_(nuevo, m.id, 'avatar');
@@ -99,6 +101,7 @@ function guardarPerfil_(token, d) {
   }
   m.actualizado = ahoraIso_();
   actualizar_('Miembros', m);
+  if (m.maestria !== maestriaAntes) recalcularPoderMiembro_(m);
   invalidarCache_();
   return miembroPrivado_(m, false);
 }

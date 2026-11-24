@@ -129,7 +129,15 @@ En la web solo es obligatorio el **total**. Si cargas las partes, tu perfil mues
 
 ## Por qué “principal”
 
-Puedes cargar varios adventurers, pero solo uno es el **principal**. Su poder es el que cuenta para armar las brigadas del Guild Clash, así que mantenlo al día después de mejorar tu equipo.`,
+Puedes cargar varios adventurers, pero solo uno es el **principal**. Su poder es el que cuenta para armar las brigadas del Guild Clash, así que mantenlo al día después de mejorar tu equipo.
+
+## Que se actualice solo
+
+Si armas una build de ese adventurer con las 5 partes del poder escritas, su poder pasa solo al adventurer. Por ejemplo, esta:
+
+[[build:demo-build-1]]
+
+Tócala para verla completa o usa **Usar de base** para armar la tuya a partir de ella.`,
   }),
   G({
     id: 'g3', slug: 'guild-clash', categoria: 'eventos', nivel: 'basico', orden: 1,

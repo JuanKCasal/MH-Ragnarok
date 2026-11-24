@@ -115,6 +115,7 @@ Un archivo de Sheets, una hoja por entidad. Fila 1 = encabezados (exactamente lo
 | adventurer_principal_id | texto | FK a `Adventurers.id`; define su poder para el Clash |
 | creado · actualizado | fecha | |
 | nick_cambios | texto | Privada. Fechas ISO de sus cambios de nick de los últimos 7 días (límite `nick_cambios_semana`) |
+| maestria | número | v10. Poder de Proof of Mastery (es de la cuenta; lo suman todas sus builds). Pública |
 
 ### 5.2 `Credenciales` (privada: nunca sale del backend)
 | miembro_id | pin_hash | sal | intentos_fallidos | bloqueado_hasta | pin_temporal (bool) | actualizado |
@@ -133,6 +134,7 @@ Un archivo de Sheets, una hoja por entidad. Fila 1 = encabezados (exactamente lo
 | nivel | número | 1–80 |
 | poder_total | número | Adventurer Power |
 | poder_equipo · poder_rostros · poder_camarada | número | Opcionales; "otros" = total − suma |
+| poder_build_id | texto | v10. Build (5 de 5) de la que sale el poder: la más fuerte asociada a este adventurer. Vacío = poder escrito a mano. Mientras tenga valor, el formulario no pisa el poder |
 | loadout | texto | Nombre del loadout (ej. "Fire Heavy") |
 | notas | texto | Máx. 500 |
 | capturas | texto | IDs de Drive separados por coma (máx. 5) |
@@ -152,7 +154,7 @@ Los enums se guardan en inglés (clave estable) y la web muestra la etiqueta en 
 ### 5.8 `ClashAsistencia`
 | semana_id | miembro_id | respuesta (`voy`/`no`/`quiza`) | poder_snapshot | adventurer_id | actualizado |
 
-`poder_snapshot` se toma del adventurer principal al confirmar y se refresca al armar los equipos.
+`poder_snapshot` se toma del adventurer principal al confirmar y se refresca al armar los equipos. **Desde la v10**, mientras la semana no esté cerrada, `GET clash` devuelve el poder **actual** del principal (si alguien mejora después de confirmar, el armado lo ve); al cerrar la semana, `poder_snapshot` se congela con el valor de ese momento y es lo que se muestra de ahí en adelante.
 
 ### 5.9 `ClashEquipos`
 | semana_id | equipo (1..n) | miembro_id | poder_snapshot | fijado (bool) |

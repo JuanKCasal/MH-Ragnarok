@@ -1,4 +1,34 @@
-# HANDOFF — MH-Ragnarok (sesión 18: entrega 1 publicada — backend v9 + Pages · siguiente: E3 tarjeta de build, decisiones tomadas)
+# HANDOFF — MH-Ragnarok (sesión 19: E3 hecha + backend v10 · SIN commit ni publicar · siguiente: publicar y probar, luego "Clash por monstruo")
+
+Fecha: 2026-11-23
+Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
+
+## Sesión 19 — E3 (tarjeta de build), Proof of Mastery en el perfil y poder vivo en el Clash
+
+### Hecho en la sesión 19 (detalle en docs/BUILDER.md §17)
+- Maqueta aprobada por Juan tal cual. Programado: tarjeta de build (`site/js/ui/tarjeta-build.js`) en el perfil del miembro (debajo de cada adventurer + "Otras builds") y en guías/noticias con `[[build:ID]]` (también en la vista previa del editor); Compartir y Usar de base; código `[[build:ID]]` para copiar (oficiales) en la hoja de la build.
+- Proof of Mastery en "Mis datos" (`Miembros.maestria`); en la build, de solo lectura si el perfil lo tiene; migración automática desde la build.
+- El poder de la build más fuerte (5 de 5) pasa al adventurer (`Adventurers.poder_build_id`); el formulario del adventurer lo muestra de solo lectura.
+- **Bug que reportó Juan** (MyMarLa 17.343 en el perfil pero 16.851 en Armar brigadas): el Clash usaba la foto del poder de cuando el miembro confirmó "Voy". Arreglado en `Clash.gs`: hasta cerrar la semana usa el poder actual; al cerrar se congela (`congelarPoderes_`). Mientras no se publique la v10, solución a mano: volver a tocar "Voy" y "Repartir de nuevo".
+- Pruebas: **148** verdes (en la nube y en la PC de Juan). Revisado a 320 y 390 px en modo demostración: sin scroll horizontal ni errores.
+- Paquete del backend: `Claude outputs/MH-Ragnarok.gs` (SHA-256 `49935c0004ad1048…`). El parche aplicado está en `Claude outputs/e3-v10.patch` (ya aplicado; se puede borrar).
+
+### Punto de partida exacto para la sesión 20
+1. **Commit + push** (Juan por consola):
+   ```
+   git add -A
+   git commit -m "E3: tarjeta de build, Proof of Mastery en el perfil, poder de la build al adventurer y poder vivo en el Clash (backend v10)"
+   git push
+   ```
+   Si Pages falla con "No artifacts named github-pages" (fallo conocido), lanzar **Run workflow** a mano en `main`.
+2. **Backend v10**: pegar `Claude outputs/MH-Ragnarok.gs` en el editor de Apps Script (reemplaza todo), guardar, **ejecutar `instalar()` una vez** (escribe los encabezados `maestria` y `poder_build_id`; es seguro repetirlo) e **Implementar → Nueva versión** "v10 (E3 + poder vivo en el Clash)" en la misma URL. Mejor publicar el backend **antes o junto** con Pages: con la web nueva y el backend v9, el Proof of Mastery del perfil no se guarda (no rompe nada).
+3. **Prueba en el celular (Juan)**: (a) Mi perfil → Proof of Mastery = 220 → guardar; (b) abrir y **guardar de nuevo** la build "Fire Heavy" (así el backend calcula y liga el poder: el adventurer debe decir "De su build Fire Heavy" con 17.343); (c) Armar brigadas → MyMarLa con 17.343 sin volver a confirmar; (d) perfil público de MyMarLa con la tarjeta debajo del adventurer; (e) una guía con `[[build:ID]]` (el código se copia desde la build).
+4. Después: entrega **"Clash por monstruo"** (ver abajo los datos del Clash del 28-11 y las 4 consecuencias de diseño) — proponer a Juan antes de programar.
+5. Siguen abiertos: activador diario de `limpiarSesiones`; lo de "Por confirmar con el juego" de la sesión 16; iconos `<9` y `≤3` de las condiciones del Clash.
+
+---
+
+# (Sesión 18/19, primera parte) HANDOFF — MH-Ragnarok (sesión 18: entrega 1 publicada — backend v9 + Pages · siguiente: E3 tarjeta de build, decisiones tomadas)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
@@ -10,6 +40,20 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 - **Pages**: las ejecuciones #27 (`a53e738`) y #28 (`8ee94d7`) fallaron con "No artifacts named github-pages" (el fallo conocido). Se lanzó **Run workflow** a mano (#29) en `main`: **verde**, la web publicada ya sirve `build-calc.js` con `PODER_MANUAL`/`calcularPoder`.
 
 ### Punto de partida exacto para la sesión 19
+
+> **Sesión 19 (2026-11-23), respuestas de Juan:** prueba en el celular OK (Poder 17.343 y campo alineado) → puntos 0 y 2 **HECHOS**. Orden: **E3 primero** (tarjeta + Proof of Mastery en el perfil, backend v10) y después, como entrega aparte, **Clash por monstruo**. Monstruos del Clash: el oficial los **elige de la lista del catálogo** (`site/data/catalogo/monstruos.json`, con buscador). Miembro sin build asignada a un monstruo: el balanceo usa **su poder a mano** (`poder_total` del adventurer, como hoy).
+
+> **Maqueta E3 hecha (sesión 19)**: `Claude outputs/maqueta-e3-tarjeta-build.html` (390 px, CSS real de la web + clases nuevas `.btar*`, `.chip-b*`, `.pips`). Propuesta: (1) en el perfil, las builds cuelgan **debajo** de la tarjeta de su adventurer con un riel dorado a la izquierda ("Builds de este adventurer"); el adventurer muestra "De su build X" cuando su poder viene de una build 5 de 5; (2) tarjeta: nombre + arma/elemento a la izquierda, poder a la derecha (o "3 de 5 · poder escrito" con borde punteado y aviso de que no cambia el poder del adventurer), franja del arma (nombre según rareza, R, elemento), 4 habilidades top con barra de niveles (ES + EN en pequeño), chips (núcleo de Rostros ◆, set de Rostros activo, camarada con rareza); toda la tarjeta abre la build; pie con Compartir / Usar de base; (3) en guías la tarjeta lleva "Build de <autor>" y botones grandes; (4) Proof of Mastery: campo numérico en "Mis datos" y en la build queda de solo lectura "220 · de tu perfil · cambiar". **Juan la aprobó tal cual** ("Me gusta así"): 4 habilidades, ES + EN, sin rango junto al Proof of Mastery.
+
+> **Guild Clash de esta semana (capturas de Juan, 23-11-2026; abre el sábado 28-11, "Opens in 5d 0h")** — insumo para la entrega "Clash por monstruo". Las 4 rondas tienen lo mismo en dificultad y condiciones: **Plata** poder recomendado **13.363** (puntos de compleción x2), **Oro** **14.813** (x3); condiciones: 10 min, `<9` (icono de cama: ¿desmayos?), sin captura, `≤3` (icono de poción: ¿objetos de curación?) — los dos iconos están por confirmar.
+> | Ronda | Monstruo (★15) | Debilidad (icono) | Ecología | Bono de arma |
+> |---|---|---|---|---|
+> | 1 | Odogaron | hielo (icono turquesa) | Lluvia: el monstruo recibe +20 % de daño de hielo y −20 % de los demás elementos | Si hay un usuario de **arco** en la brigada, +40 % de daño a todos |
+> | 2 | Paolumu | fuego | Sol abrasador: +40 % de daño de fuego de los adventurers; el monstruo se enfurece más fácil | — |
+> | 3 | Odogaron radiante | "WEAK" + hielo + un tercer icono por identificar | Sol abrasador: el monstruo recibe +20 % de fuego y −20 % de los demás | **Espadas dobles o arco**: +30 % a todos |
+> | 4 | Paolumu radiante | "WEAK" + fuego + un tercer icono por identificar | Sol abrasador: +20 % al daño de los ataques radiantes del monstruo | **Gran espada o lanza**: +30 % a todos |
+>
+> Consecuencias para el diseño del Clash por monstruo: (a) la ronda trae **poder recomendado Plata/Oro**: la web puede mostrar a cada brigada si su promedio llega a Plata u Oro; (b) el **elemento que conviene sale de la ecología, no solo de la debilidad** (ronda 3: débil al hielo pero la ecología premia el fuego) → que el oficial escriba debilidad y ecología por ronda; (c) los **bonos de arma dependen de quién va en la brigada** (arco en R1 y R3, espadas dobles en R3, gran espada/lanza en R4) → el balanceo podría intentar repartir esas armas; (d) el catálogo (`monstruos.json`, 21 monstruos) tiene Odogaron y Paolumu pero **no las variantes radiantes** ni debilidades → casilla "radiante" al elegir el monstruo. Proponer todo esto a Juan cuando toque esa entrega (después de la E3).
 0. **Arreglo de CSS sin commit** (`site/assets/css/views.css`): el campo de poder en Armadura y Rostros no tenía margen izquierdo (captura de Juan); ahora `.bld-cajon__cuerpo > .bld-poder-campo` lleva `padding: 12px 16px 0` como las piezas y los chips. Commit + push y mirar en el celular que quede alineado (el de Proof of Mastery, dentro de `.bld-datos`, ya estaba bien).
 1. ~~Pages #29~~ **HECHO** (verde, verificado).
 2. **Prueba en el celular (Juan)**: "Fire Heavy" → 7228 en Armadura, 2099 en Rostros y 220 en Adventurer y arma → la barra debe decir **Poder 17.343**.

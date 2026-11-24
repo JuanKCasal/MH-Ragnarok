@@ -6,6 +6,7 @@ import { avisoDemo, cargando, fallo } from '../ui/comun.js';
 import { ICONOS } from '../ui/iconos.js';
 import { CATEGORIAS_GUIA } from '../etiquetas.js';
 import { renderMarkdown } from '../markdown.js';
+import { incrustarBuilds } from '../ui/tarjeta-build.js';
 import { fechaLarga, tiempo, activarAnclas, compartir, portada } from '../ui/contenido.js';
 import { insigniaNivel } from './guias.js';
 
@@ -56,6 +57,7 @@ export default async function vistaGuia(el, { params, recargar }) {
     </article>`);
 
   activarAnclas(el);
+  incrustarBuilds(el);
   el.querySelector('[data-compartir]').addEventListener('click', () => compartir(g.titulo));
   return { titulo: g.titulo };
 }

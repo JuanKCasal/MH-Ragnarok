@@ -161,6 +161,7 @@ function guardarBuild_(token, d) {
     b = buscar_('Builds', function (x) { return x.id === d.id; });
     if (!b) fallar_('NO_EXISTE', 'Build no encontrada.');
     if (b.miembro_id !== yo.id && !esOficial) fallar_('SIN_PERMISO', 'Solo puedes editar tus builds.');
+    b.adventurer_id_guardado = b.adventurer_id;
   } else {
     b = { id: nuevoId_(), miembro_id: yo.id, creado: ahora };
   }
@@ -194,8 +195,13 @@ function guardarBuild_(token, d) {
   b.poder_estimado = numeroValido_(d.poder_estimado, 0, 999999, 'poder estimado', true);
   b.notas = limpiarTexto_(d.notas, 500);
   b.actualizado = ahora;
+  var advAntes = b._fila ? b.adventurer_id_guardado : '';
 
   if (b._fila) actualizar_('Builds', b); else insertar_('Builds', b);
+  // v10: Proof of Mastery al perfil y poder de la build al adventurer (el de antes y el de ahora).
+  migrarMaestria_(b.miembro_id, datos);
+  if (advAntes && advAntes !== b.adventurer_id) recalcularAdventurer_(advAntes);
+  if (b.adventurer_id) recalcularAdventurer_(b.adventurer_id);
   log_(yo.id, d.id ? 'build_editada' : 'build_creada', 'Builds', b.id);
   invalidarCache_();
   return buildPublica_(b);
@@ -207,6 +213,7 @@ function eliminarBuild_(token, d) {
   if (!b) fallar_('NO_EXISTE', 'Build no encontrada.');
   if (b.miembro_id !== yo.id && NIVEL_ROL[yo.rol] < NIVEL_ROL.oficial) fallar_('SIN_PERMISO', 'Solo puedes borrar tus builds.');
   borrarFilas_('Builds', [b]);
+  if (b.adventurer_id) recalcularAdventurer_(b.adventurer_id);
   log_(yo.id, 'build_eliminada', 'Builds', b.id);
   invalidarCache_();
   return { eliminado: true };
@@ -241,7 +248,7 @@ function listarBuilds_(p) {
   }
   return lista.map(function (b) {
     var o = buildPublica_(b);
-    o.autor = activos[b.miembro_id] ? { id: b.miembro_id, nick: activos[b.miembro_id].nick } : null;
+    o.autor = autorBuild_(activos[b.miembro_id]);
     return o;
   }).sort(function (a, b) { return String(b.actualizado).localeCompare(String(a.actualizado)); });
 }
@@ -252,6 +259,85 @@ function verBuild_(id) {
   var activos = activosPorId_();
   if (!b || (b.clase === 'perfil' && !activos[b.miembro_id])) fallar_('NO_EXISTE', 'Build no encontrada.');
   var o = buildPublica_(b);
-  o.autor = activos[b.miembro_id] ? { id: b.miembro_id, nick: activos[b.miembro_id].nick } : null;
+  o.autor = autorBuild_(activos[b.miembro_id]);
   return o;
+}
+
+/* ---------- Poder de la build → adventurer (v10, E3) ---------- */
+
+/**
+ * Poder total escrito de una build (misma cuenta que calcularPoder de site/js/build-calc.js):
+ * equipo + Rostros + Proof of Mastery + camarada + Recuerdo. El Proof of Mastery es de la cuenta:
+ * manda el del perfil; si el perfil no lo tiene, el que traiga la build (builds anteriores a la v10).
+ * @return {{total:number, completo:boolean, equipo:*, rostros:*, camarada:*}}
+ */
+function poderBuild_(datos, maestriaPerfil) {
+  var d = datos || {};
+  var p = d.poder || {};
+  var num = function (v) { return v === '' || v === null || v === undefined || isNaN(Number(v)) ? null : Number(v); };
+  var maestria = num(maestriaPerfil);
+  if (maestria === null) maestria = num(p.maestria);
+  var partes = {
+    equipo: num(p.equipo), rostros: num(p.rostros), maestria: maestria,
+    camarada: d.camarada && d.camarada.id ? num(d.camarada.poder) : null,
+    keepsake: d.keepsake ? num(d.keepsake.poder) : null
+  };
+  var total = 0;
+  var escritos = 0;
+  Object.keys(partes).forEach(function (k) { if (partes[k] !== null) { total += partes[k]; escritos++; } });
+  return { total: total, completo: escritos === 5, equipo: partes.equipo, rostros: partes.rostros, camarada: partes.camarada };
+}
+
+function datosBuild_(b) {
+  try { return JSON.parse(b.datos || '{}'); } catch (e) { return {}; }
+}
+
+/**
+ * El poder del adventurer sale de su build más fuerte con el poder completo (5 de 5).
+ * Sin ninguna completa, el adventurer conserva lo último que tenía y vuelve a ser "a mano".
+ */
+function recalcularAdventurer_(advId) {
+  if (!advId || !libro_get_().getSheetByName('Builds')) return;
+  var a = buscar_('Adventurers', function (x) { return x.id === advId; });
+  if (!a) return;
+  var dueno = buscar_('Miembros', function (x) { return x.id === a.miembro_id; });
+  var maestria = dueno ? dueno.maestria : '';
+  var mejor = null;
+  filtrar_('Builds', function (x) { return x.adventurer_id === advId && x.clase === 'perfil'; }).forEach(function (b) {
+    var pw = poderBuild_(datosBuild_(b), maestria);
+    if (pw.completo && (!mejor || pw.total > mejor.pw.total)) mejor = { b: b, pw: pw };
+  });
+  var antes = [a.poder_total, a.poder_equipo, a.poder_rostros, a.poder_camarada, a.poder_build_id].join('|');
+  if (mejor) {
+    a.poder_total = mejor.pw.total;
+    a.poder_equipo = mejor.pw.equipo;
+    a.poder_rostros = mejor.pw.rostros;
+    a.poder_camarada = mejor.pw.camarada;
+    a.poder_build_id = mejor.b.id;
+  } else {
+    a.poder_build_id = '';
+  }
+  if ([a.poder_total, a.poder_equipo, a.poder_rostros, a.poder_camarada, a.poder_build_id].join('|') !== antes) {
+    a.actualizado = ahoraIso_();
+    actualizar_('Adventurers', a);
+  }
+}
+
+/** Tras cambiar el Proof of Mastery del perfil: rehace el poder de todos sus adventurers. */
+function recalcularPoderMiembro_(m) {
+  filtrar_('Adventurers', function (x) { return x.miembro_id === m.id; })
+    .forEach(function (a) { recalcularAdventurer_(a.id); });
+}
+
+/** Migración v10: el primer Proof of Mastery escrito en una build pasa al perfil si el perfil no lo tiene. */
+function migrarMaestria_(miembroId, datos) {
+  var m = buscar_('Miembros', function (x) { return x.id === miembroId; });
+  if (!m || m.maestria !== '' || !datos.poder || datos.poder.maestria === undefined) return;
+  m.maestria = datos.poder.maestria;
+  m.actualizado = ahoraIso_();
+  actualizar_('Miembros', sinToken_(m));
+}
+
+function autorBuild_(m) {
+  return m ? { id: m.id, nick: m.nick, maestria: m.maestria } : null;
 }

@@ -19,6 +19,7 @@ import { aplicarFormato, ACCIONES } from '../editor-formato.js';
 import { fechaRelativa, fechaLarga, tiempo, activarAnclas, portada } from '../ui/contenido.js';
 import { leerBorrador, guardarBorrador, borrarBorrador } from '../borradores.js';
 import { insigniaNivel } from './guias.js';
+import { incrustarBuilds } from '../ui/tarjeta-build.js';
 import { soloOficiales } from './editor.js';
 
 const ANCHO_DOBLE = '(min-width: 1000px)';
@@ -363,6 +364,7 @@ export default async function vistaEditar(el, { params, recargar }) {
           ? html`<div class="prosa">${crudo(cuerpoHtml)}</div>`
           : html`<p class="nota">El texto aparece aquí a medida que escribes.</p>`}
       </article>`);
+    incrustarBuilds(previa, { acciones: false });
   }
   function programarPrevia() {
     if (!previaVisible()) return;

@@ -2,6 +2,7 @@
  * Datos de ejemplo para ver la web sin backend (config.js sin API_URL).
  * Nombres y poderes inventados. Imita las respuestas de la API (SPEC.md §6).
  */
+import { calcularPoder } from './build-calc.js';
 import { balancearEquipos } from './clash-balance.js';
 import { semanaClashId } from './time.js';
 import { ErrorApi } from './api.js';
@@ -132,12 +133,15 @@ const espera = (ms) => new Promise((r) => setTimeout(r, ms));
 const YO = {
   id: 'demo-yo', nick: 'Midori', nick_juego: 'Midori', uid_juego: '', pais: 'CL', rol: 'admin',
   bio: 'Ballesta pesada de fuego. Si el monstruo arde, fui yo.', avatar_id: '', adventurer_principal_id: 'demo-yo-a', creado: hace(25),
+  maestria: 220, // v10: Proof of Mastery en el perfil (Legendary Traveler III)
 };
 let advsYo = [
   { id: 'demo-yo-a', miembro_id: 'demo-yo', adventurer: 'Personaje de ejemplo', arma: 'heavy_bowgun', elemento: 'fire', tipo: 'assault',
-    nivel: 70, poder_total: 16851, poder_equipo: 6736, poder_rostros: 2099, poder_camarada: 1998, loadout: 'Fire Heavy', notas: '', capturas: [], actualizado: hace(2) },
+    nivel: 70, poder_total: 17343, poder_equipo: 7228, poder_rostros: 2099, poder_camarada: 1998, loadout: 'Fire Heavy', notas: '', capturas: [], actualizado: hace(2),
+    poder_build_id: 'demo-build-1' },
   { id: 'demo-yo-b', miembro_id: 'demo-yo', adventurer: 'Segundo personaje', arma: 'long_sword', elemento: 'thunder', tipo: 'disruptor',
-    nivel: 55, poder_total: 12040, poder_equipo: '', poder_rostros: '', poder_camarada: '', loadout: 'Trueno', notas: '', capturas: [], actualizado: hace(6) },
+    nivel: 55, poder_total: 12040, poder_equipo: '', poder_rostros: '', poder_camarada: '', loadout: 'Trueno', notas: '', capturas: [], actualizado: hace(6),
+    poder_build_id: '' },
 ];
 let cambiosNick = 0;
 let idDemo = 0;
@@ -162,6 +166,13 @@ let buildsDemo = [
         ...['1', '30', '40', '50', '60', '70', '80'].flatMap((f) => [`ul${f}`, `el${f}`]), 'cp50', 'cp60', 'cp70', 'cp80', 'ca80'] },
       // Poder a mano (captura de Juan): 7228 + 2099 + 220 + camarada 1998 + Recuerdo 5798 = 17343.
       poder: { equipo: 7228, rostros: 2099, maestria: 220 } } },
+  // Incompleta (3 de 5): para ver la tarjeta con borde punteado. Arma real del catálogo (hielo).
+  { id: 'demo-build-2', miembro_id: 'demo-yo', clase: 'perfil', adventurer_id: 'demo-yo-a', nombre: 'Hielo para el Clash',
+    arma_tipo: 'heavy_bowgun', elemento: 'ice', catalogo_version: '2026-11-23', poder_estimado: '', notas: 'Para Odogaron (ronda 1).',
+    creado: hace(1), actualizado: hace(1),
+    datos: { v: 1, adv: { id: 'fated-adventurer-heavy-bowgun', nivel: 70 }, arma: { id: 'dual-threat-iii', r: 12 },
+      piezas: { head: { id: 'rath-heart-helm-iv', r: 13 }, legs: { id: 'radiant-rathalos-greaves-v', r: 13 } },
+      camarada: { id: 'kojiro', nv: 80, estrellas: 6, poder: 1998 }, poder: { equipo: 6900 } } },
 ];
 // Nombres ES corregidos por oficiales (E6): uno de ejemplo para ver el ✓ en el modo demo.
 let nombresDemo = [
@@ -169,7 +180,23 @@ let nombresDemo = [
 ];
 const PARTES_B = ['head', 'chest', 'arms', 'waist', 'legs'];
 const ID_CAT = /^[a-z0-9][a-z0-9-]{0,79}$/;
-const conAutor = (b) => ({ ...b, datos: structuredClone(b.datos), autor: { id: b.miembro_id, nick: b.miembro_id === 'demo-yo' ? YO.nick : 'Oficial' } });
+const conAutor = (b) => ({ ...b, datos: structuredClone(b.datos),
+  autor: { id: b.miembro_id, nick: b.miembro_id === 'demo-yo' ? YO.nick : 'Oficial', maestria: b.miembro_id === 'demo-yo' ? YO.maestria : '' } });
+
+/** v10 (misma regla que recalcularAdventurer_ de Builds.gs): manda la build más fuerte con el poder 5 de 5. */
+function recalcularDemo(advId) {
+  const a = advsYo.find((x) => x.id === advId);
+  if (!a) return;
+  let mejor = null;
+  for (const b of buildsDemo.filter((x) => x.adventurer_id === advId && x.clase === 'perfil')) {
+    const p = calcularPoder(b.datos, YO.maestria);
+    if (p.completo && (!mejor || p.total > mejor.p.total)) mejor = { b, p };
+  }
+  if (!mejor) { a.poder_build_id = ''; return; }
+  const v = (id) => mejor.p.partes.find((x) => x.id === id).v;
+  Object.assign(a, { poder_total: mejor.p.total, poder_equipo: v('equipo'), poder_rostros: v('rostros'), poder_camarada: v('camarada'), poder_build_id: mejor.b.id });
+}
+const recalcularTodoDemo = () => { advsYo.forEach((a) => recalcularDemo(a.id)); sincronizar(); };
 
 function composicionDemo(d) {
   if (!d || typeof d !== 'object' || Number(d.v) !== 1) falla('DATO_INVALIDO', 'La build está mal formada.');
@@ -466,7 +493,8 @@ export async function escribirDemo(accion, datos = {}) {
       }
       for (const k of ['nick_juego', 'uid_juego', 'bio', 'avatar_id']) if (datos[k] !== undefined) YO[k] = String(datos[k]).trim();
       if (datos.pais !== undefined) YO.pais = String(datos.pais).toUpperCase().slice(0, 2);
-      sincronizar();
+      if (datos.maestria !== undefined) YO.maestria = numeroDemo(datos.maestria, 0, 999999, 'poder de Proof of Mastery', true);
+      recalcularTodoDemo();
       return privado();
     }
     case 'adventurer.guardar': {
@@ -488,6 +516,7 @@ export async function escribirDemo(accion, datos = {}) {
       if (a) Object.assign(a, nuevo);
       else advsYo.push(a = { id: `demo-adv-${++idDemo}`, miembro_id: 'demo-yo', ...nuevo });
       if (!YO.adventurer_principal_id) YO.adventurer_principal_id = a.id;
+      if (a.poder_build_id) recalcularDemo(a.id);
       sincronizar();
       return { ...a };
     }
@@ -513,8 +542,13 @@ export async function escribirDemo(accion, datos = {}) {
       const nuevo = { nombre, clase, adventurer_id: adv?.id || '', datos: composicionDemo(datos.datos),
         arma_tipo: datos.arma_tipo || '', elemento: datos.elemento || 'none', catalogo_version: recortar(datos.catalogo_version, 20),
         poder_estimado: '', notas: recortar(datos.notas, 500), actualizado: ahora };
+      const advAntes = b?.adventurer_id || '';
       if (b) Object.assign(b, nuevo);
       else buildsDemo.push(b = { id: `demo-build-n${++idDemo}`, miembro_id: 'demo-yo', creado: ahora, ...nuevo });
+      if (YO.maestria === '' && b.datos.poder?.maestria !== undefined) YO.maestria = b.datos.poder.maestria;
+      if (advAntes && advAntes !== b.adventurer_id) recalcularDemo(advAntes);
+      if (b.adventurer_id) recalcularDemo(b.adventurer_id);
+      sincronizar();
       return conAutor(b);
     }
     case 'catalogo.nombre': {
@@ -530,7 +564,11 @@ export async function escribirDemo(accion, datos = {}) {
     }
     case 'build.eliminar':
       if (!buildsDemo.some((x) => x.id === datos.id)) falla('NO_EXISTE', 'Build no encontrada.');
-      buildsDemo = buildsDemo.filter((x) => x.id !== datos.id);
+      {
+        const adv = buildsDemo.find((x) => x.id === datos.id).adventurer_id;
+        buildsDemo = buildsDemo.filter((x) => x.id !== datos.id);
+        if (adv) { recalcularDemo(adv); sincronizar(); }
+      }
       return { eliminado: true };
     case 'adventurer.principal':
       if (!advsYo.some((x) => x.id === datos.id)) falla('NO_EXISTE', 'Adventurer no encontrado.');

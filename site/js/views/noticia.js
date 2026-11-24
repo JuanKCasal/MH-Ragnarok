@@ -6,6 +6,7 @@ import { avisoDemo, cargando, fallo } from '../ui/comun.js';
 import { ICONOS } from '../ui/iconos.js';
 import { TIPOS_NOTICIA } from '../etiquetas.js';
 import { renderMarkdown } from '../markdown.js';
+import { incrustarBuilds } from '../ui/tarjeta-build.js';
 import { fechaLarga, tiempo, activarAnclas, compartir, portada } from '../ui/contenido.js';
 
 export default async function vistaNoticia(el, { params, recargar }) {
@@ -48,6 +49,7 @@ export default async function vistaNoticia(el, { params, recargar }) {
     </article>`);
 
   activarAnclas(el);
+  incrustarBuilds(el);
   el.querySelector('[data-compartir]').addEventListener('click', () => compartir(n.titulo));
   return { titulo: n.titulo };
 }

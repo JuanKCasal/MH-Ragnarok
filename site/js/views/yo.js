@@ -41,7 +41,14 @@ export function desglosePoder(a) {
     </div>`;
 }
 
-export function tarjetaAdventurer(a, { principal = false, editable = false, desglose = false } = {}) {
+/** "De su build X" cuando el poder del adventurer sale de una build 5 de 5 (v10). */
+export function fuentePoder(a, builds = []) {
+  if (!a.poder_build_id) return '';
+  const b = builds.find((x) => x.id === a.poder_build_id);
+  return html`<p class="adv__fuente">${b ? html`De su build <strong>${b.nombre}</strong>` : 'De una de sus builds'}</p>`;
+}
+
+export function tarjetaAdventurer(a, { principal = false, editable = false, desglose = false, builds = [] } = {}) {
   const datos = [armaBilingue(a.arma), a.tipo ? tipo(a.tipo) : '', a.nivel ? `Nv. ${a.nivel}` : ''].filter(Boolean).join(' · ');
   return html`
     <article class="adv ${principal ? 'adv--principal' : ''}">
@@ -50,6 +57,7 @@ export function tarjetaAdventurer(a, { principal = false, editable = false, desg
         ${principal ? html`<span class="insignia insignia--oro">Principal</span>` : ''}
       </div>
       <p class="adv__poder"><span class="num">${numero(a.poder_total)}</span> <span class="rotulo">poder</span></p>
+      ${fuentePoder(a, builds)}
       <p class="adv__datos">${elemDot(a.elemento)}${elemento(a.elemento || 'none')}${datos ? ` · ${datos}` : ''}</p>
       ${desglose ? desglosePoder(a) : ''}
       ${a.loadout ? html`<p class="adv__loadout">Loadout “${a.loadout}”</p>` : ''}
@@ -144,7 +152,7 @@ export default async function vistaYo(el, { query, recargar }) {
         ${advs.length ? html`<span class="nota">${advs.length} de ${MAX_ADVENTURERS}</span>` : ''}
       </div>
       ${advs.length
-        ? html`<div class="advs">${advs.map((a) => tarjetaAdventurer(a, { principal: a.id === principalId, editable: true, desglose: a.id === principalId }))}</div>`
+        ? html`<div class="advs">${advs.map((a) => tarjetaAdventurer(a, { principal: a.id === principalId, editable: true, desglose: a.id === principalId, builds }))}</div>`
         : query.nuevo === '1' ? '' : html`<div class="vacio"><p>Todavía no cargas ninguno. Con tu adventurer principal y su poder ya puedes confirmar el Clash del sábado.</p></div>`}
       ${advs.length < MAX_ADVENTURERS
         ? html`<a class="boton boton--ancho ${advs.length ? '' : 'boton--oro latido'}" href="#/yo/adventurer">Agregar adventurer</a>`
@@ -197,6 +205,9 @@ export default async function vistaYo(el, { query, recargar }) {
           attrs: { autocomplete: 'username', autocapitalize: 'none', spellcheck: 'false', required: true, maxlength: 24, readonly: restantes <= 0 } })}
         ${campo({ nombre: 'nick_juego', etiqueta: 'Nombre en el juego', opcional: true, valor: perfil.nick_juego, attrs: { maxlength: 32, autocapitalize: 'none', spellcheck: 'false' } })}
         ${campo({ nombre: 'uid_juego', etiqueta: 'ID de jugador', opcional: true, valor: perfil.uid_juego, ayuda: 'Lo ves en tu perfil del juego. Sirve para que te agreguen como amigo.', attrs: { maxlength: 32, inputmode: 'numeric', autocapitalize: 'none', spellcheck: 'false' } })}
+        ${campo({ nombre: 'maestria', etiqueta: 'Proof of Mastery', opcional: true, valor: perfil.maestria ?? '',
+          ayuda: 'El poder que suma tu rango de Proof of Mastery (p. ej. Legendary Traveler III → 220). Es de tu cuenta: lo escribes una vez y se suma a todas tus builds.',
+          attrs: { maxlength: 6, inputmode: 'numeric', autocomplete: 'off' } })}
         ${campo({ nombre: 'pais', etiqueta: 'País', tipo: 'select', opcional: true, valor: perfil.pais, opciones: [['', 'Sin indicar'], ...PAISES] })}
         ${campo({ nombre: 'bio', etiqueta: 'Sobre ti', tipo: 'textarea', opcional: true, valor: perfil.bio, ayuda: 'Tu arma favorita, tu horario de caza, lo que quieras contarle al clan.', attrs: { maxlength: 280, rows: 3, 'data-contador': true } })}
         <p class="error-form" role="alert" hidden></p>
@@ -262,12 +273,15 @@ export default async function vistaYo(el, { query, recargar }) {
     ev.preventDefault();
     limpiarErrores(formDatos);
     const d = datosDe(formDatos);
-    if (mostrarErrores(formDatos, { nick: errorNick(d.nick) })) return;
+    const maestria = d.maestria.trim();
+    const errMaestria = maestria && !/^\d{1,6}$/.test(maestria) ? 'Escribe solo el número (por ejemplo 220).' : '';
+    if (mostrarErrores(formDatos, { nick: errorNick(d.nick), maestria: errMaestria })) return;
     const boton = formDatos.querySelector('[type=submit]');
     ocupado(boton, true);
     try {
       const m = await escribir('perfil.guardar', {
         nick: d.nick.trim(), nick_juego: d.nick_juego.trim(), uid_juego: d.uid_juego.trim(), pais: d.pais, bio: d.bio.trim(),
+        maestria: maestria === '' ? '' : Number(maestria),
       }, s.token);
       actualizarMiembro(m);
       toast('Datos guardados.');

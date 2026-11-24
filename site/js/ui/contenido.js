@@ -45,8 +45,7 @@ export function activarAnclas(el) {
 }
 
 /** Compartir por el menú del teléfono (WhatsApp, etc.) o copiar el enlace. */
-export async function compartir(titulo) {
-  const url = location.href;
+export async function compartir(titulo, url = location.href) {
   if (navigator.share) {
     try { await navigator.share({ title: titulo, url }); return; } catch (e) { if (e?.name === 'AbortError') return; }
   }

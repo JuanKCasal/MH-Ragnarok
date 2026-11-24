@@ -43,6 +43,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
   let cat;
   let guardada = null;
   let misAdvs = [];
+  let miMaestria = null;
   try {
     const [c, g, perfil] = await Promise.all([
       cargarCatalogo(),
@@ -52,6 +53,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     cat = c;
     guardada = g;
     misAdvs = perfil?.adventurers || [];
+    miMaestria = perfil?.maestria ?? null;
   } catch (e) {
     fallo(el, e, recargar);
     return { titulo: 'Build' };
@@ -59,6 +61,9 @@ export default async function vistaBuild(el, { params, query, recargar }) {
 
   const esMia = !guardada || (s && guardada.miembro_id === s.miembro.id);
   const editable = !guardada || (s && (esMia || tieneRol('oficial')));
+  // v10: el Proof of Mastery es del perfil del dueño de la build (el de la build solo si el perfil no lo tiene).
+  const numOk = (v) => (v === '' || v === null || v === undefined || !Number.isFinite(Number(v)) ? null : Number(v));
+  const maestriaDueno = numOk(guardada ? guardada.autor?.maestria : miMaestria);
   const volverA = guardada && !esMia ? (guardada.autor ? `#/miembros/${guardada.autor.id}` : '#/') : s ? '#/yo' : '#/';
   // El borrador local solo cubre builds nuevas (una por dispositivo); las guardadas viven en el servidor.
   const claveBorrador = '';
@@ -186,7 +191,11 @@ export default async function vistaBuild(el, { params, query, recargar }) {
               </select>
               <span class="campo__ayuda">La build se mostrará junto a ese adventurer en tu perfil.</span></label>`
           : ''}
-        ${campoPoder('maestria', 'Poder de Proof of Mastery', '220', 'Lo que tu rango de Proof of Mastery suma a todos tus adventurers (Legendary Traveler III: +220).')}
+        ${maestriaDueno !== null
+          ? html`<p class="bld-maestria-perfil"><span>Proof of Mastery</span><strong>${numero(maestriaDueno)}</strong>${esMia
+              ? html`<a href="#/yo">de tu perfil · cambiar</a>`
+              : html`<em>del perfil de ${guardada?.autor?.nick || 'su dueño'}</em>`}</p>`
+          : campoPoder('maestria', 'Poder de Proof of Mastery', '220', 'Lo que tu rango de Proof of Mastery suma a todos tus adventurers (Legendary Traveler III: +220). Al guardar pasa a tu perfil y desde ahí lo suman todas tus builds.')}
       </div>
       <div class="bld-arma">
         <p class="rotulo">Arma${adv ? ` · ${ARMAS[adv.arma]?.es}` : ''}</p>
@@ -535,7 +544,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
   let expandida = '';
   function pintarTodo() {
     const foco = document.activeElement?.dataset?.foco;
-    const c = calcular(cat, b);
+    const c = calcular(cat, b, { maestria: maestriaDueno });
     const titulo = meta.nombre || (guardada ? 'Build' : 'Nueva build');
     pintar(raiz, html`
       ${avisoDemo()}
@@ -552,6 +561,10 @@ export default async function vistaBuild(el, { params, query, recargar }) {
         <button type="button" role="tab" aria-selected="${vista === 'habilidades'}" data-vista="habilidades" data-foco="v-hab">Habilidades${c.habilidades.length ? ` · ${c.habilidades.length}` : ''}</button>
       </div>
       <div class="bld-cuerpo">${vista === 'hoja' ? vistaHoja(c) : vistaHabilidades(c)}</div>
+      ${guardada && tieneRol('oficial')
+        ? html`<p class="nota bld-codigo">Para mostrarla en una guía o noticia, pega en una línea sola <code>[[build:${guardada.id}]]</code>
+            <button type="button" class="boton boton--chico boton--tenue" data-copiar-codigo>Copiar</button></p>`
+        : ''}
       ${editable && guardada ? html`<button type="button" class="boton boton--ancho boton--peligro" data-eliminar>Eliminar build</button>` : ''}
       <p class="nota bld-fuente">Datos del juego: gacha.gg y GameWith (catálogo ${cat.meta.version || ''}). Nombres en español de GameWith es-MX, por confirmar con el juego; al lado, el inglés. Lo que GameWith no trae sigue en inglés. <a href="#/nombres">Nombres del juego</a>${tieneRol('oficial') ? ' (corregir)' : ''}.</p>
       ${barra(c)}`);
@@ -675,6 +688,12 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       recuperado = false;
       abierto = 'adv';
       pintarTodo();
+      return;
+    }
+    if (t.closest('[data-copiar-codigo]')) {
+      navigator.clipboard.writeText(`[[build:${guardada.id}]]`)
+        .then(() => toast('Código copiado. Pégalo en una línea sola de la guía.'))
+        .catch(() => toast('No se pudo copiar: escríbelo a mano.', { error: true }));
       return;
     }
     if (t.closest('[data-base]')) {

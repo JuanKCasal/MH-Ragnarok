@@ -8,7 +8,7 @@ import {
   calcularCamarada, conCamarada, limpiarCamarada, ordenarCamaradas, conAdventurer, camaradasPara,
   limpiarReflexiones, calcularReflexiones, conReflexion, conCapReflexiones,
   limpiarKeepsake, calcularKeepsake, conGrabado, conRangoGrabado, conDatoKeepsake, TOTAL_GRABADOS,
-  limpiarPoder, conPoder, calcularPoder,
+  limpiarPoder, conPoder, calcularPoder, resumenTarjeta,
 } from '../site/js/build-calc.js';
 import { ARCHIVOS } from '../site/js/catalogo.js';
 
@@ -451,4 +451,37 @@ test('poder total = equipo + Rostros + Proof of Mastery + camarada + Recuerdo (c
   assert.equal(parcial.escritos, 2);
   // El poder de un camarada sin id no cuenta.
   assert.equal(calcularPoder({ camarada: { poder: 10 } }).total, null);
+});
+
+test('v10: el Proof of Mastery del perfil manda sobre el de la build', () => {
+  const b = { poder: { equipo: 7228, rostros: 2099, maestria: 220 }, camarada: { id: 'kojiro', poder: 1998 }, keepsake: { poder: 5798 } };
+  assert.equal(calcularPoder(b, 300).total, 17423);
+  assert.equal(calcularPoder(b, 300).maestriaDelPerfil, true);
+  assert.equal(calcularPoder(b, '').total, 17343, 'perfil vacío: vale el de la build');
+  assert.equal(calcularPoder(b, null).completo, true);
+  assert.equal(calcularPoder({ poder: { equipo: 1 } }, 220).escritos, 2, 'el del perfil cuenta aunque la build no lo tenga');
+  assert.equal(calcular(cat, limpiarBuild(cat, { v: 1, ...b }), { maestria: 300 }).poder.total, 17423);
+});
+
+test('E3: resumen de la tarjeta (Fire Heavy de la demo)', () => {
+  const d = { v: 1, adv: { id: 'fated-adventurer-heavy-bowgun', nivel: 70 }, arma: { id: 'blazing-assault-i', r: 14 },
+    piezas: { head: { id: 'rath-heart-helm-iv', r: 13 }, chest: { id: 'rathalos-mail-ii', r: 13 }, arms: { id: 'radiant-rathalos-vambraces-v', r: 13 },
+      waist: { id: 'anja-coil-i', r: 13 }, legs: { id: 'radiant-rathalos-greaves-v', r: 13 } },
+    rostros: { nucleo: { id: 'kushala-daora', cal: 'superior', nv: 10 }, cartas: ['barnos', 'kestodon', 'rathian', 'radiant-rathian'].map((id) => ({ id, cal: 'superior', nv: 10 })), maestria: true },
+    camarada: { id: 'kojiro', nv: 80, estrellas: 6, poder: 1998 }, keepsake: { nv: 80, poder: 5798, grabados: [] },
+    poder: { equipo: 7228, rostros: 2099, maestria: 220 } };
+  const r = resumenTarjeta(cat, d, 220);
+  assert.equal(r.poder.total, 17343);
+  assert.equal(r.poder.completo, true);
+  assert.equal(r.armaTipo, 'heavy_bowgun');
+  assert.equal(r.arma.r, 14);
+  assert.equal(r.ele.tipo, 'fire');
+  assert.equal(r.habilidades.length, 4);
+  assert.equal(r.habilidades[0].en, 'Fire Damage Up');
+  assert.equal(r.habilidades[0].nivel, 7);
+  assert.equal(r.nucleo.en, 'Kushala Daora');
+  assert.ok(r.setsRostros.some((s) => s.en === 'Ink of Flames' && s.puestas === 4));
+  assert.equal(r.camarada.rareza, 'SSR');
+  assert.deepEqual(r.faltan, []);
+  assert.deepEqual(resumenTarjeta(cat, { v: 1, poder: { equipo: 5 } }).faltan, ['Rostros', 'Proof of Mastery', 'Camarada', 'Recuerdo']);
 });

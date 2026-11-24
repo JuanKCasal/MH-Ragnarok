@@ -6,13 +6,17 @@
 
 var ESQUEMA = {
   Miembros: { id: 's', nick: 's', nick_juego: 's', uid_juego: 's', pais: 's', rol: 's', estado: 's', bio: 's',
-    avatar_id: 's', adventurer_principal_id: 's', creado: 's', actualizado: 's', nick_cambios: 's' },
+    avatar_id: 's', adventurer_principal_id: 's', creado: 's', actualizado: 's', nick_cambios: 's',
+    // v10: poder de Proof of Mastery (es de la cuenta; lo suman todas sus builds).
+    maestria: 'n' },
   Credenciales: { miembro_id: 's', pin_hash: 's', sal: 's', intentos_fallidos: 'n', bloqueado_hasta: 's',
     pin_temporal: 'b', actualizado: 's' },
   Sesiones: { token_hash: 's', miembro_id: 's', creado: 's', expira: 's', ultimo_uso: 's' },
   Adventurers: { id: 's', miembro_id: 's', adventurer: 's', arma: 's', elemento: 's', tipo: 's', nivel: 'n',
     poder_total: 'n', poder_equipo: 'n', poder_rostros: 'n', poder_camarada: 'n', loadout: 's', notas: 's',
-    capturas: 's', creado: 's', actualizado: 's' },
+    capturas: 's', creado: 's', actualizado: 's',
+    // v10: build (5 de 5) de la que sale el poder; vacío = poder escrito a mano.
+    poder_build_id: 's' },
   Noticias: { id: 's', titulo: 's', resumen: 's', cuerpo_md: 's', tipo: 's', portada_id: 's', autor_id: 's',
     publicado: 'b', fijada: 'b', fecha_pub: 's', creado: 's', actualizado: 's' },
   Guias: { id: 's', slug: 's', titulo: 's', categoria: 's', nivel: 's', resumen: 's', cuerpo_md: 's',

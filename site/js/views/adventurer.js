@@ -52,6 +52,9 @@ export default async function vistaAdventurer(el, { params, recargar }) {
     }
   }
   let capturas = [...(a.capturas || [])];
+  // v10: si el poder sale de una build (5 de 5), aquí solo se muestra; el backend no deja pisarlo.
+  const deBuild = !!a.poder_build_id;
+  const soloLectura = deBuild ? { readonly: true } : {};
   let subiendo = 0;
   const titulo = editando ? 'Editar adventurer' : 'Nuevo adventurer';
 
@@ -68,15 +71,15 @@ export default async function vistaAdventurer(el, { params, recargar }) {
       ${opcionesRadio('elemento', Object.entries(ELEMENTOS).map(([k, v]) => [k, v]), a.elemento || 'none', 'Elemento')}
       ${opcionesRadio('tipo', [...Object.entries(TIPOS), ['', 'Sin indicar']], a.tipo || '', 'Tipo', { opcional: true })}
       <div class="campos-dos">
-        ${campo({ nombre: 'poder_total', etiqueta: 'Poder total', valor: miles(a.poder_total), ayuda: 'Adventurer Power. Con o sin punto de miles.', attrs: { inputmode: 'numeric', required: true, maxlength: 7, autocomplete: 'off' } })}
+        ${campo({ nombre: 'poder_total', etiqueta: 'Poder total', valor: miles(a.poder_total), ayuda: deBuild ? 'Sale de su build más fuerte con el poder completo (5 de 5). Para cambiarlo, edita la build.' : 'Adventurer Power. Con o sin punto de miles.', attrs: { inputmode: 'numeric', required: true, maxlength: 7, autocomplete: 'off', ...soloLectura } })}
         ${campo({ nombre: 'nivel', etiqueta: 'Nivel', opcional: true, valor: a.nivel, ayuda: 'De 1 a 80.', attrs: { inputmode: 'numeric', maxlength: 2, autocomplete: 'off' } })}
       </div>
       <details class="desplegable" ${a.poder_equipo || a.poder_rostros || a.poder_camarada ? 'open' : ''}>
         <summary>Desglose del poder (opcional)</summary>
         <div class="formulario formulario--anidado">
-          ${campo({ nombre: 'poder_equipo', etiqueta: 'Equipamiento · Equipment', valor: miles(a.poder_equipo), attrs: { inputmode: 'numeric', maxlength: 7, autocomplete: 'off' } })}
-          ${campo({ nombre: 'poder_rostros', etiqueta: 'Rostros · Visage', valor: miles(a.poder_rostros), attrs: { inputmode: 'numeric', maxlength: 7, autocomplete: 'off' } })}
-          ${campo({ nombre: 'poder_camarada', etiqueta: 'Camarada · Buddy', valor: miles(a.poder_camarada), attrs: { inputmode: 'numeric', maxlength: 7, autocomplete: 'off' } })}
+          ${campo({ nombre: 'poder_equipo', etiqueta: 'Equipamiento · Equipment', valor: miles(a.poder_equipo), attrs: { inputmode: 'numeric', maxlength: 7, autocomplete: 'off', ...soloLectura } })}
+          ${campo({ nombre: 'poder_rostros', etiqueta: 'Rostros · Visage', valor: miles(a.poder_rostros), attrs: { inputmode: 'numeric', maxlength: 7, autocomplete: 'off', ...soloLectura } })}
+          ${campo({ nombre: 'poder_camarada', etiqueta: 'Camarada · Buddy', valor: miles(a.poder_camarada), attrs: { inputmode: 'numeric', maxlength: 7, autocomplete: 'off', ...soloLectura } })}
         </div>
       </details>
       ${campo({ nombre: 'loadout', etiqueta: 'Nombre del loadout', opcional: true, valor: a.loadout, ayuda: 'Como lo guardaste en el juego, por ejemplo “Fire Heavy”.', attrs: { maxlength: 40, spellcheck: 'false' } })}

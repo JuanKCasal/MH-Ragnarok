@@ -58,11 +58,15 @@ function verClash_(p) {
   var miembros = {};
   miembrosActivos_().forEach(function (m) { miembros[m.id] = m; });
   var advs = indiceAdventurers_();
+  // v10: mientras la semana no esté cerrada manda el poder ACTUAL del principal (si alguien mejora su build
+  // después de confirmar, el armado lo ve). La foto (poder_snapshot) solo cuenta para semanas cerradas.
+  var vivo = s.estado !== 'cerrada';
   var ficha = function (miembroId, poderSnap) {
     var m = miembros[miembroId];
     if (!m) return null;
     var a = advs[m.adventurer_principal_id];
-    return { miembro_id: m.id, nick: m.nick, avatar_id: m.avatar_id, pais: m.pais, poder: poderSnap,
+    var poder = vivo ? poderPrincipal_(m, advs).poder : poderSnap;
+    return { miembro_id: m.id, nick: m.nick, avatar_id: m.avatar_id, pais: m.pais, poder: poder,
       adventurer: a ? elegir_(a, ['adventurer', 'arma', 'elemento', 'tipo']) : null };
   };
   var asistencia = filtrar_('ClashAsistencia', function (x) { return x.semana_id === id; })
@@ -158,7 +162,23 @@ function cerrarClash_(token, d) {
   s.notas = limpiarTexto_(d.notas, 500);
   s.estado = 'cerrada';
   actualizar_('ClashSemanas', s);
+  congelarPoderes_(id);
   log_(yo.id, 'clash_cerrado', 'ClashSemanas', id);
   invalidarCache_();
   return sinFila_(s);
+}
+
+/** v10: al cerrar la semana, la foto del poder (asistencia y brigadas) queda con el valor de ese momento. */
+function congelarPoderes_(id) {
+  var miembros = {};
+  leer_('Miembros').forEach(function (m) { miembros[m.id] = m; });
+  var advs = indiceAdventurers_();
+  ['ClashAsistencia', 'ClashEquipos'].forEach(function (hoja) {
+    filtrar_(hoja, function (x) { return x.semana_id === id; }).forEach(function (x) {
+      var m = miembros[x.miembro_id];
+      if (!m) return;
+      var poder = poderPrincipal_(m, advs).poder;
+      if (poder && poder !== x.poder_snapshot) { x.poder_snapshot = poder; actualizar_(hoja, x); }
+    });
+  });
 }

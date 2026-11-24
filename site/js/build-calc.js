@@ -127,7 +127,7 @@ export function estadoHab(suma, max) {
  *   avisos: string[]
  * }}
  */
-export function calcular(cat, build) {
+export function calcular(cat, build, { maestria } = {}) {
   const b = build || buildVacia();
   const avisos = [];
   const aportes = new Map();
@@ -184,7 +184,7 @@ export function calcular(cat, build) {
   const camarada = calcularCamarada(cat, b.camarada, adv, avisos);
   const reflexiones = calcularReflexiones(cat, b.reflexiones, adv, camarada?.item?.tipo || '');
   const keepsake = calcularKeepsake(b.keepsake);
-  const poder = calcularPoder(b);
+  const poder = calcularPoder(b, maestria);
   const habNucleo = rostros?.nucleo?.item.nucleo?.hab;
   if (habNucleo) sumar(habNucleo[0], 'rostro', habNucleo[1]);
 
@@ -764,16 +764,46 @@ export function conPoder(build, campo, valor) {
   return b;
 }
 
-/** Desglose y total del poder escrito: { partes: [{ id, es, v }], total, escritos }. Sin datos → total null. */
-export function calcularPoder(build) {
+/**
+ * Desglose y total del poder escrito: { partes: [{ id, es, v }], total, escritos, completo, maestriaDelPerfil }.
+ * Sin datos → total null. El Proof of Mastery es de la cuenta (v10): si el perfil del dueño lo tiene, manda ese;
+ * si no, el que traiga la build (builds de antes de la v10). Misma cuenta que poderBuild_ en Builds.gs.
+ */
+export function calcularPoder(build, maestriaPerfil = null) {
   const v = (n) => (Number.isFinite(n) ? n : null);
+  const delPerfil = v(maestriaPerfil === '' || maestriaPerfil === null ? NaN : Number(maestriaPerfil));
   const partes = [
     { id: 'equipo', es: 'Equipo', v: v(build?.poder?.equipo) },
     { id: 'rostros', es: 'Rostros', v: v(build?.poder?.rostros) },
-    { id: 'maestria', es: 'Proof of Mastery', v: v(build?.poder?.maestria) },
+    { id: 'maestria', es: 'Proof of Mastery', v: delPerfil ?? v(build?.poder?.maestria) },
     { id: 'camarada', es: 'Camarada', v: build?.camarada?.id ? v(build.camarada.poder) : null },
     { id: 'keepsake', es: 'Recuerdo', v: v(build?.keepsake?.poder) },
   ];
   const escritos = partes.filter((x) => x.v !== null);
-  return { partes, total: escritos.length ? escritos.reduce((s, x) => s + x.v, 0) : null, escritos: escritos.length };
+  return { partes, total: escritos.length ? escritos.reduce((s, x) => s + x.v, 0) : null, escritos: escritos.length,
+    completo: escritos.length === partes.length, maestriaDelPerfil: delPerfil !== null };
+}
+
+/**
+ * Lo que muestra la tarjeta compacta de una build (E3): poder, arma, 4 habilidades top y chips.
+ * @param {object} cat catálogo indexado
+ * @param {object} datos composición guardada (se limpia aquí)
+ * @param {number|string|null} maestria Proof of Mastery del perfil del dueño
+ */
+export function resumenTarjeta(cat, datos, maestria = null) {
+  const b = limpiarBuild(cat, datos);
+  const c = calcular(cat, b, { maestria });
+  const nucleo = c.rostros?.nucleo?.item || null;
+  return {
+    poder: c.poder,
+    adv: c.adv,
+    armaTipo: c.adv?.arma || c.arma?.item.arma || '',
+    arma: c.arma ? { es: c.arma.nombreEs, en: c.arma.nombre, esOk: c.arma.esOk, r: c.arma.r } : null,
+    ele: c.ele,
+    habilidades: c.habilidades.slice(0, 4),
+    nucleo: nucleo ? { es: nucleo.es, en: nucleo.en } : null,
+    setsRostros: (c.rostros?.sets || []).filter((s) => s.activo).map((s) => ({ es: s.es, en: s.en, puestas: s.puestas, max: s.max })),
+    camarada: c.camarada?.item ? { es: c.camarada.item.es, en: c.camarada.item.en, rareza: c.camarada.item.rareza || '' } : null,
+    faltan: c.poder.partes.filter((x) => x.v === null).map((x) => x.es),
+  };
 }

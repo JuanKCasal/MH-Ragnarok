@@ -70,6 +70,8 @@ const esSeparadorTabla = (l) => /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s
  * @param {string} md
  * @returns {{ html: string, titulos: {nivel: number, texto: string, id: string}[] }}
  */
+const BUILD_RE = /^\s*\[\[build:([\w-]{1,64})\]\]\s*$/;
+
 export function renderMarkdown(md) {
   const lineas = String(md ?? '').replace(/\r\n?/g, '\n').split('\n');
   const out = [];
@@ -78,7 +80,7 @@ export function renderMarkdown(md) {
   let i = 0;
 
   const esInicioDeBloque = (l) => /^\s*$/.test(l) || /^#{1,4}\s/.test(l) || /^\s*([-*]|\d+[.)])\s+/.test(l)
-    || /^\s*>/.test(l) || /^\s*```/.test(l) || /^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(l);
+    || /^\s*>/.test(l) || /^\s*```/.test(l) || /^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(l) || BUILD_RE.test(l);
 
   while (i < lineas.length) {
     const l = lineas[i];
@@ -106,6 +108,14 @@ export function renderMarkdown(md) {
       if (n > 1) id += `-${n}`;
       titulos.push({ nivel, texto: texto.replace(/[*_`]/g, ''), id });
       out.push(`<h${nivel} id="${id}">${enLinea(esc(texto))}</h${nivel}>`);
+      i++;
+      continue;
+    }
+
+    // Build incrustada (E3): una línea sola con [[build:ID]]; la vista la rellena con la tarjeta (ui/tarjeta-build.js).
+    const bld = l.match(BUILD_RE);
+    if (bld) {
+      out.push(`<div class="build-incrustada" data-build-incrustada="${bld[1]}"><p class="nota">Cargando build…</p></div>`);
       i++;
       continue;
     }

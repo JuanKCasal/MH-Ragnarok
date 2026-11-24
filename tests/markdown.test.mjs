@@ -51,3 +51,11 @@ test('en línea: negrita, cursiva, código y saltos de línea', () => {
 });
 
 test('slug igual al del backend', () => assert.equal(slug('Guía del Guild Clash: ¡brigadas!'), 'guia-del-guild-clash-brigadas'));
+
+test('E3: [[build:ID]] en una línea sola deja el hueco para la tarjeta; dentro de un párrafo no', () => {
+  const h = r('Mira esta:\n[[build:abc-123]]\nY sigue [[build:x]] aquí.\n\n[[build:no vale]]');
+  assert.match(h, /<p>Mira esta:<\/p>\n<div class="build-incrustada" data-build-incrustada="abc-123">/);
+  assert.match(h, /<p>Y sigue \[\[build:x\]\] aquí\.<\/p>/);
+  assert.match(h, /<p>\[\[build:no vale\]\]<\/p>/);
+  assert.doesNotMatch(r('[[build:"><script>]]'), /<script/);
+});

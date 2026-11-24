@@ -1,12 +1,15 @@
 /** Perfil público de un miembro: datos y todos sus adventurers. Ver SPEC.md §2 (#/miembros/:id). */
 import { leer } from '../api.js';
 import { sesion } from '../auth.js';
-import { html, pintar, crudo } from '../ui/dom.js';
+import { html, pintar, crudo, numero } from '../ui/dom.js';
 import { avisoDemo, cargando, fallo } from '../ui/comun.js';
 import { ICONOS } from '../ui/iconos.js';
 import { toast } from '../ui/toast.js';
 import { bandera, nombrePais } from '../validar.js';
 import { avatar, tarjetaAdventurer } from './yo.js';
+import { cargarCatalogo } from '../catalogo.js';
+import { calcularPoder } from '../build-calc.js';
+import { tarjetaBuild, activarTarjetas } from '../ui/tarjeta-build.js';
 
 const ROLES = { admin: 'Admin', oficial: 'Oficial', miembro: 'Miembro' };
 const MES = new Intl.DateTimeFormat('es', { month: 'long', year: 'numeric' });
@@ -23,8 +26,15 @@ async function copiar(texto) {
 export default async function vistaMiembro(el, { params, recargar }) {
   pintar(el, cargando());
   let m;
+  let builds = [];
+  let cat = null;
   try {
-    m = await leer('miembro', { id: params.id });
+    // Las builds y el catálogo son opcionales: si fallan, el perfil se muestra igual (sin tarjetas).
+    [m, builds, cat] = await Promise.all([
+      leer('miembro', { id: params.id }),
+      leer('builds', { miembro: params.id }).catch(() => []),
+      cargarCatalogo().catch(() => null),
+    ]);
   } catch (e) {
     if (e.codigo === 'NO_EXISTE') {
       pintar(el, html`
@@ -38,6 +48,11 @@ export default async function vistaMiembro(el, { params, recargar }) {
   }
 
   const esYo = sesion()?.miembro?.id === m.id;
+  // Primero las completas (5 de 5) de más poder; después las que aún tienen partes sin escribir.
+  const pw = (b) => calcularPoder(b.datos, m.maestria);
+  builds = [...builds].sort((x, y) => (pw(y).completo - pw(x).completo) || ((pw(y).total ?? 0) - (pw(x).total ?? 0)));
+  const idsAdv = new Set((m.adventurers || []).map((a) => a.id));
+  const sueltas = cat ? builds.filter((b) => !idsAdv.has(b.adventurer_id)) : [];
   const advs = [...(m.adventurers || [])];
   // El principal va primero: es el que cuenta para el Guild Clash.
   advs.sort((a, b) => (b.id === m.adventurer_principal_id) - (a.id === m.adventurer_principal_id));
@@ -57,6 +72,7 @@ export default async function vistaMiembro(el, { params, recargar }) {
       </div>
     </header>
 
+    ${m.maestria !== '' && m.maestria !== undefined && m.maestria !== null ? html`<p class="perfil-maestria"><span class="rotulo">Proof of Mastery</span> <span class="num">+${numero(m.maestria)}</span> de poder en todas sus builds</p>` : ''}
     ${m.bio ? html`<p class="perfil-bio">${m.bio}</p>` : ''}
 
     ${m.uid_juego || desde || esYo
@@ -80,14 +96,28 @@ export default async function vistaMiembro(el, { params, recargar }) {
       ${advs.length
         ? html`<div class="advs">${advs.map((a) => {
             const principal = a.id === m.adventurer_principal_id;
-            return tarjetaAdventurer(a, { principal, desglose: principal });
+            const suyas = cat ? builds.filter((b) => b.adventurer_id === a.id) : [];
+            return html`<div class="adv-con-builds">
+              ${tarjetaAdventurer(a, { principal, desglose: principal, builds })}
+              ${suyas.length ? html`<div class="btar-grupo">
+                  <p class="btar-grupo__titulo">Builds de este adventurer <span>${suyas.length}</span></p>
+                  ${suyas.map((b) => tarjetaBuild(cat, b))}
+                </div>` : ''}
+            </div>`;
           })}</div>`
         : html`<div class="vacio"><p>${esYo ? 'Todavía no cargas ningún adventurer.' : `${m.nick} todavía no carga sus adventurers.`}</p>
             ${esYo ? html`<a class="boton boton--oro boton--chico" href="#/yo/adventurer">Agregar adventurer</a>` : ''}</div>`}
       ${advs.some((a) => a.id === m.adventurer_principal_id)
         ? html`<p class="nota nota--icono">${crudo(ICONOS.info)}<span>El poder del principal es el que se usa para armar las brigadas del Guild Clash.</span></p>`
         : ''}
-    </section>`);
+    </section>
+    ${sueltas.length
+      ? html`<section class="seccion" aria-labelledby="t-builds">
+          <div class="encabezado"><h2 class="titulo" id="t-builds">Otras builds</h2><span class="nota">${sueltas.length}</span></div>
+          <div class="btar-sueltas">${sueltas.map((b) => tarjetaBuild(cat, b))}</div>
+        </section>`
+      : ''}`);
+  activarTarjetas(el, new Map(builds.map((b) => [b.id, b])));
 
   el.querySelector('[data-copiar]')?.addEventListener('click', () => copiar(String(m.uid_juego)));
   return { titulo: m.nick };
