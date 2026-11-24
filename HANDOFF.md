@@ -6,6 +6,16 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 ## Sesión 16 — Corrección del Recuerdo (Keepsake) (publicado: `6f683ef` + backend v8)
 
 ### Punto de partida exacto para la sesión 17
+**Plan que pidió Juan (2026-11-23, al cerrar la sesión 16):** en una sesión nueva, hacer de una sola vez **E3 tarjeta de build, E5 Comparar y E7 poder estimado** (BUILDER §5). Antes, y mientras no exista el poder estimado, estos cambios en la hoja de la build:
+- **Armadura**: campo para escribir el poder a mano (como en Camarada y Recuerdo).
+- **Rostros**: campo para escribir el poder a mano (igual).
+- **Abajo (barra fija con Def./Atq./elemento y Guardar)**: **poder total** que se suma solo con los poderes escritos (armadura + Rostros + camarada + Recuerdo…).
+Notas para empezar:
+- La composición ya tiene un bloque `poder: { total, equipo, rostros, camarada }` (BUILDER §3) y el backend ya lo valida (`Builds.gs`, final de `composicionValida_`): puede que la armadura y los Rostros no necesiten backend nuevo. Revisar si `limpiarBuild` (build-calc.js) lo conserva. Camarada y Recuerdo guardan su poder en su propio bloque (`camarada.poder`, `keepsake.poder`): decidir de dónde lee la suma sin duplicar.
+- **Preguntar a Juan antes de programar**: ¿el poder de "Armadura" es uno solo para las 5 piezas o por pieza? ¿y el arma (Legendary 14/14 = 2888) va en su propio campo? ¿Las Reflexiones o el nivel del adventurer suman poder? ¿Qué incluye el "Adventurer Power" total del juego (para que la suma de la web coincida)? Datos conocidos en "Datos para E7" del resumen del proyecto y BUILDER §12–§15.
+- Confirmar con Juan el orden y el alcance de E3/E5/E7 (es un bloque grande; dividirlo en entregas publicadas si conviene).
+- Captura de Juan (2026-11-23): su build real muestra Def. 888 · Atq. 1.040 · Fuego 520, 11 habilidades, Recuerdo "grabados 87 %" → el Recuerdo nuevo funciona en la web publicada.
+
 1. Leer `CLAUDE.md`, este bloque y `docs/BUILDER.md` §15.1 ("Hecho en la sesión 16").
 2. **Publicar (en este orden; el backend va ANTES que el push: la v7 rechaza los ids nuevos)**:
    1. `npm test` → **134** (Claude ya las corrió en su PC: 134 pasan).
@@ -20,7 +30,7 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
    5. Probar en el celular: "Fire Heavy" → cajón Recuerdo: marcar tus grabados (todo menos el Atributo de 4 puntos) → debe decir **87 %** como el juego. Si guardaste grabados con la v7, se pierden (ids viejos): vuelve a marcarlos.
 3. **Por confirmar con el juego (Juan)**: la matriz con otro adventurer (¿misma forma?); que todos los grabados pidan el anterior de su columna; lo de la sesión 15 (Reflexiones de Haze, clase del Fated, rarezas §11).
 4. Siguen abiertos: activador diario de `limpiarSesiones`; probar en el celular Camarada, equipo en español, E6 y Rostros.
-5. **Siguiente entrega (a decidir con Juan)**: E3 tarjeta de build, E5 Comparar o E7 poder estimado.
+5. **Siguiente entrega**: ver el plan de Juan al inicio de este punto (poder a mano + total, luego E3, E5 y E7).
 
 ### Hecho en la sesión 16
 - Recuerdo rehecho con las capturas de Juan (BUILDER §15.1): 8 filas (1…80, 80), 31 pasos, nodos de 3 y 4 rangos con puntos (tocar = siguiente rango), % como el juego (piso de hechos / 31). Ids nuevos (`sb1…`, `ul…`, `el…`, `cp…`, `ca80`, `sb80b1–3`, `ca80b1–4`); los de la v7 se descartan.
