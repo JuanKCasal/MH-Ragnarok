@@ -1,22 +1,22 @@
-# HANDOFF — MH-Ragnarok (sesión 16: Recuerdo rehecho como en el juego — 31 pasos, rangos, 87 % · backend v8 publicado · falta commit)
+# HANDOFF — MH-Ragnarok (sesión 16: Recuerdo rehecho como en el juego — 31 pasos, rangos, 87 % · publicado `6f683ef` + backend v8)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
 
-## Sesión 16 — Corrección del Recuerdo (Keepsake) (sin commit)
+## Sesión 16 — Corrección del Recuerdo (Keepsake) (publicado: `6f683ef` + backend v8)
 
 ### Punto de partida exacto para la sesión 17
 1. Leer `CLAUDE.md`, este bloque y `docs/BUILDER.md` §15.1 ("Hecho en la sesión 16").
 2. **Publicar (en este orden; el backend va ANTES que el push: la v7 rechaza los ids nuevos)**:
    1. `npm test` → **134** (Claude ya las corrió en su PC: 134 pasan).
    2. ~~Backend versión 8~~ **HECHO 2026-11-23 (Claude con el Chrome de Juan, con su permiso):** el editor tenía exactamente la v7; se aplicó el cambio y quedó idéntico al paquete (SHA-256 `3017aff336f5…`), guardado y publicada la **versión 8** ("v8 (Recuerdo como en el juego)", misma URL); `builds?clase=ejemplo` → `{ok:true,data:[]}`. (Lo que se verificó: el editor tenía exactamente la v7 (SHA-256 `4dc4d558b460…`). Cambio solo en `Builds.gs` (`GRABADO_RE` y máx. 31 en `keepsakeValido_`). Paquete probado: `Claude outputs/MH-Ragnarok.gs` (SHA-256 `3017aff336f5…`). Publicar "v8 (Recuerdo como en el juego)", misma URL; sin `instalar()`. Probar `builds?clase=ejemplo` → `{ok:true,data:[]}`.)
-   3. Commit + push (Juan):
+   3. ~~Commit + push~~ **HECHO:** commit `6f683ef`, pusheado por Juan. (Comandos usados:)
       ```
       git add -A
       git commit -m "Sesión 16: Recuerdo (Keepsake) como en el juego: 31 pasos con rangos, backend v8"
       git push
       ```
-   4. Revisar el despliegue de Pages.
+   4. ~~Revisar el despliegue de Pages~~ **HECHO:** la ejecución #23 falló con el error pasajero de GitHub ("No artifacts named github-pages"); "Re-run failed jobs" volvió a fallar ("Multiple artifacts": el reintento sube un segundo artefacto en la misma ejecución). Se lanzó una ejecución nueva con **Run workflow** (#24, `workflow_dispatch`) y salió bien; la web sirve el código nuevo. **Para la próxima vez que pase: usar Run workflow, no Re-run.**
    5. Probar en el celular: "Fire Heavy" → cajón Recuerdo: marcar tus grabados (todo menos el Atributo de 4 puntos) → debe decir **87 %** como el juego. Si guardaste grabados con la v7, se pierden (ids viejos): vuelve a marcarlos.
 3. **Por confirmar con el juego (Juan)**: la matriz con otro adventurer (¿misma forma?); que todos los grabados pidan el anterior de su columna; lo de la sesión 15 (Reflexiones de Haze, clase del Fated, rarezas §11).
 4. Siguen abiertos: activador diario de `limpiarSesiones`; probar en el celular Camarada, equipo en español, E6 y Rostros.
@@ -28,7 +28,7 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 - Backend `Builds.gs` (v8) y `demo-data.js` con la validación nueva; build de ejemplo con los 27 pasos de Juan.
 - Pruebas: **134**. Revisado en navegador a 390 y 320 px (demo): sin scroll horizontal ni errores.
 
-### Git (sesión 16 — sin commit)
+### Git (sesión 16 — publicado en `6f683ef`; después solo cambió `HANDOFF.md`)
 Modificados: `HANDOFF.md`, `SPEC.md`, `docs/BUILDER.md`, `apps-script/Builds.gs`, `site/js/{build-calc,demo-data}.js`, `site/js/views/build.js`, `site/assets/css/views.css`, `tests/{build-calc,builds}.test.mjs`. (`Claude outputs/` no va al repo.)
 
 ---
