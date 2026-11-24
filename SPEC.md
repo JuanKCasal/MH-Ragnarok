@@ -205,7 +205,7 @@ Registro de cada archivo subido por el backend. Sirve para validar que un ID de 
 | `adventurer.guardar` | miembro | crea/edita uno propio (oficial: cualquiera) |
 | `adventurer.eliminar` | miembro | propio |
 | `adventurer.principal` | miembro | marca su principal |
-| `build.guardar` | miembro | crea/edita una propia (oficial: cualquiera). `clase: 'ejemplo'` solo oficiales. Máx. 10 de perfil por miembro. Composición v1: `adv`, `arma`, `piezas`, `rostros` (desde la E4, backend v4), `camarada` (`{id, nv?, estrellas?, poder?}`, backend v6), `reflexiones` (`{cap?, activas: [ids]}`, backend v7), `keepsake` (`{nv?, poder?, grabados: [ids de la matriz]}`, backend v7) y `poder` (docs/BUILDER.md §3, §14 y §15) |
+| `build.guardar` | miembro | crea/edita una propia (oficial: cualquiera). `clase: 'ejemplo'` solo oficiales. Máx. 10 de perfil por miembro. Composición v1: `adv`, `arma`, `piezas`, `rostros` (desde la E4, backend v4), `camarada` (`{id, nv?, estrellas?, poder?}`, backend v6), `reflexiones` (`{cap?, activas: [ids]}`, backend v7), `keepsake` (`{nv?, poder?, grabados: [ids de paso]}`: backend v7, ids como en el juego desde la v8, máx. 31) y `poder` (docs/BUILDER.md §3, §14 y §15) |
 | `build.eliminar` | miembro | propia (oficial: cualquiera) |
 | `catalogo.nombre` | oficial | `{tipo, id, en, es}`: guarda y confirma el nombre ES (`es` vacío = quitar la corrección). `tipo` = arma / pieza / habilidad / set / monstruo; en armas y piezas `id` = slug del nombre base EN |
 | `imagen.subir` | miembro | `{base64, mime, tipo}` → ID de Drive. Máx. 2 MB ya comprimida |

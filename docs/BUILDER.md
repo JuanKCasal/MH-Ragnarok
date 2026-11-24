@@ -267,3 +267,32 @@ Total **22**. GameWith dice que algunos piden terminar el anterior: la web marca
 - Backend `keepsakeValido_` (nv 1–80, poder, ids de la matriz). **Requiere publicar la versión 7.**
 - Modo demo: la build de ejemplo trae Reflexiones (65 puntos) y Recuerdo Nv 80, poder 5798, 19 grabados (los marcados son de ejemplo).
 - Pruebas: **133** (Reflexiones y Recuerdo: 4 en `build-calc`, 1 en `builds`, 1 en `catalogo`). Revisado en navegador a 390 y 320 px (build de ejemplo y build nueva: capacidad, no cabe, clase del Fated, cambio de adventurer con aviso, nivel que bloquea grabados), sin scroll horizontal ni errores de consola.
+
+### 15.1 Corrección con las capturas de Juan (2026-11-23, Fated de ballesta pesada) — HECHO en la sesión 16 (backend v8 publicado)
+
+**La matriz de GameWith (§15) no coincide con el juego.** Capturas en `Claude outputs/capturas-recuerdo/` (fuera del repo). Lo que muestran:
+- Pestaña **Engrave** ("Engrave 87%", "Progress: 87%"): filas de nivel **1, 30, 40, 50, 60, 70, 80, 80** (dos de 80).
+  | Columna | Filas con grabado | Nodos |
+  |---|---|---|
+  | Skill Boost (rombo) | 1, 40, 60, 70, 80, 80 | 6; el último tiene **3 rangos** (3 puntos, los de Juan llenos) |
+  | Ultimate | 1, 30, 40, 50, 60, 70, 80 | 7 |
+  | Elemental Specialization | 1, 30, 40, 50, 60, 70, 80 | 7 |
+  | Core Passive (muestra "+15.03%") | 50, 60, 70, 80 | 4 |
+  | Core Attribute | 80, 80 | 2; el último tiene **4 rangos** (4 puntos, los de Juan vacíos) |
+- Cuenta por pasos (cada rango es un paso): 8 + 7 + 7 + 4 + 5 = **31**. A Juan le falta solo el Core Attribute de 4 rangos → 27/31 = **87,1 %** = el "87%" del juego. Así que el % del juego = pasos hechos / 31.
+- Detalle de un grabado (el Core Attribute de 4 rangos): "**Crit Rate II** · Lv. 1 · Core Attribute · Adventurer Power 160 · Engraving Effect: Affinity +8 % · Required Materials: 500000 Zenny + 9600 gemas" (botón Engrave). El nombre/efecto cambia por adventurer (Juan cree que cada uno es distinto); la forma de la matriz, por confirmar con otro adventurer.
+- Pestaña **Upgrade**: hitos Lv 60 ✓, 70 ✓, 80 (actual). En Lv 80, 4 nodos: Physical Attack Up, Element Attack Up, Element Attack Up, Physical Attack Up; botón "Upgraded". Detalle de "Physical Attack Up": Adventurer Power 112, Physical Attack 200, Fire Attack 80, Defense 490. Va con el nivel: **no** se registra en la web.
+
+**Plan (sesión 16) — hecho tal cual; ver "Hecho en la sesión 16" abajo**
+1. `GRABADOS` en `build-calc.js` con ids nuevos por nivel (no chocan con los de v7, que llevan guion): `sb1, sb40, sb60, sb70, sb80, sb80b1–sb80b3`, `ul1, ul30, ul40, ul50, ul60, ul70, ul80`, `el1 … el80` (igual), `cp50, cp60, cp70, cp80`, `ca80, ca80b1–ca80b4`. 31 pasos; % = hechos / 31 (mostrar "87 %" como el juego).
+2. Cajón: filas 1, 30, 40, 50, 60, 70, 80, 80 como el juego; los nodos con rangos se marcan con 3/4 puntos (tocar = siguiente rango) en vez de casilla. Mantener "marcar uno marca los anteriores de la columna".
+3. `limpiarKeepsake` descarta los ids viejos (`hab-0`…); nada que migrar (la v7 salió hoy).
+4. Backend v8: `GRABADO_RE` nuevo y máx. 31 en `keepsakeValido_` (y en `demo-data.js`). Pruebas (`build-calc`, `builds`). Build de ejemplo con los 27 de Juan.
+5. Reflexiones: Juan confirmó que **sí están** en el juego (Weapon Insight) y ya marcó las suyas; lo confundió el nombre en español (juega en inglés). Poner el inglés visible en el rótulo del cajón: "Reflexiones (Insight)" y, para el Recuerdo, "Recuerdo (Keepsake)".
+
+**Hecho en la sesión 16 (2026-11-23)**
+- `build-calc.js`: `FILAS_GRABADO` (1, 30, 40, 50, 60, 70, 80, 80b) y `GRABADOS` por nodos (`{ fila, rangos? }`). Ids de paso: nodo simple = columna + fila (`sb1`, `ul30`, `cp80`, `ca80`…); nodo con rangos = `sb80b1–3`, `ca80b1–4`. `TOTAL_GRABADOS` = 31; `calcularKeepsake` da nodos `{ id, fila, nv, rangos, hechos, hecho, abierto }` y `pct` = piso(hechos × 100 / 31), como el juego. `conGrabado` sigue marcando en orden por columna (los rangos son pasos de esa misma cadena). Nuevo `conRangoGrabado(build, 'ca80b')`: cada toque sube un rango; desde el último vuelve a 0. `limpiarKeepsake` descarta los ids de la v7.
+- Cajón **"Recuerdo (Keepsake) y grabados"**: 8 filas como el juego; los nodos de rangos son un botón con 3/4 puntos. Cuenta "Grabado 87 % (27 de 31 pasos)" y el resumen del cajón muestra el %. Cajón **"Reflexiones (Insight)"**.
+- Backend v8 (`Builds.gs`): `GRABADO_RE` nuevo y máx. 31. Mismo cambio en `demo-data.js`; la build de ejemplo trae los 27 pasos de Juan (87 %).
+- Pruebas: **134** (`build-calc`: rangos y el 87 %; `builds`: ids nuevos y rechazo de los de v7). Revisado en navegador a 390 y 320 px (demo): sin scroll horizontal ni errores.
+- Por confirmar (Juan): que la forma de la matriz sea igual con otro adventurer (no solo el Fated de ballesta pesada) y que todos los grabados pidan el anterior de su columna.

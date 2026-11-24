@@ -619,23 +619,35 @@ export function conCapReflexiones(build, cap) {
 
 export const KEEPSAKE_NV_MAX = 80;
 /**
- * Matriz de Grabados (GameWith, guía de grabados, 2026-11-23; ES de GameWith es-MX): columna → niveles del
- * Recuerdo en que se abre cada grabado. Mejora de habilidades tiene dos de Nv 80 (el primero solo cuando
- * controlas al adventurer). 22 en total.
+ * Pantalla Engrave del juego (capturas de Juan, 2026-11-23, Fated de ballesta pesada; reemplaza la matriz de
+ * GameWith de la v7): filas de nivel 1, 30, 40, 50, 60, 70, 80 y 80 (dos de Nv 80). Cada grabado es un nodo;
+ * los del final de Mejora de habilidades y de Atributo principal tienen 3 y 4 rangos (cada rango es un paso).
+ * 31 pasos; el "Engrave %" del juego = pasos hechos / 31 (Juan: 27 de 31 = 87 %).
  */
-export const GRABADOS = [
-  { id: 'hab', es: 'Mejora de habilidades', en: 'Skill Boost', niveles: [40, 60, 70, 80, 80] },
-  { id: 'def', es: 'Definitiva', en: 'Ultimate', niveles: [30, 40, 50, 60, 70, 80] },
-  { id: 'ele', es: 'Especialización elemental', en: 'Elemental Specialization', niveles: [30, 40, 50, 60, 70, 80] },
-  { id: 'pas', es: 'Pasiva principal', en: 'Core Passive', niveles: [50, 60, 70, 80] },
-  { id: 'atr', es: 'Atributo principal', en: 'Core Attribute', niveles: [80] },
+export const FILAS_GRABADO = [
+  { id: '1', nv: 1 }, { id: '30', nv: 30 }, { id: '40', nv: 40 }, { id: '50', nv: 50 },
+  { id: '60', nv: 60 }, { id: '70', nv: 70 }, { id: '80', nv: 80 }, { id: '80b', nv: 80 },
 ];
-/** Id de un grabado: columna + índice (hab-0 … hab-4, def-0 … def-5, …, atr-0). */
-export const idGrabado = (col, i) => `${col}-${i}`;
-const GRABADO_NV = new Map(GRABADOS.flatMap((g) => g.niveles.map((nv, i) => [idGrabado(g.id, i), nv])));
-export const TOTAL_GRABADOS = GRABADO_NV.size;
+const nodos_ = (filas, final) => filas.map((fila) => ({ fila })).concat(final ? [{ fila: '80b', rangos: final }] : []);
+export const GRABADOS = [
+  { id: 'sb', es: 'Mejora de habilidades', en: 'Skill Boost', nodos: nodos_(['1', '40', '60', '70', '80'], 3) },
+  { id: 'ul', es: 'Definitiva', en: 'Ultimate', nodos: nodos_(['1', '30', '40', '50', '60', '70', '80']) },
+  { id: 'el', es: 'Especialización elemental', en: 'Elemental Specialization', nodos: nodos_(['1', '30', '40', '50', '60', '70', '80']) },
+  { id: 'cp', es: 'Pasiva principal', en: 'Core Passive', nodos: nodos_(['50', '60', '70', '80']) },
+  { id: 'ca', es: 'Atributo principal', en: 'Core Attribute', nodos: nodos_(['80'], 4) },
+];
+const NV_FILA = new Map(FILAS_GRABADO.map((f) => [f.id, f.nv]));
+/** Id de un nodo: columna + fila (sb1, ul30, …, sb80b). Un nodo con rangos tiene un paso por rango (sb80b1 … sb80b3). */
+export const idNodoGrabado = (col, fila) => `${col}${fila}`;
+const pasosNodo_ = (col, n) => (n.rangos
+  ? Array.from({ length: n.rangos }, (_, k) => `${idNodoGrabado(col, n.fila)}${k + 1}`)
+  : [idNodoGrabado(col, n.fila)]);
+/** Pasos en el orden de la matriz (columna por columna): id → { col, orden, nv }. */
+const PASOS = new Map(GRABADOS.flatMap((g) => g.nodos.flatMap((n) => pasosNodo_(g.id, n)).map((id, orden) =>
+  [id, { col: g.id, orden, nv: NV_FILA.get(g.nodos.find((n) => pasosNodo_(g.id, n).includes(id)).fila) }])));
+export const TOTAL_GRABADOS = PASOS.size;
 
-/** Normaliza { nv?, poder?, grabados: [ids] } (ids conocidos, en el orden de la matriz). Vacío → null. */
+/** Normaliza { nv?, poder?, grabados: [ids de paso] } (ids conocidos, en el orden de la matriz; los de la v7 se descartan). Vacío → null. */
 export function limpiarKeepsake(k) {
   if (!k || typeof k !== 'object') return null;
   const out = {};
@@ -644,49 +656,64 @@ export function limpiarKeepsake(k) {
   if (nv !== null) out.nv = nv;
   if (poder !== null) out.poder = poder;
   const pedidos = new Set(Array.isArray(k.grabados) ? k.grabados : []);
-  out.grabados = [...GRABADO_NV.keys()].filter((id) => pedidos.has(id));
+  out.grabados = [...PASOS.keys()].filter((id) => pedidos.has(id));
   return out.nv === undefined && out.poder === undefined && !out.grabados.length ? null : out;
 }
 
 /**
- * Ficha para la hoja: matriz con { id, nv, hecho, abierto } por celda (abierto = el nivel del Recuerdo
- * lo permite; sin nivel, todo abierto), hechos / total y avisos si hay grabados por encima del nivel.
+ * Ficha para la hoja: por columna, nodos { id, fila, nv, rangos, hechos, hecho, abierto } (abierto = el nivel del
+ * Recuerdo lo permite; sin nivel, todo abierto); pasos hechos / 31, % como el juego y avisos si hay grabados por
+ * encima del nivel.
  */
 export function calcularKeepsake(k) {
-  const hechos = new Set(k?.grabados || []);
+  const hechos = new Set((k?.grabados || []).filter((id) => PASOS.has(id)));
   const nv = k?.nv ?? null;
   const columnas = GRABADOS.map((g) => ({
-    ...g,
-    celdas: g.niveles.map((n, i) => {
-      const id = idGrabado(g.id, i);
-      return { id, nv: n, hecho: hechos.has(id), abierto: nv === null || n <= nv };
+    id: g.id, es: g.es, en: g.en,
+    nodos: g.nodos.map((n) => {
+      const pasos = pasosNodo_(g.id, n);
+      const h = pasos.filter((id) => hechos.has(id)).length;
+      const nvf = NV_FILA.get(n.fila);
+      return { id: idNodoGrabado(g.id, n.fila), fila: n.fila, nv: nvf, rangos: n.rangos || 1, hechos: h,
+        hecho: h === pasos.length, abierto: nv === null || nvf <= nv };
     }),
   }));
-  const fuera = columnas.flatMap((c) => c.celdas).filter((c) => c.hecho && !c.abierto).length;
+  const fuera = columnas.flatMap((c) => c.nodos).filter((n) => n.hechos && !n.abierto).length;
   return { nv, poder: k?.poder ?? null, columnas, hechos: hechos.size, total: TOTAL_GRABADOS,
+    pct: Math.floor((hechos.size * 100) / TOTAL_GRABADOS),
     avisos: fuera ? [`${fuera === 1 ? 'Un grabado pide' : `${fuera} grabados piden`} más nivel del Recuerdo.`] : [] };
 }
 
 /**
- * Marca o desmarca un grabado. Como el juego pide terminar el anterior de la misma columna, marcar uno
- * marca los anteriores y desmarcar uno desmarca los siguientes.
+ * Marca o desmarca un paso (un grabado o un rango). Como el juego pide hacerlos en orden dentro de la columna,
+ * marcar uno marca los anteriores y desmarcar uno desmarca los siguientes.
  */
 export function conGrabado(build, id, hecho) {
   const b = structuredClone(build || buildVacia());
+  const p = PASOS.get(id);
+  if (!p) return b;
   const k = { grabados: [], ...(b.keepsake || {}) };
-  const [col, i] = [id.slice(0, id.lastIndexOf('-')), Number(id.slice(id.lastIndexOf('-') + 1))];
-  const g = GRABADOS.find((x) => x.id === col);
-  if (!g || !(i >= 0 && i < g.niveles.length)) return b;
-  const set = new Set(k.grabados);
-  g.niveles.forEach((_, j) => {
-    const x = idGrabado(col, j);
-    if (hecho && j <= i) set.add(x);
-    if (!hecho && j >= i) set.delete(x);
-  });
-  k.grabados = [...GRABADO_NV.keys()].filter((x) => set.has(x));
+  const set = new Set(k.grabados.filter((x) => PASOS.has(x)));
+  for (const [x, q] of PASOS) {
+    if (q.col !== p.col) continue;
+    if (hecho && q.orden <= p.orden) set.add(x);
+    if (!hecho && q.orden >= p.orden) set.delete(x);
+  }
+  k.grabados = [...PASOS.keys()].filter((x) => set.has(x));
   b.keepsake = k;
   if (k.nv === undefined && k.poder === undefined && !k.grabados.length) delete b.keepsake;
   return b;
+}
+
+/** Nodo con rangos (sb80b, ca80b): cada toque sube un rango; desde el último vuelve a 0. */
+export function conRangoGrabado(build, nodo) {
+  const g = GRABADOS.find((x) => nodo.startsWith(x.id));
+  const n = g?.nodos.find((x) => x.rangos && idNodoGrabado(g.id, x.fila) === nodo);
+  if (!n) return structuredClone(build || buildVacia());
+  const hechos = new Set(build?.keepsake?.grabados || []);
+  const pasos = pasosNodo_(g.id, n);
+  const r = pasos.filter((id) => hechos.has(id)).length;
+  return r < pasos.length ? conGrabado(build, pasos[r], true) : conGrabado(build, pasos[0], false);
 }
 
 /** Cambia nivel o poder del Recuerdo (valor null o fuera de rango = sin dato). */
@@ -699,4 +726,3 @@ export function conDatoKeepsake(build, campo, valor) {
   if (k.nv === undefined && k.poder === undefined && !k.grabados.length) delete b.keepsake;
   return b;
 }
-

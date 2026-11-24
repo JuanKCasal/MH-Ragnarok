@@ -7,7 +7,7 @@ import {
   calcularRostros, conRostro, diferenciaRostros, limpiarRostros,
   calcularCamarada, conCamarada, limpiarCamarada, ordenarCamaradas, conAdventurer, camaradasPara,
   limpiarReflexiones, calcularReflexiones, conReflexion, conCapReflexiones,
-  limpiarKeepsake, calcularKeepsake, conGrabado, conDatoKeepsake, TOTAL_GRABADOS,
+  limpiarKeepsake, calcularKeepsake, conGrabado, conRangoGrabado, conDatoKeepsake, TOTAL_GRABADOS,
 } from '../site/js/build-calc.js';
 import { ARCHIVOS } from '../site/js/catalogo.js';
 
@@ -377,27 +377,43 @@ test('reflexiones: activar, quitar, capacidad y cambio de adventurer', () => {
 
 /* ---------- Recuerdo y grabados (E4) ---------- */
 
-test('recuerdo: 22 grabados; marcar en orden por columna y bloquear por nivel', () => {
-  assert.equal(TOTAL_GRABADOS, 22);
-  let b = conGrabado(buildVacia(), 'def-2', true);
-  assert.deepEqual(b.keepsake.grabados, ['def-0', 'def-1', 'def-2']);
-  b = conGrabado(b, 'def-1', false);
-  assert.deepEqual(b.keepsake.grabados, ['def-0']);
+test('recuerdo: 31 pasos como en el juego; marcar en orden por columna, rangos y bloqueo por nivel', () => {
+  assert.equal(TOTAL_GRABADOS, 31);
+  let b = conGrabado(buildVacia(), 'ul40', true);
+  assert.deepEqual(b.keepsake.grabados, ['ul1', 'ul30', 'ul40']);
+  b = conGrabado(b, 'ul30', false);
+  assert.deepEqual(b.keepsake.grabados, ['ul1']);
   b = conGrabado(b, 'nada-9', true);
-  assert.deepEqual(b.keepsake.grabados, ['def-0']);
+  b = conGrabado(b, 'def-0', true); // id de la v7: ya no existe
+  assert.deepEqual(b.keepsake.grabados, ['ul1']);
   b = conDatoKeepsake(b, 'nv', 40);
   b = conDatoKeepsake(b, 'poder', 5798);
-  b = conGrabado(b, 'atr-0', true);
+  b = conGrabado(b, 'ca80', true);
   const k = calcularKeepsake(b.keepsake);
   assert.equal(k.hechos, 2);
-  assert.equal(k.columnas.find((c) => c.id === 'atr').celdas[0].abierto, false);
-  assert.equal(k.columnas.find((c) => c.id === 'def').celdas[1].abierto, true);
+  const ca = k.columnas.find((c) => c.id === 'ca');
+  assert.equal(ca.nodos[0].abierto, false);
+  assert.equal(ca.nodos[1].rangos, 4);
+  assert.equal(k.columnas.find((c) => c.id === 'ul').nodos[2].abierto, true);
   assert.equal(k.avisos.length, 1);
-  assert.deepEqual(limpiarKeepsake({ nv: 99, poder: -2, grabados: ['atr-0', 'x', 'def-0', 'def-0'] }), { grabados: ['def-0', 'atr-0'] });
-  assert.equal(limpiarKeepsake({ grabados: [] }), null);
-  b = conDatoKeepsake(conDatoKeepsake(conGrabado(conGrabado(b, 'def-0', false), 'atr-0', false), 'nv', null), 'poder', '');
+  assert.deepEqual(limpiarKeepsake({ nv: 99, poder: -2, grabados: ['ca80', 'x', 'hab-0', 'ul1', 'ul1'] }), { grabados: ['ul1', 'ca80'] });
+  assert.equal(limpiarKeepsake({ grabados: ['def-0', 'atr-0'] }), null);
+  b = conDatoKeepsake(conDatoKeepsake(conGrabado(conGrabado(b, 'ul1', false), 'ca80', false), 'nv', null), 'poder', '');
   assert.equal(b.keepsake, undefined);
-  const c = calcular(cat, { v: 1, piezas: {}, keepsake: { nv: 80, grabados: ['hab-4'] } });
-  assert.equal(c.keepsake.hechos, 1);
+});
+
+test('recuerdo: rangos (3 y 4 puntos) y el 87 % de Juan (27 de 31)', () => {
+  let b = conRangoGrabado(buildVacia(), 'ca80b');
+  assert.deepEqual(b.keepsake.grabados, ['ca80', 'ca80b1']);
+  b = conRangoGrabado(conRangoGrabado(conRangoGrabado(b, 'ca80b'), 'ca80b'), 'ca80b');
+  assert.equal(calcularKeepsake(b.keepsake).columnas.find((c) => c.id === 'ca').nodos[1].hecho, true);
+  b = conRangoGrabado(b, 'ca80b'); // desde el último vuelve a 0
+  assert.deepEqual(b.keepsake.grabados, ['ca80']);
+  assert.deepEqual(conRangoGrabado(b, 'ul80').keepsake.grabados, ['ca80']); // sin rangos: no hace nada
+  let j = conGrabado(buildVacia(), 'sb80b3', true);
+  for (const id of ['ul80', 'el80', 'cp80', 'ca80']) j = conGrabado(j, id, true);
+  const c = calcular(cat, { v: 1, piezas: {}, keepsake: { nv: 80, ...j.keepsake } });
+  assert.equal(c.keepsake.hechos, 27);
+  assert.equal(c.keepsake.pct, 87);
   assert.equal(c.keepsake.avisos.length, 0);
 });

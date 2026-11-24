@@ -157,9 +157,9 @@ let buildsDemo = [
       camarada: { id: 'kojiro', nv: 80, estrellas: 6, poder: 1998 },
       // Reflexiones: 65 puntos como en la captura de Juan; cuáles van marcadas es solo un ejemplo.
       reflexiones: { cap: 65, activas: ['internal-ammo', 'protection', 'monsoon'] },
-      // Recuerdo como en la captura de Juan (Lv 80/80, poder 5798, "Engrave 87%"); los grabados marcados son de ejemplo.
-      keepsake: { nv: 80, poder: 5798, grabados: ['hab-0', 'hab-1', 'hab-2', 'hab-3', 'def-0', 'def-1', 'def-2', 'def-3', 'def-4', 'def-5',
-        'ele-0', 'ele-1', 'ele-2', 'ele-3', 'ele-4', 'ele-5', 'pas-0', 'pas-1', 'pas-2'] } } },
+      // Recuerdo como en las capturas de Juan (Lv 80/80, poder 5798, "Engrave 87%" = 27 de 31: le falta el Atributo de 4 rangos).
+      keepsake: { nv: 80, poder: 5798, grabados: ['sb1', 'sb40', 'sb60', 'sb70', 'sb80', 'sb80b1', 'sb80b2', 'sb80b3',
+        ...['1', '30', '40', '50', '60', '70', '80'].flatMap((f) => [`ul${f}`, `el${f}`]), 'cp50', 'cp60', 'cp70', 'cp80', 'ca80'] } } },
 ];
 // Nombres ES corregidos por oficiales (E6): uno de ejemplo para ver el ✓ en el modo demo.
 let nombresDemo = [
@@ -215,7 +215,7 @@ function composicionDemo(d) {
   }
   if (d.keepsake && typeof d.keepsake === 'object') {
     const gra = Array.isArray(d.keepsake.grabados) ? d.keepsake.grabados : [];
-    if (gra.length > 22 || gra.some((g) => !/^(hab-[0-4]|def-[0-5]|ele-[0-5]|pas-[0-3]|atr-0)$/.test(String(g)))) falla('DATO_INVALIDO', 'Grabado no válido.');
+    if (gra.length > 31 || gra.some((g) => !/^(sb(1|40|60|70|80|80b[1-3])|[ue]l(1|30|40|50|60|70|80)|cp(50|60|70|80)|ca(80|80b[1-4]))$/.test(String(g)))) falla('DATO_INVALIDO', 'Grabado no válido.');
     const k = { grabados: [...new Set(gra.map(String))] };
     const nv = opc(d.keepsake.nv, 1, 80, 'nivel del Recuerdo');
     const po = opc(d.keepsake.poder, 0, 999999, 'poder del Recuerdo');

@@ -92,10 +92,10 @@ test('camarada (E4): id + nivel, estrellas y poder opcionales; valida rangos', (
 
 test('reflexiones y recuerdo (E4): forma, rangos e ids de grabado', () => {
   const datos = { v: 1, reflexiones: { cap: 65, activas: ['internal-ammo', 'monsoon', 'monsoon'], x: 1 },
-    keepsake: { nv: 80, poder: 5798, grabados: ['def-0', 'atr-0', 'hab-4', 'def-0'] } };
+    keepsake: { nv: 80, poder: 5798, grabados: ['ul1', 'ca80b4', 'sb80b3', 'ul1'] } };
   const b = ok(E.post('build.guardar', { nombre: 'Ref', datos }, pepe));
   assert.deepEqual(b.datos.reflexiones, { activas: ['internal-ammo', 'monsoon'], cap: 65 });
-  assert.deepEqual(b.datos.keepsake, { grabados: ['def-0', 'atr-0', 'hab-4'], nv: 80, poder: 5798 });
+  assert.deepEqual(b.datos.keepsake, { grabados: ['ul1', 'ca80b4', 'sb80b3'], nv: 80, poder: 5798 });
   const vacio = ok(E.post('build.guardar', { id: b.id, nombre: 'Ref', datos: { v: 1, reflexiones: { activas: [] }, keepsake: { grabados: [] } } }, pepe));
   assert.equal(vacio.datos.reflexiones, undefined);
   assert.equal(vacio.datos.keepsake, undefined);
@@ -104,8 +104,10 @@ test('reflexiones y recuerdo (E4): forma, rangos e ids de grabado', () => {
   mal({ reflexiones: { activas: ['Mal Id'] } });
   mal({ reflexiones: { activas: Array.from({ length: 21 }, (_, i) => `r-${i}`) } });
   mal({ keepsake: { nv: 81 } });
-  mal({ keepsake: { grabados: ['atr-1'] } });
-  mal({ keepsake: { grabados: ['hab-5'] } });
+  mal({ keepsake: { grabados: ['def-0'] } }); // ids de la v7
+  mal({ keepsake: { grabados: ['sb80b4'] } });
+  mal({ keepsake: { grabados: ['ca80b5'] } });
+  mal({ keepsake: { grabados: ['cp1'] } });
   ok(E.post('build.eliminar', { id: b.id }, pepe));
 });
 

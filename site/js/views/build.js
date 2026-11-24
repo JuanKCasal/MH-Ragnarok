@@ -13,7 +13,7 @@ import { ARMAS } from '../etiquetas.js';
 import { cargarCatalogo } from '../catalogo.js';
 import { calcular, limpiarBuild, buildVacia, conPieza, conRostro, conCamarada, conAdventurer, resumenParaGuardar, PARTES, NOMBRE_PARTE,
   CALIDADES, COSTO_ROSTROS, CARTAS_ROSTROS, CAMARADA_NV_MAX, ESTRELLAS_MAX, PODER_MAX,
-  conReflexion, conCapReflexiones, REFLEXION_CAP_MAX, conGrabado, conDatoKeepsake, KEEPSAKE_NV_MAX } from '../build-calc.js';
+  conReflexion, conCapReflexiones, REFLEXION_CAP_MAX, conGrabado, conRangoGrabado, conDatoKeepsake, KEEPSAKE_NV_MAX, FILAS_GRABADO } from '../build-calc.js';
 import { abrirSelector } from '../ui/selector-pieza.js';
 import { abrirSelectorRostro } from '../ui/selector-rostro.js';
 import { abrirSelectorCamarada } from '../ui/selector-camarada.js';
@@ -320,7 +320,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     const r = c.reflexiones;
     const numero_ = (n) => (n === null || n === undefined ? '' : n);
     if (!r) {
-      return cajon('reflexiones', 'Reflexiones', 'Sin adventurer', html`
+      return cajon('reflexiones', 'Reflexiones (Insight)', 'Sin adventurer', html`
         <p class="nota bld-cajon__nota">Elige primero el adventurer: cada uno tiene sus Reflexiones.</p>`);
     }
     const resumen = r.activas
@@ -363,7 +363,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       ${grupos.map(([t, xs]) => html`
         <h3 class="rotulo bld-ref-grupo">${t}</h3>
         <ul class="bld-refs">${xs.map(fila)}</ul>`)}`;
-    return cajon('reflexiones', 'Reflexiones', resumen, html`${cuerpo}
+    return cajon('reflexiones', 'Reflexiones (Insight)', resumen, html`${cuerpo}
       <p class="nota bld-cajon__nota">Escribe los puntos de Reflexión que tiene tu adventurer y marca las que tienes equipadas. Nombres y efectos según GameWith (resumidos, por confirmar).</p>`);
   }
 
@@ -373,15 +373,24 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     const k = c.keepsake;
     const numero_ = (n) => (n === null || n === undefined ? '' : n);
     const resumen = [k.nv ? `Nv ${k.nv}` : '', k.poder !== null ? `poder ${numero(k.poder)}` : '',
-      k.hechos ? `${k.hechos}/${k.total} grabados` : ''].filter(Boolean).join(' · ') || 'Sin datos';
-    const NIVELES = [30, 40, 50, 60, 70, 80];
-    const CORTO = { hab: 'Hab.', def: 'Def.', ele: 'Elem.', pas: 'Pasiva', atr: 'Atrib.' };
-    const celda = (x, nombre) => html`
-      <label class="bld-grab ${x.hecho ? 'bld-grab--hecho' : ''} ${x.abierto ? '' : 'bld-grab--cerrado'}" title="${nombre} · Nv ${x.nv}${x.abierto ? '' : ' (te falta nivel)'}">
+      k.hechos ? `grabados ${k.pct} %` : ''].filter(Boolean).join(' · ') || 'Sin datos';
+    const CORTO = { sb: 'Hab.', ul: 'Def.', el: 'Elem.', cp: 'Pasiva', ca: 'Atrib.' };
+    const falta = (x) => (x.abierto ? '' : ', te falta nivel');
+    const clases = (x) => `bld-grab ${x.hecho ? 'bld-grab--hecho' : ''} ${x.abierto ? '' : 'bld-grab--cerrado'}`;
+    const simple = (x, nombre) => html`
+      <label class="${clases(x)}" title="${nombre} · Nv ${x.nv}${x.abierto ? '' : ' (te falta nivel)'}">
         <input type="checkbox" data-gra="${x.id}" data-foco="gra-${x.id}" ${x.hecho ? 'checked' : ''} ${!editable || (!x.abierto && !x.hecho) ? 'disabled' : ''}
-          aria-label="${nombre}, nivel ${x.nv}${x.abierto ? '' : ', te falta nivel'}">
+          aria-label="${nombre}, nivel ${x.nv}${falta(x)}">
         <span aria-hidden="true">${x.hecho ? '✓' : x.abierto ? '' : '🔒'}</span>
       </label>`;
+    // Nodo con rangos (3 o 4 puntos, como en el juego): cada toque sube un rango; desde el último vuelve a 0.
+    const conRangos = (x, nombre) => html`
+      <button type="button" class="${clases(x)} bld-grab--rangos ${x.hechos ? 'bld-grab--parcial' : ''}" data-gra-rango="${x.id}" data-foco="gra-${x.id}"
+        title="${nombre} · Nv ${x.nv} · ${x.hechos} de ${x.rangos}${x.abierto ? '' : ' (te falta nivel)'}" ${!editable || (!x.abierto && !x.hechos) ? 'disabled' : ''}
+        aria-label="${nombre}, nivel ${x.nv}, ${x.hechos} de ${x.rangos} rangos${falta(x)}${editable ? '. Toca para subir un rango' : ''}">
+        <span class="bld-grab__puntos" aria-hidden="true">${Array.from({ length: x.rangos }, (_, i) => html`<i class="${i < x.hechos ? 'si' : ''}"></i>`)}</span>
+        ${x.abierto || x.hechos ? '' : html`<span class="bld-grab__candado" aria-hidden="true">🔒</span>`}
+      </button>`;
     const cuerpo = html`
       <div class="bld-cam-datos bld-kee-datos">
         <label class="campo"><span class="campo__etiqueta">Nivel del Recuerdo</span>
@@ -392,20 +401,20 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       <div class="bld-grabados">
         <table class="bld-grab-tabla">
           <caption class="oculto-visual">Grabados por nivel del Recuerdo</caption>
-          <thead><tr><th scope="col">Nv</th>${k.columnas.map((g) => html`<th scope="col" title="${g.es}">${CORTO[g.id]}</th>`)}</tr></thead>
+          <thead><tr><th scope="col">Nv</th>${k.columnas.map((g) => html`<th scope="col" title="${g.es} (${g.en})">${CORTO[g.id]}</th>`)}</tr></thead>
           <tbody>
-            ${NIVELES.map((nv) => html`<tr><th scope="row">${nv}</th>${k.columnas.map((g) => {
-              const xs = g.celdas.filter((x) => x.nv === nv);
-              return xs.length ? html`<td><span class="bld-grab-celda">${xs.map((x) => celda(x, g.es))}</span></td>` : html`<td class="bld-grab-vacia" aria-label="nada">·</td>`;
+            ${FILAS_GRABADO.map((f) => html`<tr><th scope="row">${f.nv}</th>${k.columnas.map((g) => {
+              const x = g.nodos.find((n) => n.fila === f.id);
+              return x ? html`<td>${x.rangos > 1 ? conRangos(x, g.es) : simple(x, g.es)}</td>` : html`<td class="bld-grab-vacia" aria-label="nada">·</td>`;
             })}</tr>`)}
           </tbody>
         </table>
       </div>
-      <p class="bld-ref-cuenta"><strong>${k.hechos}</strong> de ${k.total} grabados (${Math.round((k.hechos / k.total) * 100)} %)</p>
+      <p class="bld-ref-cuenta">Grabado <strong>${k.pct} %</strong> <span class="bld-kee-pasos">(${k.hechos} de ${k.total} pasos)</span></p>
       ${k.avisos.map((a) => html`<p class="alerta bld-alerta-cam">${a}</p>`)}
-      <p class="nota bld-cajon__nota">${k.columnas.map((g) => `${CORTO[g.id]} = ${g.es}`).join(' · ')}. Marcar uno marca los anteriores de su columna (el juego pide hacerlos en orden). Mejora de habilidades tiene dos de Nv 80.</p>`;
-    return cajon('keepsake', 'Recuerdo y grabados', resumen, html`${cuerpo}
-      <p class="nota bld-cajon__nota">Nivel y poder: cópialos de la pantalla del Recuerdo (Keepsake) en el juego. Lo que hace cada grabado cambia según el adventurer. Grabados según GameWith.</p>`);
+      <p class="nota bld-cajon__nota">${k.columnas.map((g) => `${CORTO[g.id]} = ${g.es} (${g.en})`).join(' · ')}. Marcar uno marca los anteriores de su columna (el juego pide hacerlos en orden). Los de 3 y 4 puntos tienen rangos: cada toque suma uno; desde el último vuelve a cero.</p>`;
+    return cajon('keepsake', 'Recuerdo (Keepsake) y grabados', resumen, html`${cuerpo}
+      <p class="nota bld-cajon__nota">Copia nivel, poder y grabados de la pantalla del Recuerdo en el juego (pestaña Engrave): el % debe darte igual que allí. Lo que hace cada grabado cambia según el adventurer.</p>`);
   }
 
   function vistaHoja(c) {
@@ -641,6 +650,8 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       });
       return;
     }
+    const gr = t.closest('[data-gra-rango]');
+    if (gr) { if (!gr.disabled) cambiar(() => { b = conRangoGrabado(b, gr.dataset.graRango); }); return; }
     if (t.closest('[data-guardar]')) { guardar(t.closest('[data-guardar]')); return; }
     if (t.closest('[data-eliminar]')) { eliminar(t.closest('[data-eliminar]')); return; }
     if (t.closest('[data-de-cero]')) {

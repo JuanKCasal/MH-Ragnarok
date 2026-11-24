@@ -84,13 +84,14 @@ function reflexionesValidas_(r) {
   return out.cap !== undefined || out.activas.length ? out : null;
 }
 
-var GRABADO_RE = /^(hab-[0-4]|def-[0-5]|ele-[0-5]|pas-[0-3]|atr-0)$/;
+/** Pasos de grabado como en el juego (backend v8): ver GRABADOS en build-calc.js; 31 en total. */
+var GRABADO_RE = /^(sb(1|40|60|70|80|80b[1-3])|[ue]l(1|30|40|50|60|70|80)|cp(50|60|70|80)|ca(80|80b[1-4]))$/;
 
-/** Bloque keepsake (E4): { nv?, poder?, grabados: [ids de la matriz] }. Ver GRABADOS en build-calc.js. */
+/** Bloque keepsake (E4): { nv?, poder?, grabados: [ids de paso] }. Ver GRABADOS en build-calc.js. */
 function keepsakeValido_(k) {
   if (!k || typeof k !== 'object' || Array.isArray(k)) return null;
   var gra = Array.isArray(k.grabados) ? k.grabados : [];
-  if (gra.length > 22) fallar_('DATO_INVALIDO', 'Demasiados grabados.');
+  if (gra.length > 31) fallar_('DATO_INVALIDO', 'Demasiados grabados.');
   var out = { grabados: [] };
   gra.forEach(function (x) {
     var id = String(x);

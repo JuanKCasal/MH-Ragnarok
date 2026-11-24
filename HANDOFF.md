@@ -1,4 +1,39 @@
-# HANDOFF — MH-Ragnarok (sesión 15: E4 completa — Reflexiones y Recuerdo listos, falta backend v7 + commit/push)
+# HANDOFF — MH-Ragnarok (sesión 16: Recuerdo rehecho como en el juego — 31 pasos, rangos, 87 % · backend v8 publicado · falta commit)
+
+Fecha: 2026-11-23
+Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
+
+## Sesión 16 — Corrección del Recuerdo (Keepsake) (sin commit)
+
+### Punto de partida exacto para la sesión 17
+1. Leer `CLAUDE.md`, este bloque y `docs/BUILDER.md` §15.1 ("Hecho en la sesión 16").
+2. **Publicar (en este orden; el backend va ANTES que el push: la v7 rechaza los ids nuevos)**:
+   1. `npm test` → **134** (Claude ya las corrió en su PC: 134 pasan).
+   2. ~~Backend versión 8~~ **HECHO 2026-11-23 (Claude con el Chrome de Juan, con su permiso):** el editor tenía exactamente la v7; se aplicó el cambio y quedó idéntico al paquete (SHA-256 `3017aff336f5…`), guardado y publicada la **versión 8** ("v8 (Recuerdo como en el juego)", misma URL); `builds?clase=ejemplo` → `{ok:true,data:[]}`. (Lo que se verificó: el editor tenía exactamente la v7 (SHA-256 `4dc4d558b460…`). Cambio solo en `Builds.gs` (`GRABADO_RE` y máx. 31 en `keepsakeValido_`). Paquete probado: `Claude outputs/MH-Ragnarok.gs` (SHA-256 `3017aff336f5…`). Publicar "v8 (Recuerdo como en el juego)", misma URL; sin `instalar()`. Probar `builds?clase=ejemplo` → `{ok:true,data:[]}`.)
+   3. Commit + push (Juan):
+      ```
+      git add -A
+      git commit -m "Sesión 16: Recuerdo (Keepsake) como en el juego: 31 pasos con rangos, backend v8"
+      git push
+      ```
+   4. Revisar el despliegue de Pages.
+   5. Probar en el celular: "Fire Heavy" → cajón Recuerdo: marcar tus grabados (todo menos el Atributo de 4 puntos) → debe decir **87 %** como el juego. Si guardaste grabados con la v7, se pierden (ids viejos): vuelve a marcarlos.
+3. **Por confirmar con el juego (Juan)**: la matriz con otro adventurer (¿misma forma?); que todos los grabados pidan el anterior de su columna; lo de la sesión 15 (Reflexiones de Haze, clase del Fated, rarezas §11).
+4. Siguen abiertos: activador diario de `limpiarSesiones`; probar en el celular Camarada, equipo en español, E6 y Rostros.
+5. **Siguiente entrega (a decidir con Juan)**: E3 tarjeta de build, E5 Comparar o E7 poder estimado.
+
+### Hecho en la sesión 16
+- Recuerdo rehecho con las capturas de Juan (BUILDER §15.1): 8 filas (1…80, 80), 31 pasos, nodos de 3 y 4 rangos con puntos (tocar = siguiente rango), % como el juego (piso de hechos / 31). Ids nuevos (`sb1…`, `ul…`, `el…`, `cp…`, `ca80`, `sb80b1–3`, `ca80b1–4`); los de la v7 se descartan.
+- Rótulos: "Reflexiones (Insight)" y "Recuerdo (Keepsake) y grabados".
+- Backend `Builds.gs` (v8) y `demo-data.js` con la validación nueva; build de ejemplo con los 27 pasos de Juan.
+- Pruebas: **134**. Revisado en navegador a 390 y 320 px (demo): sin scroll horizontal ni errores.
+
+### Git (sesión 16 — sin commit)
+Modificados: `HANDOFF.md`, `SPEC.md`, `docs/BUILDER.md`, `apps-script/Builds.gs`, `site/js/{build-calc,demo-data}.js`, `site/js/views/build.js`, `site/assets/css/views.css`, `tests/{build-calc,builds}.test.mjs`. (`Claude outputs/` no va al repo.)
+
+---
+
+# (Sesión 15) HANDOFF — MH-Ragnarok (sesión 15: E4 completa — Reflexiones y Recuerdo listos, publicado `b4937d8` + backend v7 · el Recuerdo hay que rehacerlo, §15.1)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
@@ -8,17 +43,19 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 Juan pidió "haz todo lo pendiente, sin detenerte" y estuvo lejos de la PC.
 
 ### Punto de partida exacto para la sesión 16
+0. **PRIMERO: corregir el Recuerdo (Keepsake).** La matriz de grabados salió de GameWith y **no coincide con el juego**. Juan mandó capturas (en `Claude outputs/capturas-recuerdo/`, fuera del repo): análisis y plan exacto en **`docs/BUILDER.md` §15.1** (31 pasos, filas 1/30/40/50/60/70/80/80, rangos 3 y 4, ids nuevos, backend v8). Reflexiones está bien (Juan confirmó que existen en el juego y ya marcó las suyas; lo confundió el nombre ES): solo poner "(Insight)" y "(Keepsake)" en los rótulos.
 1. Leer `CLAUDE.md`, este bloque y `docs/BUILDER.md` §14 (Reflexiones) y §15 (Recuerdo y grabados).
 2. **Publicar (en este orden)**:
    1. `npm test` → **133** (Claude ya las corrió en su PC: 133 pasan).
-   2. **Backend versión 7** (pendiente: el sistema no dejó a Claude tocar el editor de Apps Script sin el permiso explícito de Juan). Juan o Claude con permiso: abrir el proyecto "MH-Ragnarok API" → el editor tiene **exactamente la v6** (SHA-256 `f6d4bdf892aa…`, comprobado por Claude el 2026-11-23) → pegar entero `Claude outputs/MH-Ragnarok.gs` (SHA-256 `4dc4d558b460…`; solo cambia `Builds.gs`: `reflexionesValidas_` y `keepsakeValido_`) → Guardar → Implementar → Gestionar implementaciones → lápiz → **Versión nueva** "v7 (E4: Reflexiones y Recuerdo)" (misma URL). No hace falta `instalar()` (no cambia hojas). Si la web sale antes que la v7, las builds se guardan igual pero sin Reflexiones ni Recuerdo.
-   3. Commit + push (Juan):
+   2. ~~Backend versión 7~~ **HECHO 2026-11-23 (Claude con el Chrome de Juan, con su permiso):** el editor tenía exactamente la v6 (SHA-256 `f6d4bdf892aa…`); se aplicó el cambio de `Builds.gs` y se verificó idéntico al paquete probado `Claude outputs/MH-Ragnarok.gs` (SHA-256 `4dc4d558b460…`), guardado y publicada la **versión 7** ("v7 (E4: Reflexiones y Recuerdo)", misma URL). `builds?clase=ejemplo` → `{ok:true,data:[]}`. Sin `instalar()`.
+   3. ~~Commit + push~~ **HECHO:** commit `b4937d8`, pusheado por Juan; el despliegue de Pages salió bien a la primera con las acciones nuevas (Node 24).
+   (Comandos usados:)
       ```
       git add -A
       git commit -m "Sesión 15: E4 Reflexiones y Recuerdo (grabados), backend v7 y acciones de Pages en Node 24"
       git push
       ```
-   4. Revisar el despliegue de Pages: es el primero con las acciones nuevas (Node 24). Si falla en "upload-pages-artifact" o "deploy-pages", volver a las versiones de antes en `.github/workflows/pages.yml` (checkout@v4, setup-node@v4, configure-pages@v5, upload-pages-artifact@v3, deploy-pages@v4) y avisar.
+   4. ~~Revisar el despliegue de Pages~~ HECHO (OK). Nota por si alguna vez falla: Si falla en "upload-pages-artifact" o "deploy-pages", volver a las versiones de antes en `.github/workflows/pages.yml` (checkout@v4, setup-node@v4, configure-pages@v5, upload-pages-artifact@v3, deploy-pages@v4) y avisar.
    5. Probar en el celular: abrir "Fire Heavy" → cajón Reflexiones: escribir tus puntos (65), marcar las que tienes, Guardar, volver a abrir. Cajón Recuerdo y grabados: Nivel 80, Poder 5798, marcar tus grabados (deberían quedar ~19 de 22 = tu 87 %).
 3. **Por confirmar con el juego (Juan)**:
    - Que el Fated solo pueda equipar las Reflexiones de su clase y que su clase vaya con el tipo del camarada (la web lo supone).
