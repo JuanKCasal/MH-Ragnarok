@@ -1,4 +1,4 @@
-# HANDOFF — MH-Ragnarok (sesión 17: poder a mano + poder total en la barra · sin commit · backend v9 por publicar)
+# HANDOFF — MH-Ragnarok (sesión 17: poder a mano + poder total en la barra · pusheado `a53e738` · backend v9 por publicar)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
@@ -9,9 +9,9 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 **Orden elegido por Juan: por entregas**, cada una publicada y probada en el celular: 1) poder a mano + total (**hecha, falta publicar**) → 2) **E3 tarjeta de build** → 3) **E5 Comparar** → 4) **E7 poder estimado**.
 
 1. Si la entrega 1 no está publicada, publicar (en este orden):
-   1. `npm test` → **138** (Claude ya las corrió en su PC: 138 pasan).
+   1. ~~`npm test`~~ **HECHO:** 138 pasan (Juan, 2026-11-23).
    2. **Backend versión 9** (Apps Script, misma URL, sin `instalar()`): el único cambio frente a la v8 es la lista de `poder` en `composicionValida_` (`Builds.gs`), que ahora incluye `'maestria'`. Paquete probado: `Claude outputs/MH-Ragnarok.gs` (SHA-256 `f8286f1a2e37…`; la v8 era `3017aff336f5…`). Publicar "v9 (poder a mano)". Probar `builds?clase=ejemplo` → `{ok:true,data:[]}`. (Si la web sale antes, la v8 guarda la build pero descarta el Proof of Mastery.)
-   3. Commit + push (Juan, por consola):
+   3. ~~Commit + push~~ **HECHO:** commit `a53e738`, pusheado por Juan. (Comandos usados:)
       ```
       git add -A
       git commit -m "Sesión 17: poder a mano (equipo, Rostros, Proof of Mastery) y poder total en la barra, backend v9"
@@ -35,7 +35,7 @@ Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juan
 - Pruebas: **138** (+4). Revisado a 390 y 320 px (demo): sin scroll horizontal ni errores.
 - Docs: BUILDER §3 y §16, SPEC (`build.guardar`), CLAUDE.md (glosario: Proof of Mastery).
 
-### Git (sesión 17 — sin commit)
+### Git (sesión 17 — publicado en `a53e738`)
 Modificados: `HANDOFF.md`, `CLAUDE.md`, `SPEC.md`, `docs/BUILDER.md`, `apps-script/Builds.gs`, `site/js/{build-calc,demo-data}.js`, `site/js/views/build.js`, `site/assets/css/views.css`, `tests/{build-calc,builds}.test.mjs`. (`Claude outputs/` no va al repo.)
 
 ---
