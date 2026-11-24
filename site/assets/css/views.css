@@ -825,6 +825,8 @@ textarea.editor-cuerpo { min-height: 18lh; line-height: 1.6; field-sizing: conte
 .bld-barra__poder strong { font-size: 1.1875rem; }
 .bld-barra__falta { font-size: .8125rem; opacity: .8; }
 .bld-poder-campo { margin-top: 12px; max-width: 22rem; }
+/* En Armadura y Rostros el campo va suelto en el cuerpo del cajón: mismo margen que piezas y chips. */
+.bld-cajon__cuerpo > .bld-poder-campo { margin-top: 0; padding: 12px 16px 0; max-width: calc(22rem + 32px); }
 .bld-sobra { color: var(--oro-claro); }
 .bld-listo { color: var(--acierto); }
 
