@@ -1,4 +1,28 @@
-# HANDOFF — MH-Ragnarok (sesión 17: poder a mano + poder total en la barra · pusheado `a53e738` · backend v9 por publicar)
+# HANDOFF — MH-Ragnarok (sesión 18: entrega 1 publicada — backend v9 + Pages · siguiente: E3 tarjeta de build, decisiones tomadas)
+
+Fecha: 2026-11-23
+Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
+
+## Sesión 18 — Publicación de la entrega 1 y decisiones de la E3
+
+### Hecho en la sesión 18 (Claude con el Chrome de Juan)
+- **Backend v9 publicado**: en el editor de Apps Script se aplicaron solo las dos diferencias con la v8 (línea de versión de la cabecera y la lista de `poder` con `'maestria'` en `composicionValida_`); el contenido quedó **idéntico al paquete** `Claude outputs/MH-Ragnarok.gs` (SHA-256 `f8286f1a2e37…280843`). Guardado e implementado como **Versión 9** "v9 (poder a mano)" (misma URL). `builds?clase=ejemplo` → `{ok:true,data:[]}`.
+- **Pages**: las ejecuciones #27 (`a53e738`) y #28 (`8ee94d7`) fallaron con "No artifacts named github-pages" (el fallo conocido). Se lanzó **Run workflow** a mano (#29) en `main`: **verde**, la web publicada ya sirve `build-calc.js` con `PODER_MANUAL`/`calcularPoder`.
+
+### Punto de partida exacto para la sesión 19
+1. ~~Pages #29~~ **HECHO** (verde, verificado).
+2. **Prueba en el celular (Juan)**: "Fire Heavy" → 7228 en Armadura, 2099 en Rostros y 220 en Adventurer y arma → la barra debe decir **Poder 17.343**.
+3. **E3 · Tarjeta de build** (BUILDER §5), con las decisiones de Juan de la sesión 18:
+   - La tarjeta compacta muestra: **poder total** (o "N de 5 escritos"), **arma y elemento** (ES + EN, tipo e icono), **habilidades top** (3–4 con más nivel, "Ataque 5/5") y **Rostros + camarada** en chips (núcleo de Rostros, camarada con rareza). Al tocarla abre la build completa.
+   - Dónde: en el perfil del miembro (debajo de cada adventurer) y en guías con `[[build:ID]]`; acciones Compartir y "Usar de base".
+   - **Proof of Mastery pasa al perfil del miembro** (es de la cuenta): se escribe una vez en "Mi perfil" y todas sus builds lo suman. Migración: si una build ya tiene `poder.maestria`, usarlo como valor inicial del perfil (o seguir leyéndolo de la build si el perfil no lo tiene). Requiere backend v10 (campo nuevo en `Miembros`).
+   - **El poder total de la build alimenta automáticamente el `poder_total` del adventurer** (el que usa el balanceo del Clash) cuando la build está asociada a ese adventurer (`adventurer_id`) y el total está completo (5 de 5). Definir: si hay varias builds del mismo adventurer, ¿cuál manda? (proponer: la más reciente o una marcada como "principal"; preguntar a Juan).
+   - Antes de programar: proponer a Juan el diseño de la tarjeta (mockup a 390 px) y la regla de "varias builds por adventurer".
+4. Siguen abiertos: activador diario de `limpiarSesiones`; probar en el celular Camarada, equipo en español, E6 y Rostros; lo de "Por confirmar con el juego" de la sesión 16.
+
+---
+
+# (Sesión 17) HANDOFF — MH-Ragnarok (sesión 17: poder a mano + poder total en la barra · pusheado `a53e738` · backend v9 por publicar)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
