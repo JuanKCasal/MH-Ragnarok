@@ -65,6 +65,7 @@ La estructura de carpetas, el modelo de datos y los endpoints se definen en `SPE
 | Insight | Reflexión (GameWith es-MX, confirmar) | Pasivas por adventurer que cuestan 5/10/30 puntos de Reflexión |
 | Keepsake | Recuerdo (GameWith es-MX, confirmar) | Nivel 1–80; desde Nv 30 abre Grabados (Engravings) |
 | Adventurer Power | ¿Poder de caza? (GameWith es-MX, confirmar) | Poder total; métrica para balancear el Clash |
+| Proof of Mastery | (por confirmar) | Rango de la cuenta (p. ej. Legendary Traveler III: +220 atq. físico, +110 elemental a todo el escuadrón); suma al Adventurer Power |
 
 | Assault / Disruptor / Support | Asalto / Alterador / Apoyo (GameWith es-MX, confirmar) | Tipos de adventurer |
 

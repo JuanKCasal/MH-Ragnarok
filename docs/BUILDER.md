@@ -92,10 +92,10 @@ API nueva:
   "camarada": { "id": "…", "nv": 60, "estrellas": 3, "poder": 1998 },
   "keepsake": { "nv": 60, "grabados": ["skill-boost", "ultimate", "…"] },
   "reflexiones": { "pts": 65, "max": 65, "nodos": [["internal-ammo", 30]] },
-  "poder": { "total": 16851, "equipo": 6736, "rostros": 2099, "camarada": 1998 } }
+  "poder": { "equipo": 7228, "rostros": 2099, "maestria": 220 } }
 ```
 
-Todo bloque es opcional (una build puede ser solo equipo). Los números de `poder` los escribe el miembro desde su captura y alimentan la fórmula del poder estimado.
+Todo bloque es opcional (una build puede ser solo equipo). Los números de `poder` los escribe el miembro desde su captura y alimentan la fórmula del poder estimado. Desde la sesión 17 (§16): `poder` guarda solo lo que se escribe a mano (`equipo` = arma + 5 piezas, `rostros`, `maestria` = Proof of Mastery); el camarada y el Recuerdo guardan su poder en su propio bloque y el **total se calcula** en el navegador (no se guarda).
 
 ## 4. Cálculo (navegador, módulo puro con pruebas)
 
@@ -296,3 +296,16 @@ Total **22**. GameWith dice que algunos piden terminar el anterior: la web marca
 - Backend v8 (`Builds.gs`): `GRABADO_RE` nuevo y máx. 31. Mismo cambio en `demo-data.js`; la build de ejemplo trae los 27 pasos de Juan (87 %).
 - Pruebas: **134** (`build-calc`: rangos y el 87 %; `builds`: ids nuevos y rechazo de los de v7). Revisado en navegador a 390 y 320 px (demo): sin scroll horizontal ni errores.
 - Por confirmar (Juan): que la forma de la matriz sea igual con otro adventurer (no solo el Fated de ballesta pesada) y que todos los grabados pidan el anterior de su columna.
+
+## 16. Poder a mano y poder total — hecho (2026-11-23, sesión 17)
+
+Primera entrega del plan "poder + E3 + E5 + E7" (Juan eligió **por entregas**, cada una publicada y probada antes de la siguiente).
+
+**Respuestas de Juan (sesión 17):** el poder del equipo es **un solo número para arma + 5 piezas** (no por pieza ni el arma aparte). Su Adventurer Power es **17343 = equipo 7228 + Rostros 2099 + camarada 1998 + Recuerdo 5798 + 220**. Los 220 vienen de **Proof of Mastery**: su rango "Legendary Traveler III" da "+220 de ataque físico y +110 de ataque elemental" a los adventurers del escuadrón (captura de Juan). Es de la **cuenta** (vale para todos sus adventurers), pero por ahora se escribe en cada build. Las Reflexiones y el nivel del adventurer **no** suman aparte.
+
+- Composición: `poder: { equipo?, rostros?, maestria? }` (0–999999). El total = equipo + Rostros + Proof of Mastery + `camarada.poder` (si hay camarada) + `keepsake.poder`.
+- Cálculo (`build-calc.js`): `PODER_MANUAL`, `limpiarPoder` (descarta `total` y `camarada` viejos), `conPoder`, `calcularPoder` (→ `{ partes, total, escritos }`; total `null` sin datos). `limpiarBuild` conserva `poder`; `calcular()` devuelve `poder`.
+- Pantallas: campo **Poder de Proof of Mastery** en "Adventurer y arma"; **Poder del equipo (arma + 5 piezas)** en Armadura; **Poder de Rostros** en Rostros; los resúmenes de los cajones muestran "poder 7.228". En la barra fija: **Poder 17.343** (y "· 4 de 5 escritos" si falta alguno; al mantener el puntero, el desglose).
+- Backend `Builds.gs` (**v9**): acepta `maestria` en `poder` (siguen `total`, `equipo`, `rostros`, `camarada` por compatibilidad). Sin `instalar()`. Si la web sale antes, la v8 guarda la build pero descarta el Proof of Mastery (no la rechaza).
+- Demo: la build de ejemplo suma 17.343 como el juego. Pruebas: **138**. Revisado a 390 y 320 px: sin scroll horizontal ni errores.
+- Idea para después (no hecha): Proof of Mastery al perfil del miembro, para no repetirlo en cada build.

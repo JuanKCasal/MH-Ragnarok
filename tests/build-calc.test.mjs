@@ -8,6 +8,7 @@ import {
   calcularCamarada, conCamarada, limpiarCamarada, ordenarCamaradas, conAdventurer, camaradasPara,
   limpiarReflexiones, calcularReflexiones, conReflexion, conCapReflexiones,
   limpiarKeepsake, calcularKeepsake, conGrabado, conRangoGrabado, conDatoKeepsake, TOTAL_GRABADOS,
+  limpiarPoder, conPoder, calcularPoder,
 } from '../site/js/build-calc.js';
 import { ARCHIVOS } from '../site/js/catalogo.js';
 
@@ -416,4 +417,38 @@ test('recuerdo: rangos (3 y 4 puntos) y el 87 % de Juan (27 de 31)', () => {
   assert.equal(c.keepsake.hechos, 27);
   assert.equal(c.keepsake.pct, 87);
   assert.equal(c.keepsake.avisos.length, 0);
+});
+
+test('poder a mano: limpiar conserva equipo/rostros/maestria válidos; el total no se guarda', () => {
+  assert.deepEqual(limpiarPoder({ equipo: 7228, rostros: 2099, maestria: 220, total: 1, camarada: 5, x: 3 }), { equipo: 7228, rostros: 2099, maestria: 220 });
+  assert.deepEqual(limpiarPoder({ equipo: -1, rostros: 1000000, maestria: '' }), null);
+  assert.equal(limpiarPoder(null), null);
+  const b = limpiarBuild(cat, { v: 1, poder: { equipo: '7228', total: 17343 } });
+  assert.deepEqual(b.poder, { equipo: 7228 });
+  assert.equal(limpiarBuild(cat, { v: 1 }).poder, undefined);
+});
+
+test('poder a mano: conPoder pone y quita campos; vacío quita el bloque', () => {
+  let b = conPoder(buildVacia(), 'equipo', 7228);
+  b = conPoder(b, 'maestria', '220');
+  assert.deepEqual(b.poder, { equipo: 7228, maestria: 220 });
+  b = conPoder(conPoder(b, 'equipo', null), 'maestria', 'abc');
+  assert.equal(b.poder, undefined);
+  assert.throws(() => conPoder(buildVacia(), 'total', 1));
+});
+
+test('poder total = equipo + Rostros + Proof of Mastery + camarada + Recuerdo (captura de Juan: 17343)', () => {
+  const b = { v: 1, piezas: {}, poder: { equipo: 7228, rostros: 2099, maestria: 220 },
+    camarada: { id: 'kojiro', poder: 1998 }, keepsake: { poder: 5798, grabados: [] } };
+  const p = calcularPoder(b);
+  assert.equal(p.total, 17343);
+  assert.equal(p.escritos, 5);
+  assert.equal(calcular(cat, limpiarBuild(cat, b)).poder.total, 17343);
+  // Sin datos: total null; parcial: suma lo escrito.
+  assert.equal(calcularPoder(buildVacia()).total, null);
+  const parcial = calcularPoder({ poder: { rostros: 2099 }, keepsake: { poder: 5798 } });
+  assert.equal(parcial.total, 7897);
+  assert.equal(parcial.escritos, 2);
+  // El poder de un camarada sin id no cuenta.
+  assert.equal(calcularPoder({ camarada: { poder: 10 } }).total, null);
 });

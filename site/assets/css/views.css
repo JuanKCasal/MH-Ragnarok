@@ -821,6 +821,10 @@ textarea.editor-cuerpo { min-height: 18lh; line-height: 1.6; field-sizing: conte
 .bld-barra__datos p { margin: 0; }
 .bld-barra__datos strong { font-family: var(--f-display); color: var(--oro-claro); font-size: 1.0625rem; }
 .bld-barra .boton { flex: none; padding: 0 16px; }
+.bld-barra__poder { font-size: .875rem; color: var(--texto-tenue); }
+.bld-barra__poder strong { font-size: 1.1875rem; }
+.bld-barra__falta { font-size: .8125rem; opacity: .8; }
+.bld-poder-campo { margin-top: 12px; max-width: 22rem; }
 .bld-sobra { color: var(--oro-claro); }
 .bld-listo { color: var(--acierto); }
 

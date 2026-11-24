@@ -184,6 +184,7 @@ export function calcular(cat, build) {
   const camarada = calcularCamarada(cat, b.camarada, adv, avisos);
   const reflexiones = calcularReflexiones(cat, b.reflexiones, adv, camarada?.item?.tipo || '');
   const keepsake = calcularKeepsake(b.keepsake);
+  const poder = calcularPoder(b);
   const habNucleo = rostros?.nucleo?.item.nucleo?.hab;
   if (habNucleo) sumar(habNucleo[0], 'rostro', habNucleo[1]);
 
@@ -208,7 +209,7 @@ export function calcular(cat, build) {
   }).sort((x, y) => y.nivel - x.nivel || y.suma - x.suma || porNombre(x, y));
 
   return {
-    adv, arma, piezas, def, atk, afi, ele, estado, habilidades, sets, rostros, camarada, reflexiones, keepsake,
+    adv, arma, piezas, def, atk, afi, ele, estado, habilidades, sets, rostros, camarada, reflexiones, keepsake, poder,
     resumen: {
       habilidades: habilidades.length,
       sobran: habilidades.filter((h) => h.sobra > 0).length,
@@ -338,6 +339,8 @@ export function limpiarBuild(cat, build) {
   if (ref) b.reflexiones = ref;
   const kee = limpiarKeepsake(build?.keepsake);
   if (kee) b.keepsake = kee;
+  const pod = limpiarPoder(build?.poder);
+  if (pod) b.poder = pod;
   return b;
 }
 
@@ -725,4 +728,52 @@ export function conDatoKeepsake(build, campo, valor) {
   b.keepsake = k;
   if (k.nv === undefined && k.poder === undefined && !k.grabados.length) delete b.keepsake;
   return b;
+}
+
+/* ---------------- Poder a mano (antes de E7) ---------------- */
+
+/**
+ * Poder que el miembro copia del juego mientras no exista el poder estimado (E7).
+ * En la composición: `poder: { equipo?, rostros?, maestria? }` (equipo = arma + 5 piezas, un solo número).
+ * Camarada y Recuerdo guardan su poder en su propio bloque (`camarada.poder`, `keepsake.poder`): no se duplica.
+ * Captura de Juan (2026-11-23): Adventurer Power 17343 = equipo 7228 + Rostros 2099 + camarada 1998
+ * + Recuerdo 5798 + 220 de Proof of Mastery: el rango "Legendary Traveler III" da +220 de ataque físico
+ * (y +110 elemental) a todo el escuadrón, y el juego lo cuenta en el poder. Es de la cuenta, no de la build.
+ */
+export const PODER_MANUAL = ['equipo', 'rostros', 'maestria'];
+
+/** Normaliza el bloque `poder` (solo los campos a mano; el total se calcula). Vacío → null. */
+export function limpiarPoder(p) {
+  if (!p || typeof p !== 'object') return null;
+  const out = {};
+  for (const k of PODER_MANUAL) {
+    const n = entero(p[k], 0, PODER_MAX);
+    if (n !== null) out[k] = n;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/** Cambia un campo de poder a mano (valor vacío o fuera de rango = sin dato). */
+export function conPoder(build, campo, valor) {
+  if (!PODER_MANUAL.includes(campo)) throw new Error(`Campo de poder desconocido: ${campo}`);
+  const b = structuredClone(build || buildVacia());
+  const p = { ...(b.poder || {}) };
+  const n = entero(valor, 0, PODER_MAX);
+  if (n === null) delete p[campo]; else p[campo] = n;
+  if (Object.keys(p).length) b.poder = p; else delete b.poder;
+  return b;
+}
+
+/** Desglose y total del poder escrito: { partes: [{ id, es, v }], total, escritos }. Sin datos → total null. */
+export function calcularPoder(build) {
+  const v = (n) => (Number.isFinite(n) ? n : null);
+  const partes = [
+    { id: 'equipo', es: 'Equipo', v: v(build?.poder?.equipo) },
+    { id: 'rostros', es: 'Rostros', v: v(build?.poder?.rostros) },
+    { id: 'maestria', es: 'Proof of Mastery', v: v(build?.poder?.maestria) },
+    { id: 'camarada', es: 'Camarada', v: build?.camarada?.id ? v(build.camarada.poder) : null },
+    { id: 'keepsake', es: 'Recuerdo', v: v(build?.keepsake?.poder) },
+  ];
+  const escritos = partes.filter((x) => x.v !== null);
+  return { partes, total: escritos.length ? escritos.reduce((s, x) => s + x.v, 0) : null, escritos: escritos.length };
 }

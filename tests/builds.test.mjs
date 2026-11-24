@@ -111,6 +111,14 @@ test('reflexiones y recuerdo (E4): forma, rangos e ids de grabado', () => {
   ok(E.post('build.eliminar', { id: b.id }, pepe));
 });
 
+test('poder a mano (v9): equipo, rostros y maestria (Proof of Mastery); valida rangos', () => {
+  const b = ok(E.post('build.guardar', { nombre: 'Poder', datos: { v: 1, poder: { equipo: 7228, rostros: 2099, maestria: 220, x: 9 } } }, pepe));
+  assert.deepEqual(b.datos.poder, { equipo: 7228, rostros: 2099, maestria: 220 });
+  err(E.post('build.guardar', { nombre: 'X', datos: { v: 1, poder: { maestria: -1 } } }, pepe), 'DATO_INVALIDO');
+  err(E.post('build.guardar', { nombre: 'X', datos: { v: 1, poder: { equipo: 1000000 } } }, pepe), 'DATO_INVALIDO');
+  ok(E.post('build.eliminar', { id: b.id }, pepe));
+});
+
 test('adventurer_id debe ser del dueño; al borrar el adventurer la build queda suelta', () => {
   const ajeno = ok(E.post('adventurer.guardar', { adventurer: 'Midori', arma: 'long_sword', poder_total: 9000 }, ana)).id;
   err(E.post('build.guardar', { nombre: 'X', datos: DATOS, adventurer_id: ajeno }, pepe), 'DATO_INVALIDO');

@@ -11,7 +11,7 @@ import { avisoDemo, cargando, fallo } from '../ui/comun.js';
 import { toast } from '../ui/toast.js';
 import { ARMAS } from '../etiquetas.js';
 import { cargarCatalogo } from '../catalogo.js';
-import { calcular, limpiarBuild, buildVacia, conPieza, conRostro, conCamarada, conAdventurer, resumenParaGuardar, PARTES, NOMBRE_PARTE,
+import { calcular, limpiarBuild, buildVacia, conPoder, conPieza, conRostro, conCamarada, conAdventurer, resumenParaGuardar, PARTES, NOMBRE_PARTE,
   CALIDADES, COSTO_ROSTROS, CARTAS_ROSTROS, CAMARADA_NV_MAX, ESTRELLAS_MAX, PODER_MAX,
   conReflexion, conCapReflexiones, REFLEXION_CAP_MAX, conGrabado, conRangoGrabado, conDatoKeepsake, KEEPSAKE_NV_MAX, FILAS_GRABADO } from '../build-calc.js';
 import { abrirSelector } from '../ui/selector-pieza.js';
@@ -119,6 +119,14 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     ? html`<button type="button" class="bld-cambiar" data-elegir="${parte}" data-foco="e-${parte}" aria-label="${etiqueta}"><span aria-hidden="true">⇄</span></button>`
     : '');
 
+  // Poder a mano (hasta que exista el poder estimado, E7): mismo campo que en Camarada y Recuerdo.
+  const campoPoder = (campo, etiqueta, ejemplo, ayuda = '') => html`
+    <label class="campo bld-poder-campo"><span class="campo__etiqueta">${etiqueta}</span>
+      <input class="entrada" data-poder="${campo}" data-foco="po-${campo}" inputmode="numeric" maxlength="7"
+        value="${b.poder?.[campo] ?? ''}" placeholder="${ejemplo}" ${editable ? '' : 'disabled'}>
+      ${ayuda ? html`<span class="campo__ayuda">${ayuda}</span>` : ''}</label>`;
+  const conPoderTxt = (n) => (n === null || n === undefined ? '' : `poder ${numero(n)}`);
+
   function filaPieza(c, parte) {
     const p = c.piezas[parte];
     const n = NOMBRE_PARTE[parte];
@@ -178,6 +186,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
               </select>
               <span class="campo__ayuda">La build se mostrará junto a ese adventurer en tu perfil.</span></label>`
           : ''}
+        ${campoPoder('maestria', 'Poder de Proof of Mastery', '220', 'Lo que tu rango de Proof of Mastery suma a todos tus adventurers (Legendary Traveler III: +220).')}
       </div>
       <div class="bld-arma">
         <p class="rotulo">Arma${adv ? ` · ${ARMAS[adv.arma]?.es}` : ''}</p>
@@ -209,13 +218,15 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     const rarezas = [...new Set(puestas.map((p) => c.piezas[p].r))];
     const resumen = !puestas.length ? 'Sin piezas'
       : rarezas.length === 1 && puestas.length === 5 ? `Todo en ${rarezas[0]}` : `${puestas.length} de 5 piezas`;
+    const resumenArm = [resumen, conPoderTxt(b.poder?.equipo)].filter(Boolean).join(' · ');
     const cuerpo = html`
       <ul class="bld-piezas">${PARTES.map((p) => filaPieza(c, p))}</ul>
+      ${campoPoder('equipo', 'Poder del equipo (arma + 5 piezas)', '7228', 'Suma el poder del arma y de las 5 piezas tal como sale en el juego.')}
       <ul class="bld-resumen-chips">
         <li class="bld-chip">Def. ${numero(c.def)}</li>
         ${c.sets.map((st) => html`<li class="bld-chip ${st.activo ? 'bld-chip--listo' : ''}">${bil(st.es, st.en)} ${Math.min(st.puestas, st.necesarias)}/${st.necesarias}${st.activo ? '' : ` · falta ${st.faltan}`}</li>`)}
       </ul>`;
-    return cajon('armadura', `Armadura · ${puestas.length} de 5`, resumen, cuerpo);
+    return cajon('armadura', `Armadura · ${puestas.length} de 5`, resumenArm, cuerpo);
   }
 
   /* ---------- Rostros ---------- */
@@ -258,7 +269,8 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     const r = c.rostros;
     const resumen = !r ? 'Sin Rostros'
       : [r.nucleo ? (r.nucleo.item.es || r.nucleo.item.en) : 'sin núcleo', `costo ${r.costo}/${COSTO_ROSTROS}`,
-        r.setsActivos ? `${r.setsActivos} set${r.setsActivos > 1 ? 's' : ''} activo${r.setsActivos > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ');
+        r.setsActivos ? `${r.setsActivos} set${r.setsActivos > 1 ? 's' : ''} activo${r.setsActivos > 1 ? 's' : ''}` : '',
+        conPoderTxt(b.poder?.rostros)].filter(Boolean).join(' · ');
     const cuerpo = html`
       <ul class="bld-piezas">${['nucleo', ...Array.from({ length: CARTAS_ROSTROS }, (_, i) => i)].map((k) => filaRostro(c, k))}</ul>
       <ul class="bld-resumen-chips">
@@ -268,6 +280,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
         <label class="opcion bld-maestria"><input type="checkbox" data-maestria ${r.maestria ? 'checked' : ''} ${editable ? '' : 'disabled'}>
           <span>Proof of Mastery: el núcleo suma +1 a su set</span></label>
         <div class="bld-rsets-marco">${listaSetsRostros(r.sets)}</div>` : ''}
+      ${campoPoder('rostros', 'Poder de Rostros', '2099')}
       <p class="nota bld-cajon__nota">Para los sets cuentan monstruos distintos: dos copias de la misma carta suman 1. Nombres en español de GameWith, por confirmar.</p>`;
     return cajon('rostros', `Rostros · ${r?.costo || 0}/${COSTO_ROSTROS}`, resumen, cuerpo);
   }
@@ -501,6 +514,7 @@ export default async function vistaBuild(el, { params, query, recargar }) {
     return html`
       <div class="bld-barra" role="region" aria-label="Resumen de la build">
         <div class="bld-barra__datos">
+          ${c.poder.total !== null ? html`<p class="bld-barra__poder" title="${c.poder.partes.filter((x) => x.v !== null).map((x) => `${x.es} ${numero(x.v)}`).join(' + ')}">Poder <strong>${numero(c.poder.total)}</strong>${c.poder.escritos < c.poder.partes.length ? html` <span class="bld-barra__falta">· ${c.poder.escritos} de ${c.poder.partes.length} escritos</span>` : ''}</p>` : ''}
           <p><strong>Def. ${numero(c.def)}</strong>${c.atk ? html` · Atq. ${numero(c.atk)}` : ''}${c.ele ? html` · ${nombreElemento(c.ele.tipo)} ${numero(c.ele.v)}` : ''}${c.estado ? html` · ${nombreElemento(c.estado.tipo)} ${numero(c.estado.v)}` : ''}</p>
           <p class="nota">${hab}${r.sobran ? html` · <span class="bld-sobra">${r.sobran} sobra${r.sobran > 1 ? 'n' : ''}</span>` : ''}${r.setsListos ? html` · <span class="bld-listo">${r.setsListos} set${r.setsListos > 1 ? 's' : ''} listo${r.setsListos > 1 ? 's' : ''}</span>` : ''}${r.setsAUna ? ` · ${r.setsAUna} a una pieza` : ''}${c.rostros ? html` · <span class="${c.rostros.costo > COSTO_ROSTROS ? 'bld-sobra' : ''}">Rostros ${c.rostros.costo}/${COSTO_ROSTROS}</span>` : ''}</p>
         </div>
@@ -710,6 +724,11 @@ export default async function vistaBuild(el, { params, query, recargar }) {
       const max = k === 'nv' ? KEEPSAKE_NV_MAX : PODER_MAX;
       if (n !== null && !(Number.isFinite(n) && n >= (k === 'nv' ? 1 : 0) && n <= max)) toast(k === 'nv' ? `El nivel va de 1 a ${KEEPSAKE_NV_MAX}.` : 'Escribe solo números.', { error: true });
       cambiar(() => { b = conDatoKeepsake(b, k, n); });
+    } else if (t.dataset.poder) {
+      const txt = String(t.value).replace(/[.\s]/g, '');
+      const n = txt === '' ? null : Math.round(Number(txt));
+      if (n !== null && !(Number.isFinite(n) && n >= 0 && n <= PODER_MAX)) toast('Escribe solo números.', { error: true });
+      cambiar(() => { b = conPoder(b, t.dataset.poder, n); });
     } else if (t.matches('[data-maestria]')) {
       cambiar(() => { b = { ...b, rostros: { ...b.rostros, maestria: t.checked } }; });
     } else if (t.dataset.rareza) {

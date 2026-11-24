@@ -159,7 +159,9 @@ let buildsDemo = [
       reflexiones: { cap: 65, activas: ['internal-ammo', 'protection', 'monsoon'] },
       // Recuerdo como en las capturas de Juan (Lv 80/80, poder 5798, "Engrave 87%" = 27 de 31: le falta el Atributo de 4 rangos).
       keepsake: { nv: 80, poder: 5798, grabados: ['sb1', 'sb40', 'sb60', 'sb70', 'sb80', 'sb80b1', 'sb80b2', 'sb80b3',
-        ...['1', '30', '40', '50', '60', '70', '80'].flatMap((f) => [`ul${f}`, `el${f}`]), 'cp50', 'cp60', 'cp70', 'cp80', 'ca80'] } } },
+        ...['1', '30', '40', '50', '60', '70', '80'].flatMap((f) => [`ul${f}`, `el${f}`]), 'cp50', 'cp60', 'cp70', 'cp80', 'ca80'] },
+      // Poder a mano (captura de Juan): 7228 + 2099 + 220 + camarada 1998 + Recuerdo 5798 = 17343.
+      poder: { equipo: 7228, rostros: 2099, maestria: 220 } } },
 ];
 // Nombres ES corregidos por oficiales (E6): uno de ejemplo para ver el ✓ en el modo demo.
 let nombresDemo = [
@@ -222,6 +224,15 @@ function composicionDemo(d) {
     if (nv !== null) k.nv = nv;
     if (po !== null) k.poder = po;
     if (k.nv !== undefined || k.poder !== undefined || k.grabados.length) out.keepsake = k;
+  }
+  // Poder a mano (misma lista que Builds.gs v9).
+  if (d.poder && typeof d.poder === 'object') {
+    const p = {};
+    for (const k of ['total', 'equipo', 'rostros', 'maestria', 'camarada']) {
+      const n = opc(d.poder[k], 0, 999999, `poder ${k}`);
+      if (n !== null) p[k] = n;
+    }
+    if (Object.keys(p).length) out.poder = p;
   }
   return out;
 }

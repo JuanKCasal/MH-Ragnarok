@@ -141,7 +141,9 @@ function composicionValida_(entrada) {
   if (keepsake) out.keepsake = keepsake;
   if (d.poder && typeof d.poder === 'object') {
     var poder = {};
-    ['total', 'equipo', 'rostros', 'camarada'].forEach(function (k) {
+    // A mano mientras no exista E7: equipo (arma + 5 piezas), rostros y maestria (Proof of Mastery, desde la v9).
+    // total y camarada se aceptan por compatibilidad (la web calcula el total; el camarada guarda su poder en su bloque).
+    ['total', 'equipo', 'rostros', 'maestria', 'camarada'].forEach(function (k) {
       var n = numeroValido_(d.poder[k], 0, 999999, 'poder ' + k, true);
       if (n !== '') poder[k] = n;
     });

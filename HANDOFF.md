@@ -1,7 +1,46 @@
-# HANDOFF — MH-Ragnarok (sesión 16: Recuerdo rehecho como en el juego — 31 pasos, rangos, 87 % · publicado `6f683ef` + backend v8)
+# HANDOFF — MH-Ragnarok (sesión 17: poder a mano + poder total en la barra · sin commit · backend v9 por publicar)
 
 Fecha: 2026-11-23
 Repo: https://github.com/JuanKCasal/MH-Ragnarok (publicar en GitHub Pages: `juankcasal.github.io/MH-Ragnarok`)
+
+## Sesión 17 — Poder a mano y total (entrega 1 de 4; detalle en docs/BUILDER.md §16)
+
+### Punto de partida exacto para la sesión 18
+**Orden elegido por Juan: por entregas**, cada una publicada y probada en el celular: 1) poder a mano + total (**hecha, falta publicar**) → 2) **E3 tarjeta de build** → 3) **E5 Comparar** → 4) **E7 poder estimado**.
+
+1. Si la entrega 1 no está publicada, publicar (en este orden):
+   1. `npm test` → **138** (Claude ya las corrió en su PC: 138 pasan).
+   2. **Backend versión 9** (Apps Script, misma URL, sin `instalar()`): el único cambio frente a la v8 es la lista de `poder` en `composicionValida_` (`Builds.gs`), que ahora incluye `'maestria'`. Paquete probado: `Claude outputs/MH-Ragnarok.gs` (SHA-256 `f8286f1a2e37…`; la v8 era `3017aff336f5…`). Publicar "v9 (poder a mano)". Probar `builds?clase=ejemplo` → `{ok:true,data:[]}`. (Si la web sale antes, la v8 guarda la build pero descarta el Proof of Mastery.)
+   3. Commit + push (Juan, por consola):
+      ```
+      git add -A
+      git commit -m "Sesión 17: poder a mano (equipo, Rostros, Proof of Mastery) y poder total en la barra, backend v9"
+      git push
+      ```
+   4. Revisar Pages. Si falla con "No artifacts named github-pages": **Run workflow** (no Re-run).
+   5. Probar en el celular: "Fire Heavy" → escribir 7228 en Armadura, 2099 en Rostros y 220 en Adventurer y arma → la barra debe decir **Poder 17.343** (con camarada 1998 y Recuerdo 5798 ya escritos).
+2. **Siguiente: E3 tarjeta de build** (BUILDER §5): en el perfil (debajo de cada adventurer) y en guías con `[[build:ID]]`; Compartir y "Usar de base". Confirmar con Juan qué muestra la tarjeta (¿poder total? ¿habilidades top? ¿Rostros?) antes de programar.
+3. Idea pendiente (preguntar): pasar Proof of Mastery al perfil del miembro (es de la cuenta) para no repetirlo en cada build; y si el total de la build debe alimentar el `poder_total` del adventurer (el que usa el Clash).
+4. Siguen abiertos: activador diario de `limpiarSesiones`; probar en el celular Camarada, equipo en español, E6 y Rostros; lo de "Por confirmar con el juego" de la sesión 16.
+
+### Respuestas de Juan (sesión 17)
+- Poder del equipo: **un solo número para arma + 5 piezas**.
+- Adventurer Power 17343 = equipo 7228 + Rostros 2099 + camarada 1998 + Recuerdo 5798 + **220 de Proof of Mastery** (captura: rango "Legendary Traveler III", "+220 physical attack and +110 elemental attack" a los adventurers del escuadrón).
+- Entregas: una por vez (poder → E3 → E5 → E7).
+
+### Hecho en la sesión 17
+- `build-calc.js`: `PODER_MANUAL`, `limpiarPoder`, `conPoder`, `calcularPoder`; `limpiarBuild` conserva `poder`; `calcular()` devuelve `poder`.
+- `views/build.js`: campos de poder (Proof of Mastery en Adventurer y arma; equipo en Armadura; Rostros), "poder N" en los resúmenes y **Poder total** en la barra fija ("· 4 de 5 escritos" si falta algo). CSS en `views.css` (`.bld-barra__poder`, `.bld-poder-campo`).
+- `Builds.gs` v9 y `demo-data.js` aceptan `poder.maestria`; la build de ejemplo suma 17.343.
+- Pruebas: **138** (+4). Revisado a 390 y 320 px (demo): sin scroll horizontal ni errores.
+- Docs: BUILDER §3 y §16, SPEC (`build.guardar`), CLAUDE.md (glosario: Proof of Mastery).
+
+### Git (sesión 17 — sin commit)
+Modificados: `HANDOFF.md`, `CLAUDE.md`, `SPEC.md`, `docs/BUILDER.md`, `apps-script/Builds.gs`, `site/js/{build-calc,demo-data}.js`, `site/js/views/build.js`, `site/assets/css/views.css`, `tests/{build-calc,builds}.test.mjs`. (`Claude outputs/` no va al repo.)
+
+---
+
+# (Sesión 16) HANDOFF — MH-Ragnarok (sesión 16)
 
 ## Sesión 16 — Corrección del Recuerdo (Keepsake) (publicado: `6f683ef` + backend v8)
 
